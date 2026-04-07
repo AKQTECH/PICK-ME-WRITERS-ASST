@@ -1,6 +1,6 @@
 {
-  "name": "Pick Me Writers Assistant",
-  "short_name": "Pick Me",
+  "name": "PICK ME 💋",
+  "short_name": "PICK ME 💋",
   "description": "A screenwriting companion for tracking scene progress and notes",
   "start_url": "/PICK-ME-WRITERS-ASST/",
   "scope": "/PICK-ME-WRITERS-ASST/",
@@ -9,9 +9,9 @@
   "theme_color": "#ea258d",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23ea258d' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='%23ffffff' text-anchor='middle' dominant-baseline='central'>PM</text></svg>",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
+      "src": "icon.jpg",
+      "sizes": "1080x1350",
+      "type": "image/jpeg",
       "purpose": "any"
     }
   ]

@@ -2120,8 +2120,12 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
           setNotes(data.notes);
           console.log("Set notes to:", data.notes.length);
         }
+        if (data.sequences) {
+          setSequences(data.sequences);
+          console.log("Set sequences to:", Object.keys(data.sequences).length, "items");
+        }
         localStorage.setItem("pickMeData", JSON.stringify(data));
-        alert("✓ Data loaded! Songs: " + (data.songs?.length || 0) + ", Scenes: " + (data.scenes?.length || 0) + ", Notes: " + (data.notes?.length || 0));
+        alert("✓ Data loaded! Songs: " + (data.songs?.length || 0) + ", Scenes: " + (data.scenes?.length || 0) + ", Notes: " + (data.notes?.length || 0) + ", Progress: " + (Object.keys(data.sequences || {}).length || 0));
         e.target.value = "";
       } catch (err) {
         console.error("Load error:", err);
@@ -2634,7 +2638,6 @@ const PICK_ME_DEFAULT_NOTES_MOBILE = [
 
 function App() {
   const [activeTab, setActiveTab] = useState("ritual");
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [songs, setSongs] = useState(() => {
     const saved = localStorage.getItem("pickMeData");
     return saved ? JSON.parse(saved).songs : INITIAL_SONGS;
@@ -2692,71 +2695,6 @@ function App() {
     window.dispatchEvent(new Event("notesUpdated"));
   }, [notes]);
 
-  // Handle fullscreen state changes (with vendor prefixes for mobile)
-  React.useEffect(() => {
-    const handleFullscreenChange = () => {
-      const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-      setIsFullscreen(isFS);
-    };
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-    document.addEventListener("msfullscreenchange", handleFullscreenChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("msfullscreenchange", handleFullscreenChange);
-    };
-  }, []);
-
-  const toggleFullscreen = async () => {
-    const elem = document.documentElement;
-    console.log("Fullscreen button clicked");
-    try {
-      const isCurrentlyFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
-      console.log("Currently fullscreen?", isCurrentlyFullscreen);
-
-      if (!isCurrentlyFullscreen) {
-        console.log("Attempting to enter fullscreen...");
-        // Request fullscreen with fallbacks for different browsers
-        if (elem.requestFullscreen) {
-          console.log("Using standard requestFullscreen()");
-          await elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) {
-          console.log("Using webkit requestFullscreen");
-          elem.webkitRequestFullscreen();
-        } else if (elem.mozRequestFullScreen) {
-          console.log("Using moz requestFullScreen");
-          elem.mozRequestFullScreen();
-        } else if (elem.msRequestFullscreen) {
-          console.log("Using ms requestFullscreen");
-          elem.msRequestFullscreen();
-        } else {
-          console.log("No fullscreen method available!");
-        }
-      } else {
-        console.log("Attempting to exit fullscreen...");
-        // Exit fullscreen with fallbacks
-        if (document.exitFullscreen) {
-          console.log("Using standard exitFullscreen()");
-          await document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          console.log("Using webkit exitFullscreen");
-          document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-          console.log("Using moz cancelFullScreen");
-          document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-          console.log("Using ms exitFullscreen");
-          document.msExitFullscreen();
-        }
-      }
-    } catch (err) {
-      console.error("Fullscreen error:", err.message, err.name);
-      alert("Fullscreen error: " + err.message + " (" + err.name + ")");
-    }
-  };
 
   const handleSceneDragStart = (e, id) => {
     setSceneDragId(id);
@@ -2803,27 +2741,6 @@ function App() {
       <div className="header">
         <div className="header-lip">💋</div>
         <h1>Pick Me Writers Assistant</h1>
-        <button
-          onClick={toggleFullscreen}
-          className="btn-fullscreen"
-          title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-          style={{
-            position: "absolute",
-            top: "16px",
-            right: "16px",
-            background: "transparent",
-            border: "none",
-            fontSize: "0.9em",
-            cursor: "pointer",
-            padding: "4px 6px",
-            borderRadius: "4px",
-            color: "#ea258d",
-            transition: "opacity 0.2s",
-            zIndex: "9999"
-          }}
-        >
-          {isFullscreen ? "✕" : "⛶"}
-        </button>
         <div className="header-sub">a tool for the film by april korto quioh</div>
       </div>
 
