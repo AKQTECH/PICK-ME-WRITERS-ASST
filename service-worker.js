@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pick-me-v2';
+const CACHE_NAME = 'pick-me-v3';
 const urlsToCache = [
   '/PICK-ME-WRITERS-ASST/',
   '/PICK-ME-WRITERS-ASST/index.html',
