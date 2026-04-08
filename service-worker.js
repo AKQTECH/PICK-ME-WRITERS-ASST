@@ -1,24 +1,15 @@
-const CACHE_NAME = 'pick-me-v3';
-const urlsToCache = [
-  '/PICK-ME-WRITERS-ASST/',
-  '/PICK-ME-WRITERS-ASST/index.html',
-  '/PICK-ME-WRITERS-ASST/manifest.json'
-];
-
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
-    })
-  );
+const CACHE_NAME = 'pick-me-v5';
+const urlsToCache = ['/', '/index.html', '/manifest.json', '/icon.jpg'];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache)));
+  self.skipWaiting();
 });
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    }).catch(() => {
-      return caches.match('/PICK-ME-WRITERS-ASST/index.html');
-    })
-  );
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys =>
+    Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+  ));
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
 });

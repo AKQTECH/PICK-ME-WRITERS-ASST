@@ -35,13 +35,18 @@
             --accent-lavender: #CACBDF;
         }
 
+        /* ── MOBILE FIRST: these are the base styles, not overrides ── */
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background: #FFB6D9;
             min-height: 100vh;
-            padding: 40px 16px;
+            padding: 10px 8px;
             color: var(--text-dark);
             position: relative;
+        }
+        /* Prevent iOS zoom on focus — every interactive text input MUST be 16px+ */
+        input, textarea, select, div[contenteditable] {
+            font-size: 16px !important;
         }
         body::before {
             content: '';
@@ -55,13 +60,13 @@
             z-index: -1;
         }
 
-        .container { max-width: 960px; margin: 0 auto; }
+        .container { max-width: 640px; margin: 0 auto; }
 
-        /* HEADER */
+        /* HEADER — compact on mobile */
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 50px 40px;
+            margin-bottom: 14px;
+            padding: 14px 12px 10px;
             background: var(--white);
             border-radius: 0;
             border: none;
@@ -72,17 +77,15 @@
         .header::before {
             content: '';
             position: absolute;
-            top: 0;
-            right: 0;
-            width: 0;
-            height: 0;
+            top: 0; right: 0;
+            width: 0; height: 0;
             background: none;
             border-radius: 0;
         }
-        .header-lip { font-size: 3em; margin-bottom: 16px; }
+        .header-lip { display: none; }
         .header h1 {
             font-family: 'Inter', sans-serif;
-            font-size: 3.2em;
+            font-size: 1.4em;
             font-weight: 900;
             color: var(--black);
             letter-spacing: -0.02em;
@@ -93,7 +96,7 @@
             line-height: 1.2;
         }
         .header-sub {
-            font-size: 1em;
+            font-size: 0.78em;
             color: var(--text-light);
             font-style: italic;
             opacity: 1;
@@ -650,13 +653,36 @@
         .settings-field { margin-bottom: 20px; }
         .settings-hint { font-size: 0.8em; color: var(--text-light); margin-top: 5px; font-style: italic; }
 
-        @media (max-width: 640px) {
-            .header h1 { font-size: 1.6em; }
-            .cat-grid { grid-template-columns: 1fr; }
-            .add-note-form-grid { grid-template-columns: 1fr; }
-            .song-card { grid-template-columns: 28px 44px 1fr; gap: 10px; }
-            .tabs { flex-direction: column; }
+        /* ── MOBILE DEFAULTS (no media query — this file IS mobile) ── */
+        .container { max-width: 100%; }
+        .cat-grid { grid-template-columns: 1fr; }
+        .add-note-form-grid { grid-template-columns: 1fr; }
+        .song-card { grid-template-columns: 28px 44px 1fr; gap: 8px; }
+
+        /* Progress bar */
+        .progress-bar-container { padding: 8px 10px; font-size: 0.78em; }
+        .progress-feature-name { min-width: 100px; font-size: 0.78em; }
+
+        /* Scene cards — compact, no square aspect ratio */
+        .scenes-grid { grid-template-columns: 1fr; gap: 10px; }
+        .scene-card {
+            min-height: auto !important;
+            aspect-ratio: unset !important;
+            padding: 12px;
+            flex-direction: column;
         }
+        .scene-card-label { font-size: 0.75em; }
+        .scene-drag-handle { display: none; }
+
+        /* Scene Notes accordion (handled in React component) */
+        .scene-notes-grid { grid-template-columns: 1fr !important; }
+        .scene-notes-grid > div:first-child {
+            border-right: none !important;
+            padding-right: 0 !important;
+        }
+
+        /* Card general */
+        .card { padding: 14px 10px; margin-bottom: 10px; }
 
         /* SCENE CARDS (NEW) */
         .scenes-grid {
@@ -770,7 +796,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useRef, useCallback } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -998,9 +1024,9 @@ function computeVerdict(answers) {
   let verdict, icon;
   const total = keeps + warns + cuts;
   if (cuts >= 2) { verdict = "cut"; icon = "✂️"; }
-  else if (warns >= 3 || (warns >= 2 && cuts >= 1)) { verdict = "rewrite"; icon = "✏️"; }
+  else if (warns >= 3 || (warns >= 2 && cuts >= 1)) { verdict = "rewrite"; icon = "↺"; }
   else if (keeps >= Math.ceil(total * 0.5)) { verdict = "keep"; icon = "✅"; }
-  else { verdict = "rewrite"; icon = "✏️"; }
+  else { verdict = "rewrite"; icon = "↺"; }
 
   return { verdict, icon, keeps, warns, cuts, notes };
 }
@@ -1290,7 +1316,7 @@ function EvalTab({ notionUrl, showToast }) {
 
   const copyResultToNotion = () => {
     const result = computeVerdict(answers);
-    const verdictLabel = result.verdict === "keep" ? "✅ KEEP" : result.verdict === "rewrite" ? "✏️ REWRITE" : "✂️ CUT";
+    const verdictLabel = result.verdict === "keep" ? "✅ KEEP" : result.verdict === "rewrite" ? "REWRITE" : "✂️ CUT";
     const text = `# Scene Evaluation: ${sceneName}\n\n**Verdict: ${verdictLabel}**\n\nKeep signals: ${result.keeps} | Warnings: ${result.warns} | Cut signals: ${result.cuts}\n\n## Notes\n${result.notes.join("\n")}\n\n## My Notes\n${evalNotes || "(none)"}`;
     navigator.clipboard.writeText(text).then(() => {
       window.open(notionUrl, "_blank");
@@ -1463,109 +1489,110 @@ function initializeSceneNotes(legacyNotes) {
       id: "meet-autumn",
       name: "MEET AUTUMN / AUTUMN'S WORLD (Pages 1-7)",
       scenes: [
-        { id: "cheetah", name: "THE CHEETAH GIRLS", content: "" },
-        { id: "misc-work", name: "MISCELLANEOUS WORK", content: "" },
-        { id: "background", name: "BACKGROUND WORK HIGHLIGHTS", content: "" },
-        { id: "attention", name: "ATTENTION WHORE", content: "" },
-        { id: "work-hustle", name: "THE WORK HUSTLE", content: "" }
+        { id: "cheetah", name: "THE CHEETAH GIRLS", content: "- yup that's me\n- 3.5 pages current / 3.5 pages target" },
+        { id: "misc-work", name: "MISCELLANEOUS WORK", content: "- Autumn the extra\n- she's always in the background, making herself smaller\n- 1 page current / 1 page target" },
+        { id: "background", name: "BACKGROUND WORK HIGHLIGHTS", content: "- 3 quick pops\n- maybe some VO trims, can we go without transition from being a star to background?\n- trim director's talking in background pops\n- 1 page current / 1 page target" },
+        { id: "attention", name: "ATTENTION WHORE", content: "- I didn't know you were gonna sing\n- emphasis she wanted not just anyone's attention she wanted his — maybe show him first talking to friends then stopping to look at her\n- clarify attention theme - maybe the *right* attention?\n- 0.5 pages current / 0.5 pages target" },
+        { id: "work-hustle", name: "THE WORK HUSTLE", content: "- Uber + Postmates at the same damn time\n- 1 page current / 1 page target" }
       ]
     },
     {
       id: "meet-ethan",
       name: "MEET ETHAN / THE DEAL (Pages 7-14)",
       scenes: [
-        { id: "meet-ethan", name: "MEET ETHAN", content: "" },
-        { id: "ultimatum", name: "THE ULTIMATUM", content: "" }
+        { id: "meet-ethan", name: "MEET ETHAN", content: "- rehab cut, now we begin at omar picking him up\n- cut mirrors and start on pick up\n- 7 pages current / 4 pages target" },
+        { id: "ultimatum", name: "THE ULTIMATUM", content: "- rupert v. ethan part 1\n- maybe Victoria \"sue me for not wanting to be with just some guy's son\"\n- 3 pages current / 3 pages target" }
       ]
     },
     {
       id: "intervention",
       name: "THE INTERVENTION (Pages 14-18)",
       scenes: [
-        { id: "intervention", name: "THE INTERVENTION (Pages 14-18)", content: "" }
+        { id: "intervention", name: "THE INTERVENTION", content: "- we need boundaries\n- make Musu a serial dater\n- \"how will you afford that place on your end\"\n- help the audience — Autumn find a man or....\n- 4 pages current / 4 pages target" }
       ]
     },
     {
       id: "meet-cute",
       name: "THE MEET CUTE → YES (Pages 18-28)",
       scenes: [
-        { id: "meet-cute", name: "MEET CUTE", content: "" },
-        { id: "debate", name: "DEBATE", content: "" },
-        { id: "postmate", name: "POSTMATE FATE", content: "" }
+        { id: "meet-cute", name: "MEET CUTE", content: "- hey, that's my spot\n- Ethan mentions the show is on HBO (the show IS on HBO — not a generic network)\n- bring back Autumn fantasy sequence while Kiya's talking about it?\n- 5.5 pages current / 4 pages target" },
+        { id: "debate", name: "DEBATE", content: "- Autumn with Kiya and Nowai\n- Adjust autumn's reasoning:\n    - Make Nowai's move-out date SPECIFIC (\"I'm out by the end of the month\")\n    - Maybe - Have Musu mention money during intervention (\"How are you going to afford that place alone?\")\n    - She needs rent money (concrete)\n    - Make the show's UPFRONT payment clear (she gets X just for participating, regardless of outcome) BUT maybe she has to repay the money if she doesn't make it to the end of the season/quits?\n    - Ma Kebbeh's intervention (emotional)\n    - Nowai moving out (abandonment)\n    - The show pays\n    - Money need gives her an out from admitting she really wants it\n- 4 pages current / 2 pages target" },
+        { id: "postmate", name: "POSTMATE FATE", content: "- ETHAN: \"is there really no part of you that wants more?\"\n- Stuff everywhere when she delivers to his house — he reveals he googled her, saw she was a postmate, ordered random stuff until he got her\n- ⚑ NOTE: Ethan ENGINEERED the meet-cute. He found out she was a Postmate and ordered random things until she was assigned to his address. The clutter is explained by this. The audience learns this retroactively — it's the first iteration of his pattern: making her come to him without asking directly.\n- 5.5 pages current / 4 pages target" }
       ]
     },
     {
       id: "ethan-producer",
       name: "ETHAN AS PRODUCER (Pages 28-56)",
       scenes: [
-        { id: "shoot", name: "THE SHOOT", content: "" },
-        { id: "night-one", name: "NIGHT ONE", content: "" },
-        { id: "good-morning", name: "GOOD MORNING MUHAMMED", content: "" },
-        { id: "boat-date", name: "BOAT DATE", content: "" },
-        { id: "fire-pit", name: "THE FIRE PIT", content: "" },
-        { id: "mic-pack", name: "MIC PACK MOMENT", content: "" },
-        { id: "family-check", name: "FAMILY CHECK IN", content: "" },
-        { id: "confessional", name: "CONFESSIONAL", content: "" },
-        { id: "roll-bounce", name: "ROLL BOUNCE", content: "" },
-        { id: "audience-montage", name: "AUDIENCE MONTAGE", content: "" },
-        { id: "misc-show", name: "MISC SHOW MOMENTS", content: "" }
+        { id: "shoot", name: "THE SHOOT", content: "- Three Prongs walk through / Media Training Montage / Photoshoot\n- cut the prep sequence, now the high low of polished trailer brutal photoshoot\n- ethan more directly involved in photoshoot posing — Bite your lip stick your arse out\n- he has a signal with a pa for when to throw roses\n- \"Talking to you feels like I'm playing English Madlibs, literally what the fuck are you talking about.\"\n- They argue about name of show during the photoshoot\n- 9 pages current / 3 pages target" },
+        { id: "night-one", name: "NIGHT ONE", content: "- Autumn stressed, Ethan being monitored, Victoria on his mind\n- Autumn meets Jonathan/starts getting into it\n- Cut night one compliment he just looks thrown off\n- Autumn watches crew setting up but doesn't see cameras / Omar says they are hidden\n- while talking to JN first time we hear scary *voice of God that makes them both jump*\n- **at some point Ethan rips his headset off**\n- Ethan's veneer cracks literally he cracks a tooth\n- *could cut lie detector he gets her to open up by force at the challenge the next day?*\n- They were right about you Bobby, you ARE unfuckable\n- moment where ethan is proud of her while she's on a date with someone else\n- maybe when kostas cries to his mother on the phone ethan comforts him\n- 4.5 pages current / 1 page target" },
+        { id: "good-morning", name: "GOOD MORNING MUHAMMED", content: "- Dylan wake up, Autumn adjusts to being the lead, guys get competitive over breakfast\n- Ethan, Omar + story producers monitoring feeds\n- Establish god-mode control button that lets him talk to anyone anywhere in the hotel\n- OR Later she goes to tell Ethan about it he says he saw it and shows her the footage\n- 0.5 pages target" },
+        { id: "boat-date", name: "BOAT DATE", content: "- One on one? OPTIONS: Autumn feels guilty for being distracted by Ethan on her date with Xavier\n- 2 pages target" },
+        { id: "fire-pit", name: "THE FIRE PIT", content: "- now a redo after boat disaster\n- E+A check ins — THE FIRST POST-IT + THE FIREPIT\n- 3 pages target" },
+        { id: "mic-pack", name: "MIC PACK MOMENT", content: "- sexual tension etc\n- when does she realize the mic is still on — before or after she's already said the thing?\n- 0.5 pages target" },
+        { id: "family-check", name: "FAMILY CHECK IN", content: "- WATCH PARTY FT + NOWAI ASKS ABOUT ETHAN\n- what does she need her family not to notice — and what's the first thing they notice?\n- 1 page target" },
+        { id: "confessional", name: "CONFESSIONAL", content: "- Ethan asks why she's so pissed, wants her to cry, she tells story of what happened\n- Producers show her insanely private footage which is how she finds out just how many cameras there really are\n- Cutting Khalid but a new moment of her being vulnerable needs to happen that makes show buzzy here\n- He wants her to open up and say what she wants and she won't, he says he will stay here all night he doesn't care how long it takes, he threatens to order in curry\n- Xavier one on one is somewhere around here, he says Ethan is pretty invested for a producer, outside pov on him here\n- 1.5 pages target" },
+        { id: "roll-bounce", name: "ROLL BOUNCE", content: "- rollerskating lessons\n- Ethan asks why she doesn't act anymore — we see how she sidelines herself and then blames everyone else\n- \"But when you don't know anyone is watching, that's when it's undeniable.\"\n- ⚑ CYRANO NOTE: The Cyrano belongs to ETHAN, not Autumn. Young Ethan fell for a girl in high school, couldn't conceive of a world where she chose him, and set her up with another guy — taking himself out of the equation. The other guy actually liked her too. Ethan removed his agency. The friendship broke. The email she sent later went unanswered. This is the first iteration of his lifelong pattern.\n- When Ethan tells HIS Cyrano story, Autumn says \"wait, what if she liked you back?\" He denies the possibility and she clocks it: that's the saddest thing I've ever heard.\n- This exchange is ETHAN'S CONFESSION, not a story about a hypothetical third person.\n- I just didn't think I'm someone people stay for / you didn't? / I don't\n- ⚑ ALMOST-KISS: There's a half-second on the ice before she pulls back where she doesn't want to. Hold it.\n- 3 pages target" },
+        { id: "audience-montage", name: "AUDIENCE MONTAGE", content: "- The **rodell drive guy** doing a podcast throughout the movie about the show\n- Watch parties start to happen\n- niche trivia games like HR\n- people contestants barely know selling stories to tabloids" },
+        { id: "misc-show", name: "MISC SHOW MOMENTS", content: "- WITH CONTESTANTS ??\n- Autumn starts to get into it — asks to do the clapper, Monica is like you can do whatever you want (stepping into her power)\n- Ethan's hands shaking while adjusting Autumn's mic\n- 1 page target" }
       ]
     },
     {
       id: "ethan-contestant",
       name: "ETHAN AS CONTESTANT (Pages 56-84)",
       scenes: [
-        { id: "meet-again", name: "MEET ETHAN AGAIN", content: "" },
-        { id: "spa", name: "THE SPA", content: "" },
-        { id: "lie-detector", name: "LIE DETECTOR", content: "" },
-        { id: "we-up", name: "WE UP", content: "" },
-        { id: "misc-moment", name: "MISC SHOW MOMENT", content: "" },
-        { id: "dinner-rupert", name: "DINNER WITH RUPERT", content: "" },
-        { id: "overnights", name: "OVERNIGHTS", content: "" },
-        { id: "cyrano", name: "ACCIDENTAL CYRANO", content: "" },
-        { id: "fan-fair", name: "FAN FAIR", content: "" },
-        { id: "ham-lake", name: "HAM LAKE", content: "" },
-        { id: "kiss", name: "THE KISS", content: "" }
+        { id: "meet-again", name: "MEET ETHAN AGAIN", content: "- [Ethan's commercial, omar now in control]\n- 3 pages target" },
+        { id: "spa", name: "THE SPA", content: "- Spa scene, Ethan trying to convince Autumn that him joining as a contestant won't be a mistake\n- 5.5 pages current / 4 pages target" },
+        { id: "lie-detector", name: "LIE DETECTOR", content: "- Ethan shows up to boys workout, how is he gonna get Autumn on board? Xavier vouches for Ethan, cutaways to ethan getting grilled\n- He's struggling to give up control to omar — don't forget to do etc?\n- Xavier pushes past the surface answer and asks what he actually wants and machine doesn't shock him because he's not lying, he genuinely doesn't know what he wants" },
+        { id: "we-up", name: "WE UP", content: "- fans love the khalid confessional\n- She mentions Nathan Fielder in her DMs and Ethan is seething jealous, he's like \"you're not available\"\n- ***set up they have a weed promo that's where she gets the mints???***\n- 2 pages target\n\n🔒 BILLBOARD SCENE — LOCKED\nThis scene is written by April and is complete. Do NOT rewrite, prompt, or suggest changes.\nThe scene ends with: She can't even say it. She just looks at him, and he smiles even bigger.\nThis line is the whole film." },
+        { id: "misc-moment", name: "MISC SHOW MOMENT", content: "- something something comedy\n- autumn calls home again to see if they watched, old ma passed out and had to be rushed to the hospital, they didn't want to bother her she's busy, reminder of stakes\n- 1 page target" },
+        { id: "dinner-rupert", name: "DINNER WITH RUPERT", content: "- Autumn stands up for Ethan\n- 4.5 pages current / 3 pages target" },
+        { id: "overnights", name: "OVERNIGHTS", content: "- Autumn gets stoned to deal with nerves around expectation of intimacy at fantasy suites, she and ethan decide to fake it and spend the night just hanging out, maybe fake morning after breakfast\n- Add \"America voted\" to Monica bit\n- add beat where he registers that she pulled-back\n- Ethan — how do you keep tricking me into complimenting you\n- ethan pokes a bit more on her dagger thing \"has anyone ever actually used it?\" She changes the subject\n- She throws a fry at him after Fizz Wiz and he dodges it\n- **In fred62 ethan refuses the fries. Then after they talk he allows himself to eat it even though his dad would frown upon it**\n- \"Did your dad ever actually say thank you for the lipstick idea?\" / \"I think using it was the thank you.\" / Awkward beat. They sit in it\n- Autumn calls it \"the night of attachment style horrors\"\n- *Re: GERD — \"she moans you're getting me hot\" / \"stop flirting with me\" / \"I'm just being your producer\" / \"you're not my producer anymore.\"*\n- in bed autumn shows ethan her most embarrassing commercial, he says how come she didn't advocate for herself the way he did for her he's never seen her get that worked up before. it was sexy. if you're angry you should be angry. who the fuck cares\n- \"and if anyone has a problem with it i've got your back\"\n- In hotel he watches her sleep — perhaps with CPAP\n- 8 pages current / 6 pages target" },
+        { id: "cyrano", name: "ACCIDENTAL CYRANO", content: "- ⚑ MECHANISM UPDATE: The cooking date Cyrano uses advice Ethan picked up specifically from watching Autumn WITH JN on the cooking date itself. Not generic romantic advice — Ethan fed JN lines drawn from what he observed that day. Tighter, funnier, more specific.\n- They connect but Autumn realizes it's not as fun as fake fantasy suites\n- ***still need a comedy game for the cooking date***\n- Ethan gives JN advice → JN has date and is suspiciously saying stuff he could only have heard from Ethan → Omar clocks it, wtf\n- 2 pages target" },
+        { id: "fan-fair", name: "FAN FAIR", content: "- State Fair celebs, Autumn connects with fat girl stans\n- 2 pages target" },
+        { id: "ham-lake", name: "HAM LAKE", content: "- THE WEDDING\n- maybe also big banner at MSP\n- ***Need new reason for Ethan to get invited to the wedding now that old ma isn't passing out / maybe he just gets along with family at the fair?***\n- at the wedding — Autumn helps ethan when he is choking from pepper sauce\n- She watches him for a beat before coming out to the parking lot\n- ⚑ ETHAN KISSES AUTUMN FIRST. Autumn does not initiate. This is the first half of the two-parking-lots mirror.\n- PARKING LOT 1 (Ham Lake): He risks first — no plan, no production logic, he just cannot help himself.\n- PARKING LOT 2 (Funeral): She crosses to him first — he stands still and lets it be.\n- Ethan — how do you keep tricking me into complimenting you\n- 5 pages target" },
+        { id: "kiss", name: "THE KISS", content: "- lovers in the parking lot\n- ⚑ ETHAN initiates at Ham Lake. Any beat where Autumn leans in or makes the first move is wrong.\n- 1.5 pages target" }
       ]
     },
     {
       id: "unraveling",
       name: "THE UNRAVELING (Pages 84-91)",
       scenes: [
-        { id: "lied", name: "SHE LIED Y'ALL", content: "" },
-        { id: "betrayal", name: "THE BETRAYAL", content: "" },
-        { id: "fight", name: "THE FIGHT", content: "" }
+        { id: "lied", name: "SHE LIED Y'ALL", content: "- Autumn ate tf up online\n- revisit all audience reactions from before (rodell guy), but now they are over Autumn\n- 2 pages target" },
+        { id: "pre-betrayal", name: "THE PRE-BETRAYAL ⚑ NEW", content: "⚑ THIS SCENE IS NEW — does not appear on the 2/14/26 scene list. Place it between SHE LIED Y'ALL and THE BETRAYAL.\n\nNO DIALOGUE. Pure physical behavior.\n\nEthan alone with the spa footage. He watches it. His face does what it did the first time. Rupert calls — the professional context is real and immediate. He closes the laptop. Stands up. Goes to the window. Stands there. Goes back. Opens the laptop. Authorizes the footage. Closes it. Leaves the room.\n\nTHE PAUSE IS THE SCENE. A man making a purely professional decision does not pause. The pause is personal. The audience reads the pause correctly: he knows this ends them. He is deciding whether to do it anyway. He does it anyway.\n\nThis is what makes the betrayal read as self-sabotage, not careerism." },
+        { id: "betrayal", name: "THE BETRAYAL", content: "- Autumn finds out spa footage aired, overhears Rupert talking shit\n- RUPERT: \"I had my team go in and add cameras to the places you missed. What part of 'this is MY show' do you not understand? This is gold. We have to air it. It proves she was real the whole time.\"\n- ⚑ NOTE: Ethan did not simply cave to Rupert. He paused (see PRE-BETRAYAL scene). The betrayal must read as SELF-SABOTAGE not careerism — callback to high school (set up the girl he loved with someone else) and Victoria (forced her to be the one to leave). Three iterations of the same wound. This is the most costly.\n- He used the exact mechanism of her trust as the instrument of her exposure.\n- *The betrayal MUST read as a callback (to high school + Victoria)*\n- 2 pages target" },
+        { id: "fight", name: "THE FIGHT", content: "- Autumn gets tf outta there\n- Rupert accuses Ethan of being overprotective of Autumn — \"hope it's worth it when you lose your inheritance and she still doesn't choose you\"\n- 3 pages target" }
       ]
     },
     {
       id: "low-point",
       name: "THE LOW POINT (Pages 91-95)",
       scenes: [
-        { id: "autumn-spiral", name: "AUTUMN'S SPIRAL", content: "" },
-        { id: "ethan-spiral", name: "ETHAN'S SPIRAL", content: "" }
+        { id: "autumn-spiral", name: "AUTUMN'S SPIRAL 🔒 DEFERRED", content: "⚑ THREE WEEKS OUT — grief-adjacent. Do not push toward this scene yet.\n\nAUTUMN\n- Musu gets Autumn out of bed and cooks for her, soup with lime, she deletes all socials\n- Ethan couriers box of apology Post-its to Autumn\n- \"I miss you\" \"I'm sorry\"\n- then I didn't think that you would stay\n- She shoves them in closet\n- while watching gilmore girls she throws a piece of candy at the screen then after reading ethan's post-it she picks it up from floor and eats it\n- ⚑ Nowai flies SAMUEL in (not visiting the grandmother — Samuel). They talk. He leaves her with the footage.\n- Autumn has been AVOIDING SAMUEL for most of the film. This call/visit finally lands.\n- 2 pages target" },
+        { id: "ethan-spiral", name: "ETHAN'S SPIRAL", content: "ETHAN\n- Ethan quit, he's doing pathetic \"Need You Now\" cover, Omar watches, tells him Rupert tried to hire him, he's loyal but E needs to get his shit together. He feels like he used her, doesn't know what to do\n- Scene where Ethan is in hell auditioning new leads\n- Instead of drunk dial Ethan shows up\n- while still drunk he openly blames Rupert for fucking him up and costing him Autumn (because of him Ethan learned to destroy good things before they could leave him)\n- then hungover next morning has full convo of forfeiting everything\n- Add detail in Ethan/Rupert last conversation where we can see Rupert kind of panic at not having anything to hold over Ethan anymore — he thought the money was the thing keeping him around\n- 2 pages target" }
       ]
     },
     {
       id: "turning-point",
       name: "THE TURNING POINT (Pages 95-105)",
       scenes: [
-        { id: "musu-autumn", name: "MUSU v. AUTUMN", content: "" },
-        { id: "drunk-dial", name: "DRUNK DIAL", content: "" },
-        { id: "rupert-ethan", name: "RUPERT v. ETHAN", content: "" },
-        { id: "news", name: "THE NEWS HITS", content: "" },
-        { id: "me-her", name: "ME + HER", content: "" }
+        { id: "musu-autumn", name: "MUSU v. AUTUMN", content: "- been a long time coming / HEADACHE\n- fans actually supporting her after seeing spa footage on social media but phone is OFF\n- ugly cry mirror scene\n- 3 pages target" },
+        { id: "drunk-dial", name: "DRUNK SHOW-UP ⚑", content: "⚑ NAME CHANGE: This is no longer a drunk DIAL. Ethan shows up at Rupert's mansion drunk.\n- He does not finish the conversation that night.\n- While still drunk, he openly blames Rupert for fucking him up and costing him Autumn — because of him, Ethan learned to destroy good things before they could leave him.\n- TWO SCENES: the drunk arrival (the emotion — him finally doing the thing he's always engineered from a distance, showing up without a plan) + the morning-after convo (the reckoning).\n- 2 pages target" },
+        { id: "rupert-ethan", name: "RUPERT v. ETHAN (MORNING AFTER)", content: "- Hungover. Sober. Daylight. The reckoning.\n- This is a SEPARATE SCENE from the drunk show-up — they do not finish the conversation the night before.\n- Ethan finally names the belief clearly for the first time: I am not someone people stay for without a reason.\n- Ethan quits / forfeits everything.\n- Add detail where Rupert kind of panics at not having anything to hold over Ethan anymore — he thought the money was the thing keeping him around.\n- 2 pages target" },
+        { id: "news", name: "THE NEWS HITS", content: "⚑ UPDATE: This is no longer about Ma Kebbeh. SAMUEL DIES.\n- RIP Samuel (Autumn's father)\n- Ma Kebbeh LIVES — this is the irony the film needs. Autumn complained Ma Kebbeh would live forever. She does. Samuel is the one who goes.\n- 0.5 pages target" },
+        { id: "me-her", name: "ME + HER", content: "- Autumn watches the audition tape + pink chair to curb, goes back on social to nothing but love\n- 2.5 pages target" }
       ]
     },
     {
       id: "finale",
       name: "THE BIG FINALE (Pages 105-117)",
       scenes: [
-        { id: "eulogy", name: "THE EULOGY", content: "- Autumn walks down the aisle on her way to do the eulogy like bride\n- Make the speech like vows (to herself on grandma's behalf), makes the whole crowd do it too" },
-        { id: "funeral", name: "THE FUNERAL", content: "→ **CHANGE:** It's now **Samuel's funeral instead**.\n\nFUNERAL DETAILS\n- bizarre customer service smile\n- Niece cronies confrontation\n- Race to make it to the casket first\n- Joe Nathan comes to funeral, is dating her cousin?\n- in parking lot Ethan is pacing, overthought his outfit for the funeral its an african print button down that is so tight\n- Autumn watches ethan fidget through church window and take the funeral shirt off and back on and back off again" },
-        { id: "good-man", name: "A GOOD MAN SAVANNAH", content: "- Autumn tells Ethan he changed her life\n- **ETHAN: \"I love you and I miss you and when you left the show I cried so hard I threw up.\"\n- I didn't know how much more being exposed costs you than it could ever cost me" },
-        { id: "begging", name: "BEGGING", content: "- ethan says autumn looks hot at funeral\n- she says i cried all my makeup off\n- he shrugs and says still" },
-        { id: "epilogue", name: "EPILOGUE", content: "" },
-        { id: "credits", name: "CREDITS", content: "" }
+        { id: "eulogy", name: "THE EULOGY 🔒 DEFERRED", content: "⚑ THREE WEEKS OUT — do not prompt or push toward this scene yet.\n\nThis is SAMUEL'S funeral. The eulogy is no longer for the grandmother — it is a daughter standing at her FATHER'S funeral. The man whose absence shaped the pink chair.\n\n- Autumn finally talks her shit [+escalator story]\n- Autumn walks down the aisle on her way to do the eulogy like bride\n- The speech is like vows — to herself, on Samuel's behalf. Makes the whole crowd do it too.\n- She says publicly: I see you. You were not perfect. Your absence was excruciating. And I am proud of you.\n- 4 pages target" },
+        { id: "funeral", name: "THE FUNERAL", content: "THIS IS SAMUEL'S FUNERAL. Ma Kebbeh lives.\n\n- greeting family, murder mystery, Eyes on the Sparrow, potato salad drama\n- bizarre customer service smile\n- Niece cronies confrontation\n- Race to make it to the casket first\n- Joe Nathan comes to funeral, is dating her cousin?\n- in parking lot Ethan is pacing, overthought his outfit — african print button down that is so tight\n- Autumn watches Ethan fidget through church window and take the funeral shirt off and back on and back off again\n- 2 pages target" },
+        { id: "good-man", name: "A GOOD MAN SAVANNAH", content: "- Musu and Nowai fill Autumn in on Ethan paying for the funeral, say he's outside\n- Autumn tells Ethan he changed her life\n- **ETHAN: \"I love you and I miss you and when you left the show I cried so hard I threw up.\"\n- I didn't know how much more being exposed costs you than it could ever cost me\n- 1 page target" },
+        { id: "begging", name: "BEGGING / THE PARKING LOT 🔒 DEFERRED", content: "⚑ THREE WEEKS OUT — grief-adjacent. Do not push toward this scene yet.\n\n⚑ STRUCTURAL NOTE: The funeral parking lot is the SECOND of two structurally linked parking lots (mirror of Ham Lake).\n- Ham Lake: ETHAN kisses Autumn first. He risks without a plan.\n- Funeral parking lot: AUTUMN crosses to Ethan first. He stands still. He does not pursue. He has no speech prepared.\nThe film tracks two people learning to swap the risk.\n\n- ethan says autumn looks hot at funeral\n- she says i cried all my makeup off\n- he shrugs and says still\n- Autumn crosses to him. He doesn't move toward her. He lets it be.\n- ⚑ THE LINE HE DOESN'T WANT TO SAY lives here or just before: something in the register of \"I didn't think you'd stay\" or \"I didn't think I was enough.\"\n- 4 pages target" },
+        { id: "epilogue", name: "EPILOGUE", content: "- self tape OR BBQ, couple type shit\n- 1 page target" },
+        { id: "credits", name: "CREDITS", content: "- Ethan getting cornered by LIB aunties and uncles with advice\n- 1 page target" }
       ]
     },
     {
@@ -1603,89 +1630,159 @@ function initializeSceneNotes(legacyNotes) {
 }
 
 // ─── RICH TEXT EDITOR COMPONENT ─────────────────────────────────────────────
+// Uses contenteditable so Bold / Italic / Highlight actually render visually.
+
+const HIGHLIGHT_COLORS = [
+  { color: "#FEC3E4", label: "Pink" },
+  { color: "#b2c0f9", label: "Periwinkle" },
+  { color: "#f2ffd5", label: "Lime" }
+];
 
 function RichTextEditor({ content, onChange }) {
-  const textRef = useRef(null);
+  const editorRef = useRef(null);
+  // Track what we last pushed into the DOM so we don't clobber user cursor on re-render
+  const syncedRef = useRef(null);
 
-  const applyFormatting = (before, after) => {
-    const textarea = textRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = content.substring(start, end);
-    const newContent = content.substring(0, start) + before + selected + after + content.substring(end);
-    onChange(newContent);
-  };
+  // Initial mount: write content once
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.innerHTML = content || "";
+      syncedRef.current = content || "";
+    }
+  }, []); // eslint-disable-line
 
-  const handleKeyDown = (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-      e.preventDefault();
-      applyFormatting('**', '**');
-    } else if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
-      e.preventDefault();
-      applyFormatting('*', '*');
+  // When scene changes from outside, refresh DOM only if content truly differs
+  useEffect(() => {
+    if (editorRef.current && content !== syncedRef.current) {
+      editorRef.current.innerHTML = content || "";
+      syncedRef.current = content || "";
+    }
+  }, [content]);
+
+  const syncToState = () => {
+    if (editorRef.current) {
+      const html = editorRef.current.innerHTML;
+      syncedRef.current = html;
+      onChange(html);
     }
   };
 
+  const execCmd = (cmd, value) => {
+    editorRef.current && editorRef.current.focus();
+    document.execCommand(cmd, false, value || null);
+    syncToState();
+  };
+
+  const applyHighlight = (color) => {
+    editorRef.current && editorRef.current.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || !sel.toString()) return;
+    const range = sel.getRangeAt(0);
+    const mark = document.createElement("mark");
+    mark.style.backgroundColor = color;
+    mark.style.borderRadius = "2px";
+    mark.style.padding = "0 1px";
+    try {
+      range.surroundContents(mark);
+    } catch (e) {
+      const frag = range.extractContents();
+      mark.appendChild(frag);
+      range.insertNode(mark);
+    }
+    sel.removeAllRanges();
+    syncToState();
+  };
+
+  const insertBullet = () => {
+    editorRef.current && editorRef.current.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    // Check whether cursor is at the very start of a line
+    let node = range.startContainer;
+    let offset = range.startOffset;
+    let atLineStart = offset === 0;
+    if (!atLineStart && node.nodeType === Node.TEXT_NODE) {
+      const before = node.textContent.substring(0, offset);
+      atLineStart = before.endsWith("\n") || before === "";
+    }
+    const textToInsert = atLineStart ? "• " : "\n• ";
+    document.execCommand("insertText", false, textToInsert);
+    syncToState();
+  };
+
+  const handleKeyDown = (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "b") {
+      e.preventDefault();
+      execCmd("bold");
+    } else if ((e.metaKey || e.ctrlKey) && e.key === "i") {
+      e.preventDefault();
+      execCmd("italic");
+    } else if (e.key === "Enter") {
+      // Continue bullet list automatically
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        let node = range.startContainer;
+        let lineText = node.nodeType === Node.TEXT_NODE
+          ? node.textContent.substring(0, range.startOffset)
+          : "";
+        // Walk up to get full line text if needed
+        const trimmed = lineText.trimStart();
+        if (trimmed.startsWith("• ")) {
+          if (trimmed === "• " || trimmed === "•") {
+            // Empty bullet — just do normal newline (browser default)
+            return;
+          }
+          e.preventDefault();
+          document.execCommand("insertText", false, "\n• ");
+          syncToState();
+        }
+      }
+    }
+  };
+
+  const toolbarBtn = (extra = {}) => ({
+    backgroundColor: "#fec3e4",
+    border: "1px solid #ea258d",
+    padding: "6px 12px",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "0.9em",
+    ...extra
+  });
+
   return (
     <div style={{ marginBottom: "16px" }}>
-      <div style={{ display: "flex", gap: "8px", marginBottom: "12px", flexWrap: "wrap", alignItems: "center" }}>
-        <button
-          onClick={() => applyFormatting('**', '**')}
-          style={{
-            backgroundColor: "#fec3e4",
-            border: "1px solid #ea258d",
-            padding: "6px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "0.9em",
-            fontWeight: "bold"
-          }}
-        >
-          Bold
-        </button>
-        <button
-          onClick={() => applyFormatting('*', '*')}
-          style={{
-            backgroundColor: "#fec3e4",
-            border: "1px solid #ea258d",
-            padding: "6px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "0.9em",
-            fontStyle: "italic"
-          }}
-        >
-          Italic
-        </button>
+      <div style={{ display: "flex", gap: "8px", marginBottom: "10px", flexWrap: "wrap", alignItems: "center" }}>
+        <button onClick={() => execCmd("bold")} style={toolbarBtn({ fontWeight: "bold" })}>Bold</button>
+        <button onClick={() => execCmd("italic")} style={toolbarBtn({ fontStyle: "italic" })}>Italic</button>
+        <button onClick={insertBullet} style={toolbarBtn()}>•</button>
         <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-          <span style={{ fontSize: "0.85em", color: "#666" }}>Highlight:</span>
-          {[
-            { color: "rgba(255, 193, 7, 0.3)", label: "Yellow" },
-            { color: "rgba(76, 175, 80, 0.3)", label: "Green" },
-            { color: "rgba(244, 67, 54, 0.3)", label: "Red" },
-            { color: "rgba(156, 39, 176, 0.3)", label: "Purple" }
-          ].map((hl, idx) => (
+          <span style={{ fontSize: "0.82em", color: "#666" }}>Highlight:</span>
+          {HIGHLIGHT_COLORS.map((hl, idx) => (
             <button
               key={idx}
-              onClick={() => applyFormatting(`<mark style="background-color:${hl.color}">`, '</mark>')}
+              onClick={() => applyHighlight(hl.color)}
+              title={hl.label}
               style={{
                 backgroundColor: hl.color,
-                border: "1px solid #ddd",
-                width: "24px",
-                height: "24px",
+                border: "1px solid rgba(0,0,0,0.15)",
+                width: "22px",
+                height: "22px",
                 borderRadius: "3px",
                 cursor: "pointer",
                 padding: "0"
               }}
-              title={hl.label}
             />
           ))}
         </div>
       </div>
-      <textarea
-        ref={textRef}
-        value={content}
-        onChange={e => onChange(e.target.value)}
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={syncToState}
         onKeyDown={handleKeyDown}
         style={{
           width: "100%",
@@ -1695,241 +1792,269 @@ function RichTextEditor({ content, onChange }) {
           borderRadius: "4px",
           fontFamily: "inherit",
           fontSize: "0.95em",
-          lineHeight: "1.5"
+          lineHeight: "1.6",
+          outline: "none",
+          overflowY: "auto",
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+          cursor: "text"
         }}
-        placeholder="Enter your notes here. Use Cmd+B for bold, Cmd+I for italic..."
       />
     </div>
   );
 }
 
-// ─── SCENE NOTES TAB (NEW NESTED STRUCTURE) ─────────────────────────────────
+// ─── SCENE NOTES TAB — MOBILE ACCORDION ──────────────────────────────────────
+// Mobile layout: sequence dropdown at top, scenes as tap-to-expand accordion.
+// No sidebar. Bigger touch targets. Editors expand inline below each scene header.
 
 function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
   const [selectedSequenceId, setSelectedSequenceId] = useState(null);
   const [selectedSceneId, setSelectedSceneId] = useState(null);
+  const [renamingSeq, setRenamingSeq] = useState(false);
+  const [seqNameDraft, setSeqNameDraft] = useState("");
+  const [renamingSceneId, setRenamingSceneId] = useState(null);
+  const [sceneNameDraft, setSceneNameDraft] = useState("");
 
-  // Initialize first sequence and scene on mount
+  // Auto-select first sequence + scene on mount
   React.useEffect(() => {
     if (sceneNotes && sceneNotes.length > 0 && !selectedSequenceId) {
       setSelectedSequenceId(sceneNotes[0].id);
-      setSelectedSceneId(sceneNotes[0].scenes[0].id);
+      setSelectedSceneId(sceneNotes[0].scenes[0]?.id || null);
     }
   }, [sceneNotes]);
 
   const currentSequence = sceneNotes?.find(s => s.id === selectedSequenceId);
   const currentScene = currentSequence?.scenes?.find(sc => sc.id === selectedSceneId);
 
+  // ── Content update ────────────────────────────────────────────
   const updateSceneContent = (newContent) => {
     setSceneNotes(prev => prev.map(seq =>
       seq.id === selectedSequenceId
-        ? {
-            ...seq,
-            scenes: seq.scenes.map(scene =>
-              scene.id === selectedSceneId
-                ? { ...scene, content: newContent }
-                : scene
-            )
-          }
+        ? { ...seq, scenes: seq.scenes.map(sc =>
+            sc.id === selectedSceneId ? { ...sc, content: newContent } : sc
+          )}
         : seq
     ));
   };
 
+  // ── Sequence rename ───────────────────────────────────────────
+  const startRenameSeq = () => {
+    setSeqNameDraft(currentSequence?.name || "");
+    setRenamingSeq(true);
+  };
+  const saveRenameSeq = () => {
+    if (!seqNameDraft.trim()) { setRenamingSeq(false); return; }
+    setSceneNotes(prev => prev.map(seq =>
+      seq.id === selectedSequenceId ? { ...seq, name: seqNameDraft.trim() } : seq
+    ));
+    setRenamingSeq(false);
+    showToast("Sequence renamed 💋");
+  };
+
+  // ── Scene rename ──────────────────────────────────────────────
+  const startRenameScene = (scene, e) => {
+    e.stopPropagation();
+    setRenamingSceneId(scene.id);
+    setSceneNameDraft(scene.name);
+  };
+  const saveRenameScene = (sceneId) => {
+    if (!sceneNameDraft.trim()) { setRenamingSceneId(null); return; }
+    setSceneNotes(prev => prev.map(seq =>
+      seq.id === selectedSequenceId
+        ? { ...seq, scenes: seq.scenes.map(sc =>
+            sc.id === sceneId ? { ...sc, name: sceneNameDraft.trim() } : sc
+          )}
+        : seq
+    ));
+    setRenamingSceneId(null);
+    showToast("Scene renamed 💋");
+  };
+
+  // ── Add / Delete scene ────────────────────────────────────────
   const addScene = () => {
-    const sceneName = prompt("Enter scene name:");
-    if (!sceneName) return;
-
+    const name = prompt("Enter scene name:");
+    if (!name) return;
+    const newId = `scene-${Date.now()}`;
     setSceneNotes(prev => prev.map(seq =>
       seq.id === selectedSequenceId
-        ? {
-            ...seq,
-            scenes: [...seq.scenes, {
-              id: `scene-${Date.now()}`,
-              name: sceneName,
-              content: ""
-            }]
-          }
+        ? { ...seq, scenes: [...seq.scenes, { id: newId, name: name.trim(), content: "" }] }
         : seq
     ));
-    showToast("Scene added! 💋");
+    setSelectedSceneId(newId);
+    showToast("Scene added 💋");
   };
-
-  const deleteScene = (sceneId) => {
+  const deleteScene = (sceneId, e) => {
+    e.stopPropagation();
     if (!confirm("Delete this scene?")) return;
-
     setSceneNotes(prev => prev.map(seq =>
       seq.id === selectedSequenceId
-        ? {
-            ...seq,
-            scenes: seq.scenes.filter(s => s.id !== sceneId)
-          }
+        ? { ...seq, scenes: seq.scenes.filter(s => s.id !== sceneId) }
         : seq
     ));
-
-    if (selectedSceneId === sceneId && currentSequence?.scenes?.length > 1) {
-      setSelectedSceneId(currentSequence.scenes[0].id);
+    if (selectedSceneId === sceneId) {
+      const remaining = currentSequence?.scenes?.filter(s => s.id !== sceneId);
+      setSelectedSceneId(remaining?.[0]?.id || null);
     }
-    showToast("Scene deleted 💋");
+    showToast("Scene deleted");
   };
 
+  // ── Move scene to another sequence ───────────────────────────
+  const moveSceneToSequence = (sceneId, targetSeqId) => {
+    if (targetSeqId === selectedSequenceId) return;
+    const scene = currentSequence?.scenes?.find(s => s.id === sceneId);
+    if (!scene) return;
+    setSceneNotes(prev => prev.map(seq => {
+      if (seq.id === selectedSequenceId) return { ...seq, scenes: seq.scenes.filter(s => s.id !== sceneId) };
+      if (seq.id === targetSeqId) return { ...seq, scenes: [...seq.scenes, { ...scene, id: scene.id + "-" + Date.now() }] };
+      return seq;
+    }));
+    const remaining = currentSequence?.scenes?.filter(s => s.id !== sceneId);
+    setSelectedSceneId(remaining?.[0]?.id || null);
+    showToast("Scene moved 💋");
+  };
+
+  // ── Drag to reorder within sequence ──────────────────────────
   const moveScene = (fromIdx, toIdx) => {
     if (toIdx < 0 || !currentSequence || toIdx >= currentSequence.scenes.length) return;
-
     setSceneNotes(prev => prev.map(seq =>
       seq.id === selectedSequenceId
-        ? {
-            ...seq,
-            scenes: (() => {
-              const newScenes = [...seq.scenes];
-              const [moved] = newScenes.splice(fromIdx, 1);
-              newScenes.splice(toIdx, 0, moved);
-              return newScenes;
-            })()
-          }
+        ? { ...seq, scenes: (() => {
+            const arr = [...seq.scenes];
+            const [m] = arr.splice(fromIdx, 1);
+            arr.splice(toIdx, 0, m);
+            return arr;
+          })() }
         : seq
     ));
   };
 
-  if (!sceneNotes || sceneNotes.length === 0) {
-    return <div className="empty-state">Initializing Scene Notes...</div>;
-  }
+  if (!sceneNotes || sceneNotes.length === 0) return <div className="empty-state">Initializing...</div>;
 
-  // If no sequence selected, show sequence list
-  if (!selectedSequenceId) {
-    return (
-      <div>
-        <div className="empty-state">
-          <div className="empty-state-icon">📋</div>
-          <div className="empty-state-text">Select a sequence to begin taking notes</div>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
-          {sceneNotes.map(seq => (
-            <button
-              key={seq.id}
-              onClick={() => {
-                setSelectedSequenceId(seq.id);
-                setSelectedSceneId(seq.scenes[0].id);
-              }}
-              style={{
-                padding: "16px",
-                backgroundColor: "#fec3e4",
-                border: "1px solid #ea258d",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontSize: "0.95em",
-                fontWeight: "600",
-                color: "#333"
-              }}
-            >
-              {seq.name}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const dropdownStyle = {
+    width: "100%", padding: "14px 40px 14px 16px",
+    backgroundColor: "#fec3e4", border: "2px solid #eb2e90",
+    borderRadius: "24px", fontSize: "1em", fontWeight: "700",
+    color: "#333", cursor: "pointer", appearance: "none",
+    backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23eb2e90' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")",
+    backgroundRepeat: "no-repeat", backgroundPosition: "right 16px center"
+  };
 
-  // Show scene list and editor
   return (
     <div>
-      <div style={{ display: "flex", gap: "12px", marginBottom: "20px", alignItems: "center" }}>
-        <button
-          onClick={() => setSelectedSequenceId(null)}
-          style={{
-            backgroundColor: "#fec3e4",
-            border: "1px solid #ea258d",
-            padding: "8px 16px",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "0.9em"
-          }}
-        >
-          ← Back to Sequences
-        </button>
-        <h2 style={{ margin: 0, fontSize: "1.1em" }}>{currentSequence?.name}</h2>
+      {/* ── Sequence selector ── */}
+      <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "16px" }}>
+        {renamingSeq ? (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+            <input
+              autoFocus
+              value={seqNameDraft}
+              onChange={e => setSeqNameDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") saveRenameSeq(); if (e.key === "Escape") setRenamingSeq(false); }}
+              style={{ width: "100%", padding: "12px 14px", border: "2px solid #eb2e90", borderRadius: "24px", fontSize: "1em", fontWeight: "700" }}
+            />
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button onClick={saveRenameSeq} style={{ flex: 1, padding: "10px", backgroundColor: "#ea258d", color: "white", border: "none", borderRadius: "20px", cursor: "pointer", fontWeight: "700", fontSize: "0.9em" }}>Save</button>
+              <button onClick={() => setRenamingSeq(false)} style={{ flex: 1, padding: "10px", backgroundColor: "#fec3e4", border: "1px solid #eb2e90", borderRadius: "20px", cursor: "pointer", fontSize: "0.9em" }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div style={{ flex: 1 }}>
+              <select
+                value={selectedSequenceId || ""}
+                onChange={e => {
+                  const seq = sceneNotes.find(s => s.id === e.target.value);
+                  if (seq) { setSelectedSequenceId(seq.id); setSelectedSceneId(null); }
+                }}
+                style={dropdownStyle}
+              >
+                {sceneNotes.map(seq => <option key={seq.id} value={seq.id}>{seq.name}</option>)}
+              </select>
+            </div>
+            <button
+              onClick={startRenameSeq}
+              style={{ padding: "12px 14px", backgroundColor: "#fec3e4", border: "1px solid #eb2e90", borderRadius: "20px", cursor: "pointer", fontSize: "0.9em", whiteSpace: "nowrap", minHeight: "44px" }}
+            >·</button>
+          </>
+        )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "20px" }}>
-        {/* Scene List */}
-        <div style={{ borderRight: "1px solid #eee", paddingRight: "16px" }}>
-          <div style={{ marginBottom: "12px", fontWeight: "600", color: "#666" }}>Scenes</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-            {currentSequence?.scenes?.map((scene, idx) => (
+      {/* ── Accordion scene list ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "12px" }}>
+        {currentSequence?.scenes?.map((scene) => {
+          const isOpen = selectedSceneId === scene.id;
+          const isRenaming = renamingSceneId === scene.id;
+          return (
+            <div key={scene.id} style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid #eb2e90" }}>
+              {/* Scene header (always visible) */}
               <div
-                key={scene.id}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.effectAllowed = "move";
-                  e.dataTransfer.setData("sceneIdx", idx.toString());
-                }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const fromIdx = parseInt(e.dataTransfer.getData("sceneIdx"));
-                  moveScene(fromIdx, idx);
-                }}
-                onClick={() => setSelectedSceneId(scene.id)}
+                onClick={() => { if (!isRenaming) setSelectedSceneId(isOpen ? null : scene.id); }}
                 style={{
-                  padding: "10px",
-                  backgroundColor: selectedSceneId === scene.id ? "#ea258d" : "#f5f5f5",
-                  color: selectedSceneId === scene.id ? "white" : "#333",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "0.9em",
-                  textAlign: "left"
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "14px 12px", minHeight: "52px",
+                  backgroundColor: isOpen ? "#ea258d" : "#fec3e4",
+                  color: isOpen ? "white" : "#333",
+                  cursor: "pointer"
                 }}
               >
-                {scene.name}
+                {isRenaming ? (
+                  <div onClick={e => e.stopPropagation()} style={{ flex: 1, display: "flex", gap: "6px" }}>
+                    <input
+                      autoFocus
+                      value={sceneNameDraft}
+                      onChange={e => setSceneNameDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") saveRenameScene(scene.id); if (e.key === "Escape") setRenamingSceneId(null); }}
+                      style={{ flex: 1, padding: "6px 10px", border: "1px solid #eb2e90", borderRadius: "4px", fontSize: "1em" }}
+                    />
+                    <button onClick={() => saveRenameScene(scene.id)} style={{ padding: "6px 10px", backgroundColor: "#ea258d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "700", minHeight: "44px" }}>✓</button>
+                    <button onClick={() => setRenamingSceneId(null)} style={{ padding: "6px 10px", backgroundColor: "rgba(0,0,0,0.1)", border: "none", borderRadius: "4px", cursor: "pointer", minHeight: "44px" }}>✕</button>
+                  </div>
+                ) : (
+                  <>
+                    <span style={{ flex: 1, fontWeight: "600", fontSize: "0.92em", lineHeight: "1.3" }}>{scene.name}</span>
+                    <div style={{ display: "flex", gap: "4px", flexShrink: 0, marginLeft: "8px" }} onClick={e => e.stopPropagation()}>
+                      <button onClick={e => startRenameScene(scene, e)} style={{ background: "none", border: "none", cursor: "pointer", padding: "6px", fontSize: "1em", minWidth: "36px", minHeight: "36px" }}>·</button>
+                      <button onClick={e => deleteScene(scene.id, e)} style={{ background: "none", border: "none", cursor: "pointer", padding: "6px", fontSize: "1em", color: isOpen ? "rgba(255,255,255,0.8)" : "#c00", minWidth: "36px", minHeight: "36px" }}>✕</button>
+                      <span style={{ padding: "6px 4px", fontSize: "0.85em", opacity: 0.7 }}>{isOpen ? "▲" : "▼"}</span>
+                    </div>
+                  </>
+                )}
               </div>
-            ))}
-          </div>
-          <button
-            onClick={addScene}
-            style={{
-              width: "100%",
-              backgroundColor: "#fec3e4",
-              border: "1px solid #ea258d",
-              padding: "8px",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "0.9em"
-            }}
-          >
-            + Add Scene
-          </button>
-        </div>
 
-        {/* Scene Editor */}
-        <div>
-          {currentScene ? (
-            <>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h3 style={{ margin: 0 }}>{currentScene.name}</h3>
-                <button
-                  onClick={() => deleteScene(currentScene.id)}
-                  style={{
-                    backgroundColor: "transparent",
-                    border: "none",
-                    padding: "0",
-                    cursor: "pointer",
-                    color: "#ea258d",
-                    fontSize: "1.5em",
-                    lineHeight: "1",
-                    width: "24px",
-                    height: "24px"
-                  }}
-                  title="Delete scene"
-                >
-                  ✕
-                </button>
-              </div>
-              <RichTextEditor content={currentScene.content} onChange={updateSceneContent} />
-            </>
-          ) : (
-            <div className="empty-state">Select a scene to edit</div>
-          )}
-        </div>
+              {/* Expanded: move dropdown + editor */}
+              {isOpen && (
+                <div style={{ padding: "12px", backgroundColor: "white" }}>
+                  {/* Move to */}
+                  <select
+                    onChange={e => { if (e.target.value) moveSceneToSequence(scene.id, e.target.value); e.target.value = ""; }}
+                    defaultValue=""
+                    style={{
+                      width: "100%", padding: "10px 12px", marginBottom: "12px",
+                      border: "1px solid #eb2e90", borderRadius: "6px",
+                      backgroundColor: "white", fontSize: "0.9em", cursor: "pointer"
+                    }}
+                  >
+                    <option value="">↪ Move scene to a different sequence...</option>
+                    {sceneNotes.filter(s => s.id !== selectedSequenceId).map(s => (
+                      <option key={s.id} value={s.id}>{s.name.split(" (")[0]}</option>
+                    ))}
+                  </select>
+                  {/* Editor */}
+                  <RichTextEditor content={scene.content} onChange={updateSceneContent} />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
+
+      <button
+        onClick={addScene}
+        style={{ width: "100%", backgroundColor: "#fec3e4", border: "1px solid #ea258d", padding: "14px", borderRadius: "8px", cursor: "pointer", fontSize: "0.95em", fontWeight: "700", minHeight: "52px" }}
+      >
+        + Add Scene
+      </button>
     </div>
   );
 }
@@ -2259,7 +2384,7 @@ function DraftNotesTab({ showToast, notes, setNotes }) {
         </button>
         {!isEditing ? (
           <button className="btn btn-secondary" onClick={() => setIsEditing(true)}>
-            ✏️ Edit Notes
+            Edit Notes
           </button>
         ) : (
           <>
@@ -2309,6 +2434,64 @@ function DraftNotesTab({ showToast, notes, setNotes }) {
     </div>
   );
 }
+
+// ─── SCENE QUESTION TAB ────────────────────────────────────────────────────
+
+const SCENE_QUESTIONS = [
+  { sceneNumber: 1, sceneTitle: "The Cheetah Girls", questions: [{ character: "Autumn", question: "What does she think performing for this room will get her — and is she right?" }] },
+  { sceneNumber: 2, sceneTitle: "Scooch", questions: [{ character: "Autumn", question: "What is the specific thought she has when they tell her to move again — and does she say it or swallow it?" }] },
+  { sceneNumber: 3, sceneTitle: "Background Work Highlights", questions: [{ character: "Autumn", question: "At what point in this montage does she stop believing it's temporary?" }] },
+  { sceneNumber: 4, sceneTitle: "Attention Whore", questions: [{ character: "Autumn", question: "What does she believe about herself in this room, alone with the camera, that she will spend the rest of the movie trying to get back to?" }] },
+  { sceneNumber: 5, sceneTitle: "The Hustle", questions: [{ character: "Autumn", question: "What is she telling herself to keep going — and what would happen if she stopped saying it?" }] },
+  { sceneNumber: 6, sceneTitle: "Meet Ethan", questions: [{ character: "Ethan", question: "What is the story he's telling himself about why he's ready to come back — and what detail in this first scene quietly proves he isn't?" }] },
+  { sceneNumber: 7, sceneTitle: "The Ultimatum", questions: [{ character: "Ethan", question: "What does he want Rupert to see in him right now — and what does he do when it's clear Rupert won't look?" }] },
+  { sceneNumber: 8, sceneTitle: "The Intervention", questions: [{ character: "Autumn", question: "What does she think this gathering is — and what is the exact moment she realizes what it actually is?" }] },
+  { sceneNumber: 9, sceneTitle: "Meet Cute", questions: [{ character: "Autumn", question: "What makes her stay for one more sentence when everything in her says leave?" }, { character: "Ethan", question: "He ordered random deliveries until he got her assigned. What did he tell himself he was doing — and when does he stop pretending it was accidental?" }] },
+  { sceneNumber: 10, sceneTitle: "Debate", questions: [{ character: "Autumn", question: "What does she need to win this argument — and is winning actually what she wants?" }, { character: "Ethan", question: "What does he do when she makes a point he can't counter?" }] },
+  { sceneNumber: 11, sceneTitle: "Postmate Fate", questions: [{ character: "Autumn", question: "\"Is there really no part of you that wants more?\" — What does she do with that question after she leaves?" }] },
+  { sceneNumber: 12, sceneTitle: "Show Prep Sequence", questions: [{ character: "Autumn", question: "At what point in the prep does she stop performing \"woman who is ready\" and actually feel it for one second?" }, { character: "Ethan", question: "When he says \"bite your lip, stick your arse out\" — is he directing the show or is he already somewhere else?" }] },
+  { sceneNumber: 13, sceneTitle: "Pre Show Panic", questions: [{ character: "Autumn", question: "What is the specific fear underneath the panic — not \"I'll fail\" but the thing failure would prove about her?" }, { character: "Ethan", question: "Victoria is on his mind. What is he monitoring about himself that he won't say to Omar?" }] },
+  { sceneNumber: 14, sceneTitle: "Rolling / Enter JN", questions: [{ character: "Autumn", question: "What does she do with her face when she's surprised by herself — when something works better than she expected?" }, { character: "Ethan", question: "When she lands a moment he didn't direct, what does he do in the control room?" }] },
+  { sceneNumber: 15, sceneTitle: "Titty Gate", questions: [{ character: "Autumn", question: "What does she decide in the moment she chooses to go back out there — and what does she tell herself it means?" }] },
+  { sceneNumber: 16, sceneTitle: "The Lie Detector + The First Elimination", questions: [{ character: "Autumn", question: "Who is she actually performing for when she's in front of those cameras — the audience, the men, or herself?" }, { character: "Ethan", question: "At some point he rips his headset off. What is the thought that makes him do it?" }] },
+  { sceneNumber: 17, sceneTitle: "Good Morning Muhammad", questions: [{ character: "Ethan", question: "He saw it on the monitors. What does watching the footage of Dylan in her room make him realize about the machine he built — and why does it take this moment to see it?" }] },
+  { sceneNumber: 18, sceneTitle: "Boat Group Date", questions: [{ character: "Autumn", question: "When she gets distracted by Ethan, what is the thought she's trying not to complete?" }] },
+  { sceneNumber: 19, sceneTitle: "The First Post-It + The Firepit", questions: [{ character: "Ethan", question: "What does he want her to do with the note — and what would it mean to him if she did?" }, { character: "Autumn", question: "What does she do with the note when no one is watching?" }] },
+  { sceneNumber: 20, sceneTitle: "High School Never Ends", questions: [{ character: "Autumn", question: "What does the contestants' behavior remind her of — and why is that reminder specific to her body?" }] },
+  { sceneNumber: 21, sceneTitle: "The Confessional", questions: [{ character: "Autumn", question: "He says he'll stay all night, he doesn't care how long it takes. At what point does she stop fighting the room and start actually talking — and what is the thing she says first?" }, { character: "Ethan", question: "He threatens to order curry. Is he running a production technique or is something else happening — and does he know the difference?" }] },
+  { sceneNumber: 22, sceneTitle: "Mic Pack Moment", questions: [{ character: "Autumn", question: "When does she realize the mic is still on — before or after she's already said the thing?" }, { character: "Ethan", question: "What does he do with the footage?" }] },
+  { sceneNumber: 23, sceneTitle: "Family Check-In", questions: [{ character: "Autumn", question: "What does she need her family not to notice — and what's the first thing they notice?" }] },
+  { sceneNumber: 24, sceneTitle: "Misc Comedy Moment", questions: [{ character: "Autumn", question: "What does this moment reveal about her that she would never say directly?" }] },
+  { sceneNumber: 25, sceneTitle: "Roll Bounce + Fan Demand", questions: [{ character: "Autumn", question: "When Ethan tells her the Cyrano story, she asks \"wait, what if she liked you back?\" — what does she actually mean by that question?" }, { character: "Ethan", question: "He denies the possibility that she could have liked him back. What does it cost him to say that out loud — and does he hear himself say it?" }] },
+  { sceneNumber: 26, sceneTitle: "Meet Ethan Again", questions: [{ character: "Autumn", question: "What does she see when she looks at him now that she didn't let herself see the first time?" }, { character: "Ethan", question: "What is he trying to prove in this scene — and to whom?" }] },
+  { sceneNumber: 27, sceneTitle: "The Spa", questions: [{ character: "Autumn", question: "When she tells him the pink chair story, what does she think she's giving him — and what is she actually giving him?" }, { character: "Ethan", question: "At what point does he stop trying to convince her and start just witnessing her — and does he know that's what happened?" }] },
+  { sceneNumber: 28, sceneTitle: "Ethan Gets Hazed", questions: [{ character: "Ethan", question: "Xavier pushes past the surface answer — the machine doesn't shock him because he genuinely doesn't know what he wants. What does it feel like to not know?" }] },
+  { sceneNumber: 29, sceneTitle: "We Up", questions: [{ character: "Autumn", question: "What does it feel like to be loved by people who only know the version the cameras made — and when does that feeling turn?" }, { character: "Ethan", question: "She mentions Nathan Fielder in her DMs and he's seething. What does he say instead of what he means?" }] },
+  { sceneNumber: 30, sceneTitle: "Old Ma Setback", questions: [{ character: "Autumn", question: "What does she hear underneath what they're telling her about Ma Kebbeh — and what does she do with it?" }] },
+  { sceneNumber: 31, sceneTitle: "Misc Show Moment", questions: [{ character: "Autumn", question: "What small true thing happens here that she won't be able to use — and why does she notice it anyway?" }] },
+  { sceneNumber: 32, sceneTitle: "Dinner with Rupert", questions: [{ character: "Autumn", question: "What does she understand about Ethan by the end of this dinner that she couldn't have understood before it?" }, { character: "Ethan", question: "What does it cost him to let her see this?" }] },
+  { sceneNumber: 33, sceneTitle: "What's Your Fantasy", questions: [{ character: "Autumn", question: "What does she say when she's stoned that she would never say sober — and does she know she said it?" }, { character: "Ethan", question: "What does he do when she tells him something true?" }] },
+  { sceneNumber: 34, sceneTitle: "JN Cooking Date + Accidental Cyrano", questions: [{ character: "Ethan", question: "At what point does he realize the lines he's feeding JN are about Autumn — and what does he do when he realizes it?" }, { character: "Autumn", question: "When does she stop enjoying the date with JN — and what specifically ends it?" }] },
+  { sceneNumber: 35, sceneTitle: "Fan Fair", questions: [{ character: "Autumn", question: "What does it mean to her when someone sees her body as a reason to love her rather than a reason not to?" }] },
+  { sceneNumber: 36, sceneTitle: "Ham Lake", questions: [{ character: "Autumn", question: "She watches him through the church window — fidgeting with the funeral shirt, on and off, on and off. What does she decide before she comes outside?" }, { character: "Ethan", question: "He's overthought his outfit and he's choking on pepper sauce and he's completely out of control. What does he stop pretending at this wedding?" }] },
+  { sceneNumber: 37, sceneTitle: "The Kiss", questions: [{ character: "Ethan", question: "He kisses first. What is the last thing he tells himself before he does it?" }, { character: "Autumn", question: "She watches him for a beat before coming outside. What does she decide in that beat?" }] },
+  { sceneNumber: 38, sceneTitle: "She Lied Y'all", questions: [{ character: "Autumn", question: "What does she do with her face when she reads what they're saying about her — and who does she not call?" }] },
+  { sceneNumber: 39, sceneTitle: "The Betrayal", questions: [{ character: "Autumn", question: "What is the specific thing she overhears that tells her it wasn't an accident — and what is the first thing she feels before the anger arrives?" }] },
+  { sceneNumber: 40, sceneTitle: "The Fight", questions: [{ character: "Autumn", question: "\"You were supposed to protect me.\" What is she actually asking him — and does she know he can't answer it?" }, { character: "Ethan", question: "What is the thing he doesn't say — and why?" }] },
+  { sceneNumber: 41, sceneTitle: "Autumn's Spiral", questions: [{ character: "Autumn", question: "What does she let herself feel when Musu makes the soup — and what does she do when she realizes she's feeling it?" }] },
+  { sceneNumber: 42, sceneTitle: "Ethan's Spiral", questions: [{ character: "Ethan", question: "He's doing a \"Need You Now\" cover and he's in hell auditioning new leads. What does he think he destroyed — and does he think he deserved to?" }] },
+  { sceneNumber: 43, sceneTitle: "Musu v. Autumn", questions: [{ character: "Autumn", question: "What is the thing she has needed to say to Musu for years — and why does she get to say it now?" }, { character: "Musu", question: "What does she finally give Autumn in this scene — and what does it cost her?" }] },
+  { sceneNumber: 44, sceneTitle: "Drunk Show-Up at Rupert's", questions: [{ character: "Ethan", question: "He openly blames Rupert while still drunk — \"because of him I learned to destroy good things before they could leave me.\" What does it feel like to say that out loud for the first time?" }] },
+  { sceneNumber: 45, sceneTitle: "Rupert v. Ethan", questions: [{ character: "Ethan", question: "The thing Rupert didn't count on is that the money stopped being the thing. What does Ethan say when he realizes Rupert has nothing left to hold over him?" }] },
+  { sceneNumber: 46, sceneTitle: "The News Hits", questions: [{ character: "Autumn", question: "What does the news about Samuel make possible that wasn't possible before it?" }] },
+  { sceneNumber: 47, sceneTitle: "Me + Her", questions: [{ character: "Autumn", question: "She watches the audition tape and puts the pink chair to the curb. What does she see in herself on the tape that she couldn't see before — and what does putting the chair outside mean to her?" }] },
+  { sceneNumber: 48, sceneTitle: "The Eulogy", questions: [{ character: "Autumn", question: "She walks the aisle like a bride, she makes the crowd say the vows with her. What is the thing in this speech that is for herself and not for the room — and when does she know it landed?" }] },
+  { sceneNumber: 49, sceneTitle: "The Funeral", questions: [{ character: "Autumn", question: "What does she let herself receive from her family today that she has been refusing for the entire movie?" }] },
+  { sceneNumber: 50, sceneTitle: "A Good Man Savannah", questions: [{ character: "Autumn", question: "What is the difference between choosing Ethan because she needs him and choosing Ethan because she wants him — and does she know which one this is?" }] },
+  { sceneNumber: 51, sceneTitle: "Begging", questions: [{ character: "Ethan", question: "\"I love you and I miss you and when you left the show I cried so hard I threw up.\" What does he give up by being here in this parking lot — and does he know that's what makes it work?" }] },
+  { sceneNumber: 52, sceneTitle: "Epilogue", questions: [{ character: "Autumn", question: "What does it feel like to be on camera when someone who loves you is behind it?" }] },
+  { sceneNumber: 53, sceneTitle: "Credits", questions: [{ character: "Ethan", question: "What does he do when the Liberian aunties corner him — and is it the right thing?" }] },
+];
 
 // ─── SCENE QUESTION TAB ────────────────────────────────────────────────────
 
@@ -2629,15 +2812,30 @@ function App() {
     return PICK_ME_DEFAULT_NOTES;
   });
   const [sceneNotes, setSceneNotes] = useState(() => {
+    const defaults = initializeSceneNotes(notes);
     const saved = localStorage.getItem("pickMeSceneNotes");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Migration: fill in any empty scene content from defaults
+        // Preserves user-written notes; only populates scenes that are still empty
+        return parsed.map(seq => {
+          const defaultSeq = defaults.find(d => d.id === seq.id);
+          if (!defaultSeq) return seq;
+          return {
+            ...seq,
+            scenes: seq.scenes.map(scene => {
+              if (scene.content && scene.content.trim()) return scene; // Keep user's content
+              const defaultScene = defaultSeq.scenes.find(d => d.id === scene.id);
+              return defaultScene ? { ...scene, content: defaultScene.content } : scene;
+            })
+          };
+        });
       } catch (e) {
         console.warn("Failed to parse sceneNotes:", e);
       }
     }
-    return initializeSceneNotes(notes);
+    return defaults;
   });
   const [notionUrl, setNotionUrl] = useState("https://www.notion.so/3314237e26d081a887afd5c24e7c45a1");
   const [sequences, setSequences] = useState(() => {
