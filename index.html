@@ -1696,19 +1696,9 @@ function RichTextEditor({ content, onChange }) {
     editorRef.current && editorRef.current.focus();
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0 || !sel.toString()) return;
-    const range = sel.getRangeAt(0);
-    const mark = document.createElement("mark");
-    mark.style.backgroundColor = color;
-    mark.style.borderRadius = "2px";
-    mark.style.padding = "0 1px";
-    try {
-      range.surroundContents(mark);
-    } catch (e) {
-      const frag = range.extractContents();
-      mark.appendChild(frag);
-      range.insertNode(mark);
-    }
-    sel.removeAllRanges();
+    // Use the browser's native hiliteColor — handles multi-node selections safely
+    // (manual surroundContents breaks when selection crosses block boundaries)
+    document.execCommand("hiliteColor", false, color);
     syncToState();
   };
 
