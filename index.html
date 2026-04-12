@@ -1011,22 +1011,41 @@ function computeVerdict(answers) {
   });
 
   // Specific note logic
-  if (answers["q_cut4"] === "yes") notes.push("⚠️ The story holds without this scene — identify exactly what it's earning before you keep it.");
-  if (answers["q_cut1"] === "no" && answers["q_cut2"] === "no" && answers["q_cut3"] === "no") notes.push("🚨 No relationship shift, no unique info, no obstacle. Strong cut candidate unless it's pure comedy that earns its place.");
-  if (answers["q_momentum"] === "yes") notes.push("⏱ Pacing drag detected. What emotional payoff justifies the slowdown?");
-  if (answers["q_voice"] === "no") notes.push("🎭 Autumn's voice feels off. Reconnect her to the wound: she wants to be wanted and can't believe she is.");
-  if (answers["q_ethan_armor"] === "no" && answers["q_ethan_present"] === "yes") notes.push("🎬 Ethan's production armor is absent — is that a choice? His arc depends on this pattern being visible.");
-  if (answers["q_ethan_agency"] === "yes") notes.push("✍️ Ethan is writing someone's ending for them. Flag intentional or unintentional — both matter.");
-  if (answers["q_show_visibility"] === "no" && answers["q_show_check"] === "yes") notes.push("📺 Show mechanic present but not interrogating Autumn's wound. The format should cost her something.");
-  if (answers["q_green_flags"] === "no") notes.push("💚 Green flag opportunity missed. Can Ethan do something small and specific here that Autumn deflects?");
-  if (answers["q_panty_seat"] === "no") notes.push("📋 No Panty Seat List root. Consider: which of the 30 truths does this scene speak to?");
+  if (answers["q_cut4"] === "yes") notes.push("The story holds without this scene — identify exactly what it's earning before you keep it.");
+  if (answers["q_cut1"] === "no" && answers["q_cut2"] === "no" && answers["q_cut3"] === "no") notes.push("No relationship shift, no unique info, no obstacle. Strong cut candidate unless it's pure comedy that earns its place.");
+  if (answers["q_momentum"] === "yes") notes.push("Pacing drag detected. What emotional payoff justifies the slowdown?");
+  if (answers["q_voice"] === "no") notes.push("Autumn's voice feels off. Reconnect her to the wound: she wants to be wanted and can't believe she is.");
+  if (answers["q_ethan_armor"] === "no" && answers["q_ethan_present"] === "yes") notes.push("Ethan's production armor is absent — is that a choice? His arc depends on this pattern being visible.");
+  if (answers["q_ethan_agency"] === "yes") notes.push("Ethan is writing someone's ending for them. Flag intentional or unintentional — both matter.");
+  if (answers["q_show_visibility"] === "no" && answers["q_show_check"] === "yes") notes.push("Show mechanic present but not interrogating Autumn's wound. The format should cost her something.");
+  if (answers["q_green_flags"] === "no") notes.push("Green flag opportunity missed. Can Ethan do something small and specific here that Autumn deflects?");
+  if (answers["q_panty_seat"] === "no") notes.push("No Panty Seat List root. Consider: which of the 30 truths does this scene speak to?");
 
+  const _keepIcon = (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="22" cy="22" r="20" fill="#D4EFDF" stroke="#1A5E30" strokeWidth="2.5"/>
+      <path d="M12 22l7 8 13-16" stroke="#1A5E30" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+  const _rewriteIcon = (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="22" cy="22" r="20" fill="#F0D7A8" stroke="#B7560E" strokeWidth="2.5"/>
+      <path d="M30 17a10 10 0 1 0 2 8" stroke="#B7560E" strokeWidth="3" strokeLinecap="round" fill="none"/>
+      <path d="M31 10v8h-8" stroke="#B7560E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  );
+  const _cutIcon = (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="22" cy="22" r="20" fill="#FADBD8" stroke="#922B21" strokeWidth="2.5"/>
+      <path d="M14 14l16 16M30 14L14 30" stroke="#922B21" strokeWidth="3.5" strokeLinecap="round"/>
+    </svg>
+  );
   let verdict, icon;
   const total = keeps + warns + cuts;
-  if (cuts >= 2) { verdict = "cut"; icon = "✂️"; }
-  else if (warns >= 3 || (warns >= 2 && cuts >= 1)) { verdict = "rewrite"; icon = "↺"; }
-  else if (keeps >= Math.ceil(total * 0.5)) { verdict = "keep"; icon = "✅"; }
-  else { verdict = "rewrite"; icon = "↺"; }
+  if (cuts >= 2) { verdict = "cut"; icon = _cutIcon; }
+  else if (warns >= 3 || (warns >= 2 && cuts >= 1)) { verdict = "rewrite"; icon = _rewriteIcon; }
+  else if (keeps >= Math.ceil(total * 0.5)) { verdict = "keep"; icon = _keepIcon; }
+  else { verdict = "rewrite"; icon = _rewriteIcon; }
 
   return { verdict, icon, keeps, warns, cuts, notes };
 }
@@ -1316,7 +1335,7 @@ function EvalTab({ notionUrl, showToast }) {
 
   const copyResultToNotion = () => {
     const result = computeVerdict(answers);
-    const verdictLabel = result.verdict === "keep" ? "✅ KEEP" : result.verdict === "rewrite" ? "REWRITE" : "✂️ CUT";
+    const verdictLabel = result.verdict === "keep" ? "KEEP" : result.verdict === "rewrite" ? "REWRITE" : "CUT";
     const text = `# Scene Evaluation: ${sceneName}\n\n**Verdict: ${verdictLabel}**\n\nKeep signals: ${result.keeps} | Warnings: ${result.warns} | Cut signals: ${result.cuts}\n\n## Notes\n${result.notes.join("\n")}\n\n## My Notes\n${evalNotes || "(none)"}`;
     navigator.clipboard.writeText(text).then(() => {
       window.open(notionUrl, "_blank");
@@ -1332,7 +1351,7 @@ function EvalTab({ notionUrl, showToast }) {
   if (step === "setup") {
     return (
       <div className="eval-step0">
-        <div className="section-title">🎬 Scene Evaluation</div>
+        <div className="section-title">Scene Evaluation</div>
         <div style={{marginBottom:"8px"}}>
           <label>What scene are we evaluating?</label>
           <input
@@ -1425,9 +1444,9 @@ function EvalTab({ notionUrl, showToast }) {
           if (!k && !w && !c) return null;
           return (
             <div className="flag-strip">
-              {k > 0 && <span className="flag-badge flag-keep">✅ {k} keep</span>}
-              {w > 0 && <span className="flag-badge flag-warn">⚠️ {w} warn</span>}
-              {c > 0 && <span className="flag-badge flag-cut">✂️ {c} cut</span>}
+              {k > 0 && <span className="flag-badge flag-keep">{k} keep</span>}
+              {w > 0 && <span className="flag-badge flag-warn">{w} warn</span>}
+              {c > 0 && <span className="flag-badge flag-cut">{c} cut</span>}
             </div>
           );
         })()}
@@ -1448,9 +1467,9 @@ function EvalTab({ notionUrl, showToast }) {
           <div className="verdict-icon">{result.icon}</div>
           <div className="verdict-title">{verdictLabel}</div>
           <div className="flag-summary">
-            <span className="flag-count fc-keep">✅ {result.keeps} keep</span>
-            <span className="flag-count fc-warn">⚠️ {result.warns} warn</span>
-            <span className="flag-count fc-cut">✂️ {result.cuts} cut</span>
+            <span className="flag-count fc-keep">{result.keeps} keep</span>
+            <span className="flag-count fc-warn">{result.warns} warn</span>
+            <span className="flag-count fc-cut">{result.cuts} cut</span>
           </div>
           {result.notes.length > 0 && (
             <ul className="verdict-notes" style={{textAlign:"left",marginTop:"14px"}}>
@@ -1471,7 +1490,7 @@ function EvalTab({ notionUrl, showToast }) {
         <div className="result-actions">
           <button className="btn btn-restart" onClick={goBack}>← Review Answers</button>
           <button className="btn btn-notion" onClick={copyResultToNotion}>✦ Copy & Open Notion</button>
-          <button className="btn btn-primary" onClick={restart}>New Scene ↩</button>
+          <button className="btn btn-primary" onClick={restart}>New Scene</button>
         </div>
       </div>
     );
@@ -1755,14 +1774,15 @@ function RichTextEditor({ content, onChange }) {
   return (
     <div style={{ marginBottom: "16px" }}>
       <div style={{ display: "flex", gap: "8px", marginBottom: "10px", flexWrap: "wrap", alignItems: "center" }}>
-        <button onClick={() => execCmd("bold")} style={toolbarBtn({ fontWeight: "bold" })}>Bold</button>
-        <button onClick={() => execCmd("italic")} style={toolbarBtn({ fontStyle: "italic" })}>Italic</button>
-        <button onClick={insertBullet} style={toolbarBtn()}>•</button>
+        <button onMouseDown={e => e.preventDefault()} onClick={() => execCmd("bold")} style={toolbarBtn({ fontWeight: "bold" })}>Bold</button>
+        <button onMouseDown={e => e.preventDefault()} onClick={() => execCmd("italic")} style={toolbarBtn({ fontStyle: "italic" })}>Italic</button>
+        <button onMouseDown={e => e.preventDefault()} onClick={insertBullet} style={toolbarBtn()}>•</button>
         <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
           <span style={{ fontSize: "0.82em", color: "#666" }}>Highlight:</span>
           {HIGHLIGHT_COLORS.map((hl, idx) => (
             <button
               key={idx}
+              onMouseDown={e => e.preventDefault()}
               onClick={() => applyHighlight(hl.color)}
               title={hl.label}
               style={{
@@ -1797,7 +1817,8 @@ function RichTextEditor({ content, onChange }) {
           overflowY: "auto",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
-          cursor: "text"
+          cursor: "text",
+          color: "#000"
         }}
       />
     </div>
@@ -1975,7 +1996,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
             <button
               onClick={startRenameSeq}
               style={{ padding: "12px 14px", backgroundColor: "#fec3e4", border: "1px solid #eb2e90", borderRadius: "20px", cursor: "pointer", fontSize: "0.9em", whiteSpace: "nowrap", minHeight: "44px" }}
-            >·</button>
+            >Rename</button>
           </>
         )}
       </div>
@@ -2012,36 +2033,41 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
                   </div>
                 ) : (
                   <>
-                    <span style={{ flex: 1, fontWeight: "600", fontSize: "0.92em", lineHeight: "1.3" }}>{scene.name}</span>
+                    <span
+                      onDoubleClick={e => startRenameScene(scene, e)}
+                      title="Double-tap to rename"
+                      style={{ flex: 1, fontWeight: "600", fontSize: "0.92em", lineHeight: "1.3" }}
+                    >{scene.name}</span>
                     <div style={{ display: "flex", gap: "4px", flexShrink: 0, marginLeft: "8px" }} onClick={e => e.stopPropagation()}>
-                      <button onClick={e => startRenameScene(scene, e)} style={{ background: "none", border: "none", cursor: "pointer", padding: "6px", fontSize: "1em", minWidth: "36px", minHeight: "36px" }}>·</button>
-                      <button onClick={e => deleteScene(scene.id, e)} style={{ background: "none", border: "none", cursor: "pointer", padding: "6px", fontSize: "1em", color: isOpen ? "rgba(255,255,255,0.8)" : "#c00", minWidth: "36px", minHeight: "36px" }}>✕</button>
+                      <button onClick={e => deleteScene(scene.id, e)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 6px", fontSize: "0.7em", color: isOpen ? "rgba(255,255,255,0.7)" : "#c00", minHeight: "36px" }}>✕</button>
                       <span style={{ padding: "6px 4px", fontSize: "0.85em", opacity: 0.7 }}>{isOpen ? "▲" : "▼"}</span>
                     </div>
                   </>
                 )}
               </div>
 
-              {/* Expanded: move dropdown + editor */}
+              {/* Expanded: editor + optional move */}
               {isOpen && (
                 <div style={{ padding: "12px", backgroundColor: "white" }}>
-                  {/* Move to */}
-                  <select
-                    onChange={e => { if (e.target.value) moveSceneToSequence(scene.id, e.target.value); e.target.value = ""; }}
-                    defaultValue=""
-                    style={{
-                      width: "100%", padding: "10px 12px", marginBottom: "12px",
-                      border: "1px solid #eb2e90", borderRadius: "6px",
-                      backgroundColor: "white", fontSize: "0.9em", cursor: "pointer"
-                    }}
-                  >
-                    <option value="">↪ Move scene to a different sequence...</option>
-                    {sceneNotes.filter(s => s.id !== selectedSequenceId).map(s => (
-                      <option key={s.id} value={s.id}>{s.name.split(" (")[0]}</option>
-                    ))}
-                  </select>
-                  {/* Editor */}
                   <RichTextEditor content={scene.content} onChange={updateSceneContent} />
+                  {sceneNotes.filter(s => s.id !== selectedSequenceId).length > 0 && (
+                    <div style={{ marginTop: "10px", borderTop: "1px solid #f0f0f0", paddingTop: "10px" }}>
+                      <select
+                        onChange={e => { if (e.target.value) moveSceneToSequence(scene.id, e.target.value); e.target.value = ""; }}
+                        defaultValue=""
+                        style={{
+                          width: "100%", padding: "8px 12px",
+                          border: "1px solid #eb2e90", borderRadius: "20px",
+                          backgroundColor: "#fec3e4", color: "#333", fontSize: "0.82em", cursor: "pointer"
+                        }}
+                      >
+                        <option value="">Move scene to...</option>
+                        {sceneNotes.filter(s => s.id !== selectedSequenceId).map(s => (
+                          <option key={s.id} value={s.id}>{s.name.split(" (")[0]}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2297,7 +2323,7 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
 
   return (
     <div className="settings-section">
-      <div className="section-title">⚙️ Settings</div>
+      <div className="section-title">Settings</div>
       
       <div className="settings-field">
         <label>Notion destination URL</label>
@@ -2380,7 +2406,7 @@ function DraftNotesTab({ showToast, notes, setNotes }) {
     <div>
       <div style={{marginBottom:"22px", display:"flex", gap:"12px"}}>
         <button className="btn btn-secondary" onClick={copyToClipboard}>
-          📋 Copy All Notes
+          Copy All Notes
         </button>
         {!isEditing ? (
           <button className="btn btn-secondary" onClick={() => setIsEditing(true)}>
