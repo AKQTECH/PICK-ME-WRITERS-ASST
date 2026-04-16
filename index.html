@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PICK ME WRITERS ASSISTANT 💋</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23EA258D' width='100' height='100'/><rect fill='%23FFB6D9' x='4' y='4' width='92' height='92'/><text x='50' y='65' font-size='70' font-weight='bold' text-anchor='middle' fill='%23EA258D' font-family='Arial'>P</text></svg>">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -1785,6 +1788,7 @@ function RichTextEditor({ content, onChange }) {
       <div style={{ display: "flex", gap: "8px", marginBottom: "10px", flexWrap: "wrap", alignItems: "center" }}>
         <button onMouseDown={e => e.preventDefault()} onClick={() => execCmd("bold")} style={toolbarBtn({ fontWeight: "bold" })}>Bold</button>
         <button onMouseDown={e => e.preventDefault()} onClick={() => execCmd("italic")} style={toolbarBtn({ fontStyle: "italic" })}>Italic</button>
+        <button onMouseDown={e => e.preventDefault()} onClick={() => execCmd("strikeThrough")} style={toolbarBtn({ textDecoration: "line-through" })}>Strike</button>
         <button onMouseDown={e => e.preventDefault()} onClick={insertBullet} style={toolbarBtn()}>•</button>
         <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
           <span style={{ fontSize: "0.82em", color: "#666" }}>Highlight:</span>
@@ -1847,13 +1851,23 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
   const [sceneNameDraft, setSceneNameDraft] = useState("");
   const [showSeqBar, setShowSeqBar] = useState(true);
 
-  // Auto-select first sequence + scene on mount
+  // Restore last position from localStorage, then fall back to first sequence/scene
   React.useEffect(() => {
-    if (sceneNotes && sceneNotes.length > 0 && !selectedSequenceId) {
-      setSelectedSequenceId(sceneNotes[0].id);
-      setSelectedSceneId(sceneNotes[0].scenes[0]?.id || null);
+    if (!sceneNotes || sceneNotes.length === 0) return;
+    const savedSeqId = localStorage.getItem("pickMe_selectedSeqId");
+    const savedSceneId = localStorage.getItem("pickMe_selectedSceneId");
+    const validSeq = savedSeqId ? sceneNotes.find(s => s.id === savedSeqId) : null;
+    const targetSeq = validSeq || sceneNotes[0];
+    if (!selectedSequenceId || !sceneNotes.find(s => s.id === selectedSequenceId)) {
+      setSelectedSequenceId(targetSeq.id);
+      const validScene = savedSceneId ? targetSeq.scenes.find(sc => sc.id === savedSceneId) : null;
+      setSelectedSceneId(validScene?.id || targetSeq.scenes[0]?.id || null);
     }
   }, [sceneNotes]);
+
+  // Persist selection across tab switches
+  useEffect(() => { if (selectedSequenceId) localStorage.setItem("pickMe_selectedSeqId", selectedSequenceId); }, [selectedSequenceId]);
+  useEffect(() => { if (selectedSceneId) localStorage.setItem("pickMe_selectedSceneId", selectedSceneId); }, [selectedSceneId]);
 
   const currentSequence = sceneNotes?.find(s => s.id === selectedSequenceId);
   const currentScene = currentSequence?.scenes?.find(sc => sc.id === selectedSceneId);
@@ -1975,6 +1989,16 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
     <button onClick={onClick} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.85em", color: "#e0a5c8", padding: "0 6px", fontWeight: "400", minHeight: "44px" }}>{symbol}</button>
   );
 
+  const addSequence = () => {
+    const newSeqId = "seq-" + Date.now();
+    const newSceneId = "sc-" + Date.now();
+    const newSeq = { id: newSeqId, name: "New Sequence", scenes: [{ id: newSceneId, name: "New Scene", content: "" }] };
+    setSceneNotes(prev => [...prev, newSeq]);
+    setSelectedSequenceId(newSeqId);
+    setSelectedSceneId(newSceneId);
+    showToast("Sequence added 💋");
+  };
+
   return (
     <div>
       {/* ── Sequence selector ── */}
@@ -2008,6 +2032,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
                   {sceneNotes.map(seq => <option key={seq.id} value={seq.id}>{seq.name}</option>)}
                 </select>
               </div>
+              <button onClick={addSequence} style={{ padding: "12px 14px", backgroundColor: "#ea258d", color: "white", border: "none", borderRadius: "20px", cursor: "pointer", fontSize: "0.9em", whiteSpace: "nowrap", minHeight: "44px", fontWeight: "700" }}>+ Sequence</button>
               <button onClick={startRenameSeq} style={{ padding: "12px 14px", backgroundColor: "#fec3e4", border: "1px solid #eb2e90", borderRadius: "20px", cursor: "pointer", fontSize: "0.9em", whiteSpace: "nowrap", minHeight: "44px" }}>Rename</button>
               {pinkBtn("[ - ]", () => setShowSeqBar(false))}
             </>
