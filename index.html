@@ -2313,6 +2313,7 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
       scenes: scenes,
       notes: notes,
       sequences: sequences,
+      sceneNotes: sceneNotes,
       exportedAt: new Date().toISOString()
     };
     const json = JSON.stringify(data, null, 2);
@@ -2359,8 +2360,13 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
           setSequences(data.sequences);
           console.log("Set sequences to:", Object.keys(data.sequences).length, "items");
         }
+        if (data.sceneNotes && Array.isArray(data.sceneNotes) && data.sceneNotes.length > 0) {
+          setSceneNotes(data.sceneNotes);
+          localStorage.setItem("pickMeSceneNotes", JSON.stringify(data.sceneNotes));
+          console.log("Set sceneNotes to:", data.sceneNotes.length, "sequences");
+        }
         localStorage.setItem("pickMeData", JSON.stringify(data));
-        alert("✓ Data loaded! Songs: " + (data.songs?.length || 0) + ", Scenes: " + (data.scenes?.length || 0) + ", Notes: " + (data.notes?.length || 0) + ", Progress: " + (Object.keys(data.sequences || {}).length || 0));
+        alert("✓ Data loaded! Songs: " + (data.songs?.length || 0) + ", Scenes: " + (data.scenes?.length || 0) + ", Notes: " + (data.notes?.length || 0) + ", Scene Sequences: " + (data.sceneNotes?.length || 0) + ", Progress: " + (Object.keys(data.sequences || {}).length || 0));
         e.target.value = "";
       } catch (err) {
         console.error("Load error:", err);
