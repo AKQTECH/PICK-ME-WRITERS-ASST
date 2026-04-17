@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'none';
+      script-src 'unsafe-inline' 'unsafe-eval' https://unpkg.com;
+      style-src 'unsafe-inline' https://fonts.googleapis.com;
+      font-src https://fonts.gstatic.com;
+      img-src 'self' data: blob:;
+      manifest-src 'self';
+      connect-src 'none';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'none';
+    ">
     <title>PICK ME WRITERS ASSISTANT 💋</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon_32.png">
@@ -2086,10 +2098,10 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
                       style={{ flex: 1, fontWeight: "600", fontSize: "0.92em", lineHeight: "1.3" }}
                     >{scene.name}</span>
                     <div style={{ display: "flex", gap: "2px", flexShrink: 0, marginLeft: "8px", alignItems: "center" }} onClick={e => e.stopPropagation()}>
-                      {idx > 0 && <button onClick={() => moveScene(idx, idx - 1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 5px", fontSize: "0.75em", color: isOpen ? "rgba(255,255,255,0.8)" : "#eb2e90", minHeight: "36px" }} title="Move up">↑</button>}
-                      {idx < totalScenes - 1 && <button onClick={() => moveScene(idx, idx + 1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 5px", fontSize: "0.75em", color: isOpen ? "rgba(255,255,255,0.8)" : "#eb2e90", minHeight: "36px" }} title="Move down">↓</button>}
+                      {idx > 0 && <button onClick={() => moveScene(idx, idx - 1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 5px", color: isOpen ? "rgba(255,255,255,0.8)" : "#eb2e90", minHeight: "36px", display: "flex", alignItems: "center" }} title="Move up"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 7 L5 3 L9 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button>}
+                      {idx < totalScenes - 1 && <button onClick={() => moveScene(idx, idx + 1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 5px", color: isOpen ? "rgba(255,255,255,0.8)" : "#eb2e90", minHeight: "36px", display: "flex", alignItems: "center" }} title="Move down"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 3 L5 7 L9 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button>}
                       <button onClick={e => deleteScene(scene.id, e)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 6px", fontSize: "0.7em", color: isOpen ? "rgba(255,255,255,0.7)" : "#c00", minHeight: "36px" }}>✕</button>
-                      <span style={{ padding: "6px 4px", fontSize: "0.85em", opacity: 0.7 }}>{isOpen ? "▲" : "▼"}</span>
+                      <span style={{ padding: "6px 4px", opacity: 0.7, display: "flex", alignItems: "center" }}>{isOpen ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 7 L5 3 L9 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 3 L5 7 L9 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}</span>
                     </div>
                   </>
                 )}
@@ -2296,7 +2308,7 @@ function ScenesTab({ scenes, setScenes, sceneDragId, sceneOverIdx, handleSceneDr
 
 // ─── SETTINGS TAB (UPDATED WITH SAVE/LOAD) ────────────────────────────────────
 
-function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences, setSongs, setScenes, setNotes, setSequences }) {
+function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences, sceneNotes, setSongs, setScenes, setNotes, setSequences, setSceneNotes }) {
   const [draft, setDraft] = useState(notionUrl);
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef(null);
@@ -3042,14 +3054,14 @@ function App() {
                 );
               })()}
               <button className="progress-toggle-btn" onClick={() => setShowSequenceBar(false)} title="Hide progress">
-                ▼
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 3 L5 7 L9 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </>
           ) : (
             <>
               <div className="progress-feature-name">No sequences yet</div>
               <button className="progress-toggle-btn" onClick={() => setShowSequenceBar(false)} title="Hide progress">
-                ▼
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 3 L5 7 L9 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </>
           )}
@@ -3059,7 +3071,7 @@ function App() {
       {!showSequenceBar && (
         <div style={{display: "flex", justifyContent: "flex-end", marginBottom: "20px"}}>
           <button className="progress-toggle-btn" onClick={() => setShowSequenceBar(true)} title="Show progress">
-            ▲
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 7 L5 3 L9 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
         </div>
       )}
@@ -3087,7 +3099,7 @@ function App() {
           <SceneNotesTab sceneNotes={sceneNotes} setSceneNotes={setSceneNotes} showToast={showToast} />
         )}
         {activeTab === "settings" && (
-          <SettingsTab notionUrl={notionUrl} setNotionUrl={setNotionUrl} songs={songs} scenes={scenes} notes={notes} sequences={sequences} setSongs={setSongs} setScenes={setScenes} setNotes={setNotes} setSequences={setSequences} />
+          <SettingsTab notionUrl={notionUrl} setNotionUrl={setNotionUrl} songs={songs} scenes={scenes} notes={notes} sequences={sequences} sceneNotes={sceneNotes} setSongs={setSongs} setScenes={setScenes} setNotes={setNotes} setSequences={setSequences} setSceneNotes={setSceneNotes} />
         )}
       </div>
 
