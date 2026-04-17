@@ -2905,30 +2905,16 @@ function App() {
     return PICK_ME_DEFAULT_NOTES;
   });
   const [sceneNotes, setSceneNotes] = useState(() => {
-    const defaults = initializeSceneNotes(notes);
     const saved = localStorage.getItem("pickMeSceneNotes");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Migration: fill in any empty scene content from defaults
-        // Preserves user-written notes; only populates scenes that are still empty
-        return parsed.map(seq => {
-          const defaultSeq = defaults.find(d => d.id === seq.id);
-          if (!defaultSeq) return seq;
-          return {
-            ...seq,
-            scenes: seq.scenes.map(scene => {
-              if (scene.content && scene.content.trim()) return scene; // Keep user's content
-              const defaultScene = defaultSeq.scenes.find(d => d.id === scene.id);
-              return defaultScene ? { ...scene, content: defaultScene.content } : scene;
-            })
-          };
-        });
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {
         console.warn("Failed to parse sceneNotes:", e);
       }
     }
-    return defaults;
+    return initializeSceneNotes(notes);
   });
   const [notionUrl, setNotionUrl] = useState("https://www.notion.so/3314237e26d081a887afd5c24e7c45a1");
   const [sequences, setSequences] = useState(() => {
