@@ -10,7 +10,7 @@
       font-src https://fonts.gstatic.com;
       img-src 'self' data: blob:;
       manifest-src 'self';
-      connect-src 'none';
+      connect-src https://api.dropboxapi.com https://content.dropboxapi.com https://api.dropbox.com https://www.dropbox.com;
       object-src 'none';
       base-uri 'self';
       form-action 'none';
@@ -813,6 +813,139 @@
 
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   DROPBOX SYNC MODULE — OAuth PKCE flow, no client secret needed.
+   Files live at /PICK ME/pickme-data.json in your Dropbox.
+   ⚠️  After registering at https://www.dropbox.com/developers/apps,
+       replace __DROPBOX_APP_KEY__ below with your App Key.
+   ══════════════════════════════════════════════════════════════════════════════ */
+const DBX = (() => {
+  const APP_KEY      = 'ihs603r1u305x3s';
+  const KEY_TOKENS   = 'akq_pickme_dbx_tokens';
+  const KEY_PKCE     = 'akq_pickme_dbx_pkce';
+  const KEY_FILEID   = 'akq_pickme_dbx_fileid';
+  const PICKME_PATH  = '/PICK ME/pickme-data.json';
+
+  let st = { accessToken: null, refreshToken: null, expiresAt: 0, account: null, fileId: null };
+
+  function b64url(buf) {
+    return btoa(String.fromCharCode(...new Uint8Array(buf)))
+      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  async function sha256(str) {
+    return b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)));
+  }
+  function randVerifier(len=64) {
+    const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    let s=''; const arr=new Uint8Array(len); crypto.getRandomValues(arr);
+    for(let i=0;i<len;i++) s+=chars[arr[i]%chars.length]; return s;
+  }
+  function getRedirectUri() { const u=new URL(location.href); u.search=''; u.hash=''; return u.href; }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY_TOKENS);
+      if (raw) { const t=JSON.parse(raw); st.accessToken=t.accessToken||null; st.refreshToken=t.refreshToken||null; st.expiresAt=t.expiresAt||0; st.account=t.account||null; }
+      st.fileId = localStorage.getItem(KEY_FILEID) || null;
+    } catch(e) { console.warn('DBX load failed:', e); }
+  }
+  function saveTokens() {
+    localStorage.setItem(KEY_TOKENS, JSON.stringify({ accessToken:st.accessToken, refreshToken:st.refreshToken, expiresAt:st.expiresAt, account:st.account }));
+    if (st.fileId) localStorage.setItem(KEY_FILEID, st.fileId);
+  }
+  function clearTokens() {
+    localStorage.removeItem(KEY_TOKENS); localStorage.removeItem(KEY_FILEID);
+    st = { accessToken:null, refreshToken:null, expiresAt:0, account:null, fileId:null };
+  }
+
+  function isConfigured() { return APP_KEY && APP_KEY !== '__DROPBOX_APP_KEY__'; }
+  function isConnected()   { return !!st.refreshToken; }
+  function account()       { return st.account; }
+
+  async function startOAuth() {
+    if (!isConfigured()) {
+      alert("Dropbox isn't set up yet.\n\nYou need to:\n1. Register an app at https://www.dropbox.com/developers/apps\n2. Paste its App Key into this file (search for __DROPBOX_APP_KEY__)");
+      return;
+    }
+    const verifier = randVerifier(); const challenge = await sha256(verifier);
+    sessionStorage.setItem(KEY_PKCE, verifier);
+    const params = new URLSearchParams({ response_type:'code', client_id:APP_KEY, code_challenge:challenge, code_challenge_method:'S256', redirect_uri:getRedirectUri(), token_access_type:'offline' });
+    location.href = `https://www.dropbox.com/oauth2/authorize?${params.toString()}`;
+  }
+
+  async function handleCallback() {
+    const url = new URL(location.href);
+    const code = url.searchParams.get('code'); const error = url.searchParams.get('error');
+    if (error) { url.searchParams.delete('error'); url.searchParams.delete('error_description'); history.replaceState(null,'',url.href); alert('Dropbox cancelled: '+error); return false; }
+    if (!code) return false;
+    const verifier = sessionStorage.getItem(KEY_PKCE); sessionStorage.removeItem(KEY_PKCE);
+    url.searchParams.delete('code'); url.searchParams.delete('state'); history.replaceState(null,'',url.href);
+    if (!verifier) return false;
+    const body = new URLSearchParams({ code, grant_type:'authorization_code', client_id:APP_KEY, redirect_uri:getRedirectUri(), code_verifier:verifier });
+    const r = await fetch('https://api.dropbox.com/oauth2/token', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body });
+    if (!r.ok) { alert('Could not finish Dropbox connection. Try again.'); return false; }
+    const t = await r.json();
+    st.accessToken=t.access_token; st.refreshToken=t.refresh_token; st.expiresAt=Date.now()+(t.expires_in||14400)*1000;
+    try { const acct=await apiCall('/users/get_current_account',null); st.account={name:acct.name?.display_name||'—',email:acct.email||''}; } catch(e){ st.account=null; }
+    saveTokens(); return true;
+  }
+
+  async function refreshIfNeeded() {
+    if (!st.refreshToken) throw new Error('Not connected');
+    if (st.accessToken && Date.now() < st.expiresAt-30000) return;
+    const body = new URLSearchParams({ grant_type:'refresh_token', refresh_token:st.refreshToken, client_id:APP_KEY });
+    const r = await fetch('https://api.dropbox.com/oauth2/token', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body });
+    if (!r.ok) { clearTokens(); throw new Error('Dropbox session expired — please reconnect'); }
+    const t = await r.json(); st.accessToken=t.access_token; st.expiresAt=Date.now()+(t.expires_in||14400)*1000; saveTokens();
+  }
+
+  async function apiCall(endpoint, argsObj) {
+    await refreshIfNeeded();
+    const r = await fetch('https://api.dropboxapi.com/2'+endpoint, { method:'POST', headers:{'Authorization':'Bearer '+st.accessToken,'Content-Type':'application/json'}, body:argsObj?JSON.stringify(argsObj):'null' });
+    if (!r.ok) { const txt=await r.text(); throw new Error(`DBX ${endpoint} ${r.status}: ${txt}`); }
+    return r.json();
+  }
+
+  async function uploadPath(path, content) {
+    await refreshIfNeeded();
+    const arg = { path, mode:{'.tag':'overwrite'}, autorename:false, mute:true, strict_conflict:false };
+    const r = await fetch('https://content.dropboxapi.com/2/files/upload', { method:'POST', headers:{'Authorization':'Bearer '+st.accessToken,'Dropbox-API-Arg':JSON.stringify(arg),'Content-Type':'application/octet-stream'}, body:typeof content==='string'?new Blob([content]):content });
+    if (!r.ok) { const txt=await r.text(); throw new Error(`DBX upload ${path} ${r.status}: ${txt}`); }
+    return r.json();
+  }
+
+  async function getPathById(id) {
+    try { const m=await apiCall('/files/get_metadata',{path:id}); return m.path_display||null; } catch(e){ return null; }
+  }
+
+  async function uploadSmart(content) {
+    let path = PICKME_PATH;
+    if (st.fileId) { const cur=await getPathById(st.fileId); if(cur) path=cur; }
+    const res = await uploadPath(path, content);
+    st.fileId=res.id; localStorage.setItem(KEY_FILEID, res.id); return res;
+  }
+
+  async function downloadPath(path) {
+    await refreshIfNeeded();
+    const r = await fetch('https://content.dropboxapi.com/2/files/download', { method:'POST', headers:{'Authorization':'Bearer '+st.accessToken,'Dropbox-API-Arg':JSON.stringify({path})} });
+    if (r.status===409) return null;
+    if (!r.ok) { const txt=await r.text(); throw new Error(`DBX download ${path} ${r.status}: ${txt}`); }
+    return r.text();
+  }
+
+  async function downloadData() {
+    let txt = null;
+    if (st.fileId) { const p=await getPathById(st.fileId); if(p) txt=await downloadPath(p); }
+    if (!txt) txt = await downloadPath(PICKME_PATH);
+    return txt;
+  }
+
+  async function disconnect() { try{await apiCall('/auth/token/revoke',null);}catch(e){} clearTokens(); }
+
+  return { load, isConfigured, isConnected, account, startOAuth, handleCallback, uploadSmart, downloadData, disconnect };
+})();
+DBX.load();
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -1742,7 +1875,6 @@ function RichTextEditor({ content, onChange }) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
-    // Check whether cursor is at the very start of a line
     let node = range.startContainer;
     let offset = range.startOffset;
     let atLineStart = offset === 0;
@@ -1755,6 +1887,23 @@ function RichTextEditor({ content, onChange }) {
     syncToState();
   };
 
+  const insertSubBullet = () => {
+    editorRef.current && editorRef.current.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    let node = range.startContainer;
+    let offset = range.startOffset;
+    let atLineStart = offset === 0;
+    if (!atLineStart && node.nodeType === Node.TEXT_NODE) {
+      const before = node.textContent.substring(0, offset);
+      atLineStart = before.endsWith("\n") || before === "";
+    }
+    const textToInsert = atLineStart ? "  ○ " : "\n  ○ ";
+    document.execCommand("insertText", false, textToInsert);
+    syncToState();
+  };
+
   const handleKeyDown = (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "b") {
       e.preventDefault();
@@ -1762,22 +1911,57 @@ function RichTextEditor({ content, onChange }) {
     } else if ((e.metaKey || e.ctrlKey) && e.key === "i") {
       e.preventDefault();
       execCmd("italic");
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      const node = range.startContainer;
+      if (node.nodeType === Node.TEXT_NODE) {
+        const before = node.textContent.substring(0, range.startOffset);
+        const lastNl = before.lastIndexOf("\n");
+        const currentLine = before.substring(lastNl + 1);
+        if (!e.shiftKey) {
+          // Tab: if line starts with "• " convert to "  ○ ", else insert "  ○ "
+          if (currentLine === "• ") {
+            const newRange = range.cloneRange();
+            newRange.setStart(node, range.startOffset - 2);
+            newRange.setEnd(node, range.startOffset);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+            document.execCommand("insertText", false, "  ○ ");
+          } else {
+            document.execCommand("insertText", false, "  ○ ");
+          }
+        } else {
+          // Shift+Tab: if line starts with "  ○ " convert back to "• "
+          if (currentLine === "  ○ ") {
+            const newRange = range.cloneRange();
+            newRange.setStart(node, range.startOffset - 4);
+            newRange.setEnd(node, range.startOffset);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+            document.execCommand("insertText", false, "• ");
+          }
+        }
+        syncToState();
+      }
     } else if (e.key === "Enter") {
-      // Continue bullet list automatically
       const sel = window.getSelection();
       if (sel && sel.rangeCount > 0) {
         const range = sel.getRangeAt(0);
-        let node = range.startContainer;
-        let lineText = node.nodeType === Node.TEXT_NODE
-          ? node.textContent.substring(0, range.startOffset)
-          : "";
-        // Walk up to get full line text if needed
-        const trimmed = lineText.trimStart();
-        if (trimmed.startsWith("• ")) {
-          if (trimmed === "• " || trimmed === "•") {
-            // Empty bullet — just do normal newline (browser default)
-            return;
-          }
+        const node = range.startContainer;
+        const before = node.nodeType === Node.TEXT_NODE
+          ? node.textContent.substring(0, range.startOffset) : "";
+        const lastNl = before.lastIndexOf("\n");
+        const currentLine = before.substring(lastNl + 1);
+        if (currentLine.startsWith("  ○ ")) {
+          if (currentLine === "  ○ ") { return; } // empty sub-bullet — escape
+          e.preventDefault();
+          document.execCommand("insertText", false, "\n  ○ ");
+          syncToState();
+        } else if (currentLine.startsWith("• ")) {
+          if (currentLine === "• ") { return; } // empty bullet — escape
           e.preventDefault();
           document.execCommand("insertText", false, "\n• ");
           syncToState();
@@ -1803,7 +1987,14 @@ function RichTextEditor({ content, onChange }) {
         <button onMouseDown={e => e.preventDefault()} onClick={() => execCmd("bold")} style={toolbarBtn({ fontWeight: "bold" })}>Bold</button>
         <button onMouseDown={e => e.preventDefault()} onClick={() => execCmd("italic")} style={toolbarBtn({ fontStyle: "italic" })}>Italic</button>
         <button onMouseDown={e => e.preventDefault()} onClick={() => execCmd("strikeThrough")} style={toolbarBtn({ textDecoration: "line-through" })}>Strike</button>
-        <button onMouseDown={e => e.preventDefault()} onClick={insertBullet} style={toolbarBtn()}>•</button>
+        <button onMouseDown={e => e.preventDefault()} onClick={insertBullet} style={toolbarBtn()} title="Bullet (•)">•</button>
+        <button onMouseDown={e => e.preventDefault()} onClick={insertSubBullet} style={toolbarBtn()} title="Sub-bullet (○)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "inline-block", verticalAlign: "middle", marginRight: "3px" }}>
+            <line x1="3" y1="7" x2="5" y2="7" stroke="#333" strokeWidth="1.5" strokeLinecap="round"/>
+            <circle cx="8" cy="7" r="2.5" stroke="#333" strokeWidth="1.5" fill="none"/>
+          </svg>
+          <span style={{ fontSize: "0.85em" }}>Sub</span>
+        </button>
         <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
           <span style={{ fontSize: "0.82em", color: "#666" }}>Highlight:</span>
           {HIGHLIGHT_COLORS.map((hl, idx) => (
@@ -2313,6 +2504,64 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef(null);
 
+  // ── Dropbox state ─────────────────────────────────────────────────────────
+  const [dbxConnected, setDbxConnected] = useState(() => DBX.isConnected());
+  const [dbxAccount,   setDbxAccount]   = useState(() => DBX.account()?.name || null);
+  const [dbxSyncing,   setDbxSyncing]   = useState(false);
+  const [dbxMsg,       setDbxMsg]       = useState("");
+
+  useEffect(() => {
+    const refresh = () => { setDbxConnected(DBX.isConnected()); setDbxAccount(DBX.account()?.name || null); };
+    window.addEventListener("dbxStatusChanged", refresh);
+    return () => window.removeEventListener("dbxStatusChanged", refresh);
+  }, []);
+
+  const dbxPush = async () => {
+    if (!DBX.isConnected()) return;
+    setDbxSyncing(true); setDbxMsg("Syncing...");
+    try {
+      const data = { songs, scenes, notes, sequences, sceneNotes, pushedAt: new Date().toISOString() };
+      await DBX.uploadSmart(JSON.stringify(data, null, 2));
+      setDbxMsg("Synced to Dropbox!");
+      setTimeout(() => setDbxMsg(""), 3000);
+    } catch(e) {
+      console.error("DBX push failed:", e);
+      setDbxMsg("Sync failed — check connection");
+    }
+    setDbxSyncing(false);
+  };
+
+  const dbxPull = async () => {
+    if (!DBX.isConnected()) return;
+    setDbxSyncing(true); setDbxMsg("Pulling...");
+    try {
+      const txt = await DBX.downloadData();
+      if (!txt) { setDbxMsg("Nothing in Dropbox yet — push first!"); setDbxSyncing(false); return; }
+      const data = JSON.parse(txt);
+      if (data.songs?.length > 0) setSongs(data.songs);
+      if (data.scenes) setScenes(data.scenes);
+      if (data.notes) setNotes(data.notes);
+      if (data.sequences) setSequences(data.sequences);
+      if (data.sceneNotes?.length > 0) {
+        setSceneNotes(data.sceneNotes);
+        localStorage.setItem("pickMeSceneNotes", JSON.stringify(data.sceneNotes));
+      }
+      localStorage.setItem("pickMeData", JSON.stringify(data));
+      setDbxMsg("Pulled from Dropbox!");
+      setTimeout(() => setDbxMsg(""), 3000);
+    } catch(e) {
+      console.error("DBX pull failed:", e);
+      setDbxMsg("Pull failed — check connection");
+    }
+    setDbxSyncing(false);
+  };
+
+  const dbxDisconnect = async () => {
+    await DBX.disconnect();
+    setDbxConnected(false); setDbxAccount(null); setDbxMsg("Disconnected from Dropbox");
+    setTimeout(() => setDbxMsg(""), 3000);
+  };
+
   const save = () => {
     setNotionUrl(draft);
     setSaved(true);
@@ -2431,6 +2680,60 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
           onChange={handleFileLoad}
           style={{display:"none"}}
         />
+      </div>
+
+      {/* ── Dropbox Sync ── */}
+      <div style={{marginTop:"40px",borderTop:"1px solid var(--border-pink)",paddingTop:"30px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"12px"}}>
+          <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4L4 10.5L12 17L20 10.5L12 4Z" fill="#0061FF"/>
+            <path d="M28 4L20 10.5L28 17L36 10.5L28 4Z" fill="#0061FF"/>
+            <path d="M4 23.5L12 17L20 23.5L12 30L4 23.5Z" fill="#0061FF"/>
+            <path d="M36 23.5L28 17L20 23.5L28 30L36 23.5Z" fill="#0061FF"/>
+            <path d="M12 32L20 25.5L28 32L20 38L12 32Z" fill="#0061FF"/>
+          </svg>
+          <span style={{fontSize:"1em",fontWeight:"700",color:"var(--hot-pink,#eb2e90)"}}>Dropbox Sync</span>
+          {dbxConnected && (
+            <span style={{display:"inline-flex",alignItems:"center",gap:"5px",fontSize:"0.8em",color:"#3bd167",fontWeight:"600"}}>
+              <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="#3bd167"/></svg>
+              {dbxAccount ? dbxAccount.split(" ")[0] : "Connected"}
+            </span>
+          )}
+        </div>
+
+        <div style={{fontSize:"0.85em",color:"var(--text-light,#888)",marginBottom:"14px",fontStyle:"italic",lineHeight:"1.5"}}>
+          {dbxConnected
+            ? "Your data syncs to /PICK ME/pickme-data.json in your Dropbox. Push after edits; Pull to load changes from another device."
+            : "Connect Dropbox to sync your data across devices automatically. Your data lives at /PICK ME/pickme-data.json."
+          }
+        </div>
+
+        {dbxMsg && (
+          <div style={{padding:"8px 12px",background:"#fff3f9",border:"1px solid #fec3e4",borderRadius:"6px",fontSize:"0.85em",color:"#333",marginBottom:"12px"}}>
+            {dbxMsg}
+          </div>
+        )}
+
+        <div style={{display:"flex",gap:"10px",flexWrap:"wrap"}}>
+          {!dbxConnected ? (
+            <button className="btn btn-secondary" onClick={() => DBX.startOAuth()} style={{display:"flex",alignItems:"center",gap:"6px"}}>
+              <svg width="14" height="14" viewBox="0 0 40 40" fill="none"><path d="M12 4L4 10.5L12 17L20 10.5L12 4Z" fill="#0061FF"/><path d="M28 4L20 10.5L28 17L36 10.5L28 4Z" fill="#0061FF"/><path d="M4 23.5L12 17L20 23.5L12 30L4 23.5Z" fill="#0061FF"/><path d="M36 23.5L28 17L20 23.5L28 30L36 23.5Z" fill="#0061FF"/><path d="M12 32L20 25.5L28 32L20 38L12 32Z" fill="#0061FF"/></svg>
+              Connect Dropbox
+            </button>
+          ) : (
+            <>
+              <button className="btn btn-secondary" onClick={dbxPush} disabled={dbxSyncing} style={{opacity:dbxSyncing?0.6:1}}>
+                {dbxSyncing ? "Syncing..." : "Push to Dropbox"}
+              </button>
+              <button className="btn btn-secondary" onClick={dbxPull} disabled={dbxSyncing} style={{opacity:dbxSyncing?0.6:1}}>
+                Pull from Dropbox
+              </button>
+              <button className="btn btn-secondary" onClick={dbxDisconnect} style={{color:"#c00",borderColor:"#c00"}}>
+                Disconnect
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -2942,6 +3245,17 @@ function App() {
     window.dispatchEvent(new Event("notesUpdated"));
   }, [notes]);
 
+  // ── Handle Dropbox OAuth callback on page load ──────────────────────────
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const justConnected = await DBX.handleCallback();
+        if (justConnected) {
+          window.dispatchEvent(new Event("dbxStatusChanged"));
+        }
+      } catch(e) { console.warn("DBX callback:", e); }
+    })();
+  }, []); // eslint-disable-line
 
   const handleSceneDragStart = (e, id) => {
     setSceneDragId(id);
