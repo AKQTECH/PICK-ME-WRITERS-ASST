@@ -829,7 +829,7 @@ const DBX = (() => {
   const KEY_TOKENS   = 'akq_pickme_dbx_tokens';
   const KEY_PKCE     = 'akq_pickme_dbx_pkce';
   const KEY_FILEID   = 'akq_pickme_dbx_fileid';
-  const PICKME_PATH  = '/pickme-data.json';
+  const PICKME_PATH  = '/PICK ME/pickme-data.json';
 
   let st = { accessToken: null, refreshToken: null, expiresAt: 0, account: null, fileId: null };
 
@@ -952,7 +952,7 @@ const DBX = (() => {
 DBX.load();
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const APP_VERSION = '20260420b';
+const APP_VERSION = '20260421';
 
 // ─── CONSOLIDATED STATE KEY + AUTO SYNC ──────────────────────────────────────
 const PICKME_STATE_KEY = 'pickme_state_v1';
@@ -3226,6 +3226,7 @@ function App() {
   const [dbxSyncStatus, setDbxSyncStatus] = useState('idle'); // 'idle'|'syncing'|'error'
   const [dbxConnected, setDbxConnected] = useState(() => DBX.isConnected());
   const _skipPushRef = React.useRef(false);
+  const _isFirstRender = React.useRef(true);
 
   const [songs, setSongs] = useState(() => {
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
@@ -3308,6 +3309,11 @@ function App() {
 
   // ── Consolidated save: writes pickme_state_v1 + legacy keys, auto-push ──
   React.useEffect(() => {
+    // Skip first render so auto-pull can compare timestamps without local overwriting remote
+    if (_isFirstRender.current) {
+      _isFirstRender.current = false;
+      return;
+    }
     if (_skipPushRef.current) {
       // State came from a pull — keep remote lastModified, just update legacy keys
       _skipPushRef.current = false;
