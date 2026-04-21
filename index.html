@@ -820,7 +820,7 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 /* ══════════════════════════════════════════════════════════════════════════════
    DROPBOX SYNC MODULE — OAuth PKCE flow, no client secret needed.
-   Files live at /PICK ME/pickme-data.json in your Dropbox.
+   Files live at pickme-data.json in your Dropbox app folder.
    ⚠️  After registering at https://www.dropbox.com/developers/apps,
        replace __DROPBOX_APP_KEY__ below with your App Key.
    ══════════════════════════════════════════════════════════════════════════════ */
@@ -829,7 +829,7 @@ const DBX = (() => {
   const KEY_TOKENS   = 'akq_pickme_dbx_tokens';
   const KEY_PKCE     = 'akq_pickme_dbx_pkce';
   const KEY_FILEID   = 'akq_pickme_dbx_fileid';
-  const PICKME_PATH  = '/PICK ME/pickme-data.json';
+  const PICKME_PATH  = '/pickme-data.json';
 
   let st = { accessToken: null, refreshToken: null, expiresAt: 0, account: null, fileId: null };
 
@@ -952,7 +952,7 @@ const DBX = (() => {
 DBX.load();
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const APP_VERSION = '20260420';
+const APP_VERSION = '20260420b';
 
 // ─── CONSOLIDATED STATE KEY + AUTO SYNC ──────────────────────────────────────
 const PICKME_STATE_KEY = 'pickme_state_v1';
@@ -2753,8 +2753,8 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
 
         <div style={{fontSize:"0.85em",color:"var(--text-light,#888)",marginBottom:"14px",fontStyle:"italic",lineHeight:"1.5"}}>
           {dbxConnected
-            ? "Your data syncs to /PICK ME/pickme-data.json in your Dropbox. Push after edits; Pull to load changes from another device."
-            : "Connect Dropbox to sync your data across devices automatically. Your data lives at /PICK ME/pickme-data.json."
+            ? "Auto-syncing every 10 seconds across all your devices. Use the buttons below to force an immediate sync."
+            : "Connect Dropbox to automatically keep your data in sync across desktop and mobile."
           }
         </div>
 
@@ -2773,10 +2773,10 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
           ) : (
             <>
               <button className="btn btn-secondary" onClick={dbxPush} disabled={dbxSyncing} style={{opacity:dbxSyncing?0.6:1}}>
-                {dbxSyncing ? "Syncing..." : "Push to Dropbox"}
+                {dbxSyncing ? "Syncing..." : "Force Push"}
               </button>
               <button className="btn btn-secondary" onClick={dbxPull} disabled={dbxSyncing} style={{opacity:dbxSyncing?0.6:1}}>
-                Pull from Dropbox
+                Force Pull
               </button>
               <button className="btn btn-secondary" onClick={dbxDisconnect} style={{color:"#c00",borderColor:"#c00"}}>
                 Disconnect
@@ -3427,13 +3427,6 @@ function App() {
         <div className="header-lip">💋</div>
         <h1>Pick Me Writers Assistant</h1>
         <div className="header-sub">a tool for the film by april korto quioh</div>
-        <div style={{fontSize:'0.6em', color:'#ccc', marginTop:4, letterSpacing:'0.06em'}}>v{APP_VERSION}</div>
-        {dbxConnected && (
-          <div style={{position:'absolute', top:10, right:12, display:'flex', alignItems:'center', gap:4}} title={dbxSyncStatus==='syncing'?'Syncing with Dropbox...':dbxSyncStatus==='error'?'Sync error':'Synced with Dropbox'}>
-            <div style={{width:8, height:8, borderRadius:'50%', background:dbxSyncStatus==='error'?'#e74c3c':'#2ecc71', animation:dbxSyncStatus==='syncing'?'dbxPulse 1s ease-in-out infinite':'none'}} />
-            <span style={{fontSize:'0.6em', color:'#aaa', letterSpacing:'0.08em', fontFamily:'Inter,sans-serif'}}>DBX</span>
-          </div>
-        )}
       </div>
 
       <div className="tabs">
