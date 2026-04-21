@@ -803,6 +803,10 @@
             border-radius: 0.5px;
             margin: 0.75px 0;
         }
+        @keyframes dbxPulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.8); }
+        }
     </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ea258d">
@@ -946,6 +950,55 @@ const DBX = (() => {
   return { load, isConfigured, isConnected, account, startOAuth, handleCallback, uploadSmart, downloadData, disconnect };
 })();
 DBX.load();
+
+// ─── VERSION ─────────────────────────────────────────────────────────────────
+const APP_VERSION = '20260420';
+
+// ─── CONSOLIDATED STATE KEY + AUTO SYNC ──────────────────────────────────────
+const PICKME_STATE_KEY = 'pickme_state_v1';
+let _dbxPushTimer = null;
+
+function scheduleDropboxPush() {
+  if (!DBX.isConnected()) return;
+  clearTimeout(_dbxPushTimer);
+  _dbxPushTimer = setTimeout(async () => {
+    _dbxPushTimer = null;
+    try {
+      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
+      const raw = localStorage.getItem(PICKME_STATE_KEY);
+      if (!raw) { window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' })); return; }
+      await DBX.uploadSmart(raw);
+      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
+    } catch(e) {
+      console.warn('Auto-push failed:', e);
+      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'error' }));
+    }
+  }, 2000);
+}
+
+async function performDropboxPull() {
+  if (!DBX.isConnected()) return false;
+  try {
+    const txt = await DBX.downloadData();
+    if (!txt) return false;
+    const remote = JSON.parse(txt);
+    if (!remote.lastModified) return false;
+    const localRaw = localStorage.getItem(PICKME_STATE_KEY);
+    if (localRaw) {
+      try {
+        const local = JSON.parse(localRaw);
+        if (local.lastModified && remote.lastModified <= local.lastModified) return false;
+      } catch(e) {}
+    }
+    // Remote is newer — write to localStorage and notify React
+    localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(remote));
+    window.dispatchEvent(new CustomEvent('pickme_state_updated', { detail: remote }));
+    return true;
+  } catch(e) {
+    console.warn('DBX pull failed:', e);
+    return false;
+  }
+}
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -2519,13 +2572,17 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
   const dbxPush = async () => {
     if (!DBX.isConnected()) return;
     setDbxSyncing(true); setDbxMsg("Syncing...");
+    window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
     try {
-      const data = { songs, scenes, notes, sequences, sceneNotes, pushedAt: new Date().toISOString() };
-      await DBX.uploadSmart(JSON.stringify(data, null, 2));
+      const state = { songs, scenes, notes, sequences, sceneNotes, lastModified: new Date().toISOString() };
+      localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(state));
+      await DBX.uploadSmart(JSON.stringify(state, null, 2));
+      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
       setDbxMsg("Synced to Dropbox!");
       setTimeout(() => setDbxMsg(""), 3000);
     } catch(e) {
       console.error("DBX push failed:", e);
+      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'error' }));
       setDbxMsg("Sync failed — check connection");
     }
     setDbxSyncing(false);
@@ -2535,19 +2592,12 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
     if (!DBX.isConnected()) return;
     setDbxSyncing(true); setDbxMsg("Pulling...");
     try {
-      const txt = await DBX.downloadData();
-      if (!txt) { setDbxMsg("Nothing in Dropbox yet — push first!"); setDbxSyncing(false); return; }
-      const data = JSON.parse(txt);
-      if (data.songs?.length > 0) setSongs(data.songs);
-      if (data.scenes) setScenes(data.scenes);
-      if (data.notes) setNotes(data.notes);
-      if (data.sequences) setSequences(data.sequences);
-      if (data.sceneNotes?.length > 0) {
-        setSceneNotes(data.sceneNotes);
-        localStorage.setItem("pickMeSceneNotes", JSON.stringify(data.sceneNotes));
+      const pulled = await performDropboxPull();
+      if (pulled) {
+        setDbxMsg("Pulled from Dropbox!");
+      } else {
+        setDbxMsg("Already up to date!");
       }
-      localStorage.setItem("pickMeData", JSON.stringify(data));
-      setDbxMsg("Pulled from Dropbox!");
       setTimeout(() => setDbxMsg(""), 3000);
     } catch(e) {
       console.error("DBX pull failed:", e);
@@ -3157,11 +3207,19 @@ function PreWritingRitualTab() {
 
 function App() {
   const [activeTab, setActiveTab] = useState("ritual");
+  const [dbxSyncStatus, setDbxSyncStatus] = useState('idle'); // 'idle'|'syncing'|'error'
+  const [dbxConnected, setDbxConnected] = useState(() => DBX.isConnected());
+  const _skipPushRef = React.useRef(false);
+
   const [songs, setSongs] = useState(() => {
+    const v1 = localStorage.getItem(PICKME_STATE_KEY);
+    if (v1) { try { const p=JSON.parse(v1); if(p.songs?.length>0) return p.songs; } catch(e){} }
     const saved = localStorage.getItem("pickMeData");
     return saved ? JSON.parse(saved).songs : INITIAL_SONGS;
   });
   const [scenes, setScenes] = useState(() => {
+    const v1 = localStorage.getItem(PICKME_STATE_KEY);
+    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) return p.scenes; } catch(e){} }
     const saved = localStorage.getItem("pickMeData");
     return saved ? JSON.parse(saved).scenes : [];
   });
@@ -3181,24 +3239,25 @@ function App() {
   ];
 
   const [notes, setNotes] = useState(() => {
-    // Always use PICK_ME_DEFAULT_NOTES as the source of truth
-    // Only use saved data if it has all 12 items (CURRENT SCENE NOTES + 11 sequences)
     try {
+      const v1 = localStorage.getItem(PICKME_STATE_KEY);
+      if (v1) {
+        const p = JSON.parse(v1);
+        if (p.notes && Array.isArray(p.notes) && p.notes.length >= 12 && !p.notes.some(n => n.scene && n.scene.includes("SEQ "))) {
+          return p.notes;
+        }
+      }
       const saved = localStorage.getItem("pickMeData");
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.notes && Array.isArray(parsed.notes) && parsed.notes.length >= 12) {
-          // Check if old data contains "SEQ X:" format - if so, it's corrupted and needs clearing
           const hasOldFormat = parsed.notes.some(n => n.scene && n.scene.includes("SEQ "));
-          if (!hasOldFormat) {
-            return parsed.notes;
-          }
+          if (!hasOldFormat) return parsed.notes;
         }
       }
     } catch (e) {
-      console.warn("Failed to parse pickMeData:", e);
+      console.warn("Failed to parse notes:", e);
     }
-    // Clear all old corrupted localStorage data
     try {
       localStorage.removeItem("scene-notes");
       localStorage.removeItem("pickMeData");
@@ -3208,6 +3267,8 @@ function App() {
     return PICK_ME_DEFAULT_NOTES;
   });
   const [sceneNotes, setSceneNotes] = useState(() => {
+    const v1 = localStorage.getItem(PICKME_STATE_KEY);
+    if (v1) { try { const p=JSON.parse(v1); if(p.sceneNotes?.length>0) return p.sceneNotes; } catch(e){} }
     const saved = localStorage.getItem("pickMeSceneNotes");
     if (saved) {
       try {
@@ -3221,29 +3282,91 @@ function App() {
   });
   const [notionUrl, setNotionUrl] = useState("https://www.notion.so/3314237e26d081a887afd5c24e7c45a1");
   const [sequences, setSequences] = useState(() => {
+    const v1 = localStorage.getItem(PICKME_STATE_KEY);
+    if (v1) { try { const p=JSON.parse(v1); if(p.sequences) return p.sequences; } catch(e){} }
     const saved = localStorage.getItem("pick-me-sequences");
     return saved ? JSON.parse(saved) : {};
   });
   const [sceneDragId, setSceneDragId] = useState(null);
   const [sceneOverIdx, setSceneOverIdx] = useState(null);
 
+  // ── Consolidated save: writes pickme_state_v1 + legacy keys, auto-push ──
   React.useEffect(() => {
+    if (_skipPushRef.current) {
+      // State came from a pull — keep remote lastModified, just update legacy keys
+      _skipPushRef.current = false;
+      localStorage.setItem("pick-me-sequences", JSON.stringify(sequences));
+      localStorage.setItem("pickMeData", JSON.stringify({ songs, scenes, notes }));
+      localStorage.setItem("pickMeSceneNotes", JSON.stringify(sceneNotes));
+      localStorage.setItem("draft-notes", notes.map(n => `${n.scene ? n.scene + ": " : ""}${n.content}`).join("\n\n"));
+      window.dispatchEvent(new Event("notesUpdated"));
+      return;
+    }
+    const state = { songs, scenes, notes, sequences, sceneNotes, lastModified: new Date().toISOString() };
+    localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(state));
     localStorage.setItem("pick-me-sequences", JSON.stringify(sequences));
-  }, [sequences]);
-
-  React.useEffect(() => {
-    const data = { songs, scenes, notes };
-    localStorage.setItem("pickMeData", JSON.stringify(data));
-  }, [songs, scenes, notes]);
-
-  React.useEffect(() => {
+    localStorage.setItem("pickMeData", JSON.stringify({ songs, scenes, notes }));
     localStorage.setItem("pickMeSceneNotes", JSON.stringify(sceneNotes));
-  }, [sceneNotes]);
-
-  React.useEffect(() => {
     localStorage.setItem("draft-notes", notes.map(n => `${n.scene ? n.scene + ": " : ""}${n.content}`).join("\n\n"));
     window.dispatchEvent(new Event("notesUpdated"));
-  }, [notes]);
+    scheduleDropboxPush();
+  }, [songs, scenes, notes, sequences, sceneNotes]); // eslint-disable-line
+
+  // ── Listen for dbxSyncStatus events (from auto-push/pull) ───────────────
+  React.useEffect(() => {
+    const handler = e => setDbxSyncStatus(e.detail);
+    window.addEventListener('dbxSyncStatus', handler);
+    return () => window.removeEventListener('dbxSyncStatus', handler);
+  }, []);
+
+  // ── Listen for dbxStatusChanged (connect/disconnect) ────────────────────
+  React.useEffect(() => {
+    const handler = () => setDbxConnected(DBX.isConnected());
+    window.addEventListener('dbxStatusChanged', handler);
+    return () => window.removeEventListener('dbxStatusChanged', handler);
+  }, []);
+
+  // ── Apply state pulled from Dropbox ─────────────────────────────────────
+  React.useEffect(() => {
+    const handler = e => {
+      const d = e.detail;
+      _skipPushRef.current = true;
+      clearTimeout(_dbxPushTimer);
+      if (d.songs?.length>0) setSongs(d.songs);
+      if (d.scenes) setScenes(d.scenes);
+      if (d.notes?.length>0) setNotes(d.notes);
+      if (d.sequences) setSequences(d.sequences);
+      if (d.sceneNotes?.length>0) setSceneNotes(d.sceneNotes);
+    };
+    window.addEventListener('pickme_state_updated', handler);
+    return () => window.removeEventListener('pickme_state_updated', handler);
+  }, []); // eslint-disable-line
+
+  // ── Auto-pull: on boot + every 10s + on tab visibility ──────────────────
+  React.useEffect(() => {
+    if (!dbxConnected) return;
+    // Boot pull
+    (async () => {
+      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
+      await performDropboxPull();
+      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
+    })();
+    const iv = setInterval(async () => {
+      if (document.hidden) return;
+      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
+      await performDropboxPull();
+      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
+    }, 10000);
+    const onVis = async () => {
+      if (!document.hidden) {
+        window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
+        await performDropboxPull();
+        window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => { clearInterval(iv); document.removeEventListener('visibilitychange', onVis); };
+  }, [dbxConnected]); // eslint-disable-line
 
   // ── Handle Dropbox OAuth callback on page load ──────────────────────────
   React.useEffect(() => {
@@ -3252,6 +3375,7 @@ function App() {
         const justConnected = await DBX.handleCallback();
         if (justConnected) {
           window.dispatchEvent(new Event("dbxStatusChanged"));
+          // dbxConnected reactive effect handles boot pull
         }
       } catch(e) { console.warn("DBX callback:", e); }
     })();
@@ -3303,6 +3427,13 @@ function App() {
         <div className="header-lip">💋</div>
         <h1>Pick Me Writers Assistant</h1>
         <div className="header-sub">a tool for the film by april korto quioh</div>
+        <div style={{fontSize:'0.6em', color:'#ccc', marginTop:4, letterSpacing:'0.06em'}}>v{APP_VERSION}</div>
+        {dbxConnected && (
+          <div style={{position:'absolute', top:10, right:12, display:'flex', alignItems:'center', gap:4}} title={dbxSyncStatus==='syncing'?'Syncing with Dropbox...':dbxSyncStatus==='error'?'Sync error':'Synced with Dropbox'}>
+            <div style={{width:8, height:8, borderRadius:'50%', background:dbxSyncStatus==='error'?'#e74c3c':'#2ecc71', animation:dbxSyncStatus==='syncing'?'dbxPulse 1s ease-in-out infinite':'none'}} />
+            <span style={{fontSize:'0.6em', color:'#aaa', letterSpacing:'0.08em', fontFamily:'Inter,sans-serif'}}>DBX</span>
+          </div>
+        )}
       </div>
 
       <div className="tabs">
