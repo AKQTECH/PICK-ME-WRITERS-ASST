@@ -2612,6 +2612,14 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
     setTimeout(() => setDbxMsg(""), 3000);
   };
 
+  const dbxReset = async () => {
+    await DBX.disconnect();
+    localStorage.removeItem('akq_pickme_dbx_fileid');
+    setDbxConnected(false); setDbxAccount(null);
+    setDbxMsg("Reset complete — please reconnect Dropbox");
+    setTimeout(() => setDbxMsg(""), 4000);
+  };
+
   const save = () => {
     setNotionUrl(draft);
     setSaved(true);
@@ -2781,9 +2789,17 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
               <button className="btn btn-secondary" onClick={dbxDisconnect} style={{color:"#c00",borderColor:"#c00"}}>
                 Disconnect
               </button>
+              <button className="btn btn-secondary" onClick={dbxReset} style={{color:"#999",borderColor:"#ddd",fontSize:"0.8em"}}>
+                Reset
+              </button>
             </>
           )}
         </div>
+      </div>
+
+      {/* ── Version ── */}
+      <div style={{marginTop:"40px",paddingTop:"20px",borderTop:"1px solid var(--border-pink)",textAlign:"center",color:"#ccc",fontSize:"0.75em",letterSpacing:"0.06em"}}>
+        v{APP_VERSION}
       </div>
     </div>
   );
