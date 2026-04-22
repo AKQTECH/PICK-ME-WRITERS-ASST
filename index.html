@@ -708,17 +708,17 @@
             margin-bottom: 16px;
         }
         .scene-card {
-            background: #FFE4F0;
-            border: 2px solid var(--border-pink);
-            border-radius: 0;
-            padding: 16px;
+            background: #fec3e4;
+            border: none;
+            border-radius: 20px;
+            padding: 0;
             position: relative;
             display: flex;
             flex-direction: row;
-            align-items: flex-start;
-            min-height: 200px;
-            aspect-ratio: 1;
-            box-shadow: 2px 2px 4px rgba(234, 37, 141, 0.1);
+            align-items: center;
+            min-height: 0;
+            aspect-ratio: unset;
+            box-shadow: none;
         }
         .scene-card-header {
             display: flex;
@@ -952,7 +952,7 @@ const DBX = (() => {
 DBX.load();
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const APP_VERSION = '20260421c';
+const APP_VERSION = '20260421d';
 
 // ─── CONSOLIDATED STATE KEY + AUTO SYNC ──────────────────────────────────────
 const PICKME_STATE_KEY = 'pickme_state_v1';
@@ -2389,7 +2389,9 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
 
 let nextSceneId = 1;
 
-function ScenesTab({ scenes, setScenes, sceneDragId, sceneOverIdx, handleSceneDragStart, handleSceneDragOver, handleSceneDrop, handleSceneDragEnd }) {
+function ScenesTab({ scenes, setScenes }) {
+  const dragIdRef = React.useRef(null);
+  const [overIdx, setOverIdx] = React.useState(null);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -2475,22 +2477,39 @@ function ScenesTab({ scenes, setScenes, sceneDragId, sceneOverIdx, handleSceneDr
             return (
               <div
                 key={scene.id}
-                className={`scene-card${sceneDragId === scene.id ? " dragging" : ""}${sceneOverIdx === idx && sceneDragId !== scene.id ? " drag-over" : ""}`}
-                style={{display:"flex", alignItems:"center", gap:"0", padding:"0", borderRadius:"20px", border:"none", background:"#fec3e4", cursor:"default", minHeight:"0"}}
-                onDragOver={e => { e.preventDefault(); handleSceneDragOver(e, idx); }}
-                onDrop={e => handleSceneDrop(e, idx)}
+                draggable
+                onDragStart={e => {
+                  dragIdRef.current = scene.id;
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", String(idx));
+                }}
+                onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setOverIdx(idx); }}
+                onDrop={e => {
+                  e.preventDefault();
+                  const fromId = dragIdRef.current;
+                  if (fromId == null || fromId === scene.id) { dragIdRef.current = null; setOverIdx(null); return; }
+                  setScenes(prev => {
+                    const next = [...prev];
+                    const fromIdx = next.findIndex(s => s.id === fromId);
+                    const toIdx = next.findIndex(s => s.id === scene.id);
+                    if (fromIdx === -1 || toIdx === -1) return prev;
+                    const [moved] = next.splice(fromIdx, 1);
+                    next.splice(toIdx, 0, moved);
+                    return next;
+                  });
+                  dragIdRef.current = null;
+                  setOverIdx(null);
+                }}
+                onDragEnd={() => { dragIdRef.current = null; setOverIdx(null); }}
+                style={{display:"flex", alignItems:"center", gap:"0", padding:"0", borderRadius:"20px", border: overIdx === idx && dragIdRef.current !== scene.id ? "2px dashed #ea258d" : "2px solid transparent", background:"#fec3e4", cursor:"grab", minHeight:"0", boxSizing:"border-box"}}
               >
-                {/* Drag handle */}
+                {/* Drag handle — visual only */}
                 <div
-                  title="Drag to reorder"
-                  draggable
-                  onDragStart={e => { e.stopPropagation(); handleSceneDragStart(e, scene.id); }}
-                  onDragEnd={handleSceneDragEnd}
-                  style={{display:"flex", flexDirection:"column", gap:"3px", alignItems:"center", padding:"0 10px 0 14px", cursor:"grab", flexShrink:0, alignSelf:"center"}}
+                  style={{display:"flex", flexDirection:"column", gap:"3px", alignItems:"center", padding:"0 10px 0 14px", flexShrink:0, pointerEvents:"none"}}
                 >
-                  <span style={{display:"block",width:"14px",height:"2px",background:"#ea258d",borderRadius:"2px"}}/>
-                  <span style={{display:"block",width:"14px",height:"2px",background:"#ea258d",borderRadius:"2px"}}/>
-                  <span style={{display:"block",width:"14px",height:"2px",background:"#ea258d",borderRadius:"2px"}}/>
+                  <span style={{display:"block",width:"10px",height:"1.5px",background:"#f093c5",borderRadius:"2px"}}/>
+                  <span style={{display:"block",width:"10px",height:"1.5px",background:"#f093c5",borderRadius:"2px"}}/>
+                  <span style={{display:"block",width:"10px",height:"1.5px",background:"#f093c5",borderRadius:"2px"}}/>
                 </div>
 
                 {/* Content */}
@@ -3542,7 +3561,7 @@ function App() {
           <EvalTab notionUrl={notionUrl} showToast={showToast} />
         )}
         {activeTab === "scenes" && (
-          <ScenesTab scenes={scenes} setScenes={setScenes} sceneDragId={sceneDragId} sceneOverIdx={sceneOverIdx} handleSceneDragStart={handleSceneDragStart} handleSceneDragOver={handleSceneDragOver} handleSceneDrop={handleSceneDrop} handleSceneDragEnd={handleSceneDragEnd} />
+          <ScenesTab scenes={scenes} setScenes={setScenes} />
         )}
         {activeTab === "ritual" && (
           <PreWritingRitualTab />
