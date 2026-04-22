@@ -952,7 +952,7 @@ const DBX = (() => {
 DBX.load();
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const APP_VERSION = '20260421b';
+const APP_VERSION = '20260421c';
 
 // ─── CONSOLIDATED STATE KEY + AUTO SYNC ──────────────────────────────────────
 const PICKME_STATE_KEY = 'pickme_state_v1';
@@ -2476,37 +2476,38 @@ function ScenesTab({ scenes, setScenes, sceneDragId, sceneOverIdx, handleSceneDr
               <div
                 key={scene.id}
                 className={`scene-card${sceneDragId === scene.id ? " dragging" : ""}${sceneOverIdx === idx && sceneDragId !== scene.id ? " drag-over" : ""}`}
-                style={{display:"flex", alignItems:"flex-start", gap:"8px", padding:"0", borderRadius:"8px", border:"1.5px solid var(--border-pink)", background:"white", cursor:"default"}}
+                style={{display:"flex", alignItems:"center", gap:"0", padding:"0", borderRadius:"20px", border:"none", background:"#fec3e4", cursor:"default", minHeight:"0"}}
                 onDragOver={e => { e.preventDefault(); handleSceneDragOver(e, idx); }}
                 onDrop={e => handleSceneDrop(e, idx)}
               >
-                {/* Drag handle — only this part is draggable */}
+                {/* Drag handle */}
                 <div
-                  className="scene-drag-handle"
                   title="Drag to reorder"
                   draggable
                   onDragStart={e => { e.stopPropagation(); handleSceneDragStart(e, scene.id); }}
                   onDragEnd={handleSceneDragEnd}
-                  style={{alignSelf:"stretch", display:"flex", alignItems:"center", padding:"12px 8px", cursor:"grab", flexShrink:0}}
+                  style={{display:"flex", flexDirection:"column", gap:"3px", alignItems:"center", padding:"0 10px 0 14px", cursor:"grab", flexShrink:0, alignSelf:"center"}}
                 >
-                  <span/><span/><span/>
+                  <span style={{display:"block",width:"14px",height:"2px",background:"#ea258d",borderRadius:"2px"}}/>
+                  <span style={{display:"block",width:"14px",height:"2px",background:"#ea258d",borderRadius:"2px"}}/>
+                  <span style={{display:"block",width:"14px",height:"2px",background:"#ea258d",borderRadius:"2px"}}/>
                 </div>
 
                 {/* Content */}
                 <div style={{flex:1, minWidth:0}}>
-                  {/* Title row — always visible, click to expand */}
+                  {/* Title row */}
                   <div
                     onClick={() => !isEditing && toggleExpand(scene.id)}
-                    style={{display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 12px 12px 0", cursor:"pointer", userSelect:"none"}}
+                    style={{display:"flex", alignItems:"center", justifyContent:"space-between", padding:"11px 12px 11px 0", cursor:"pointer", userSelect:"none"}}
                   >
-                    <span style={{fontWeight:"600", fontSize:"0.95em", color:"#222", flex:1}}>{scene.title}</span>
-                    <div style={{display:"flex", alignItems:"center", gap:"8px", flexShrink:0}}>
+                    <span style={{fontWeight:"700", fontSize:"0.9em", color:"#ea258d", flex:1, letterSpacing:"0.02em"}}>{scene.title}</span>
+                    <div style={{display:"flex", alignItems:"center", gap:"6px", flexShrink:0}}>
                       {scene.description && (
-                        <span style={{fontSize:"0.75em", color:"#aaa"}}>{isExpanded ? "▲" : "▼"}</span>
+                        <span style={{fontSize:"0.7em", color:"#ea258d", opacity:0.7}}>{isExpanded ? "▲" : "▼"}</span>
                       )}
                       <button
                         onClick={e => { e.stopPropagation(); deleteScene(scene.id); }}
-                        style={{background:"none", border:"none", color:"#ccc", cursor:"pointer", fontSize:"1.1em", lineHeight:1, padding:"0 4px"}}
+                        style={{background:"none", border:"none", color:"#ea258d", opacity:0.5, cursor:"pointer", fontSize:"1em", lineHeight:1, padding:"0 4px"}}
                         title="Delete"
                       >×</button>
                     </div>
@@ -2516,11 +2517,11 @@ function ScenesTab({ scenes, setScenes, sceneDragId, sceneOverIdx, handleSceneDr
                   {isExpanded && !isEditing && (
                     <div style={{paddingRight:"12px", paddingBottom:"12px"}}>
                       {scene.description && (
-                        <div style={{fontSize:"0.88em", color:"#555", whiteSpace:"pre-wrap", lineHeight:"1.55", marginBottom:"10px"}}>{scene.description}</div>
+                        <div style={{fontSize:"0.85em", color:"#c0457a", whiteSpace:"pre-wrap", lineHeight:"1.55", marginBottom:"10px"}}>{scene.description}</div>
                       )}
                       <button
                         onClick={() => startEditing(scene)}
-                        style={{fontSize:"0.82em", background:"none", border:"1px solid var(--border-pink)", borderRadius:"4px", color:"var(--neon-pink)", padding:"4px 10px", cursor:"pointer"}}
+                        style={{fontSize:"0.8em", background:"white", border:"none", borderRadius:"10px", color:"#ea258d", padding:"4px 12px", cursor:"pointer", fontWeight:"600"}}
                       >Edit</button>
                     </div>
                   )}
@@ -2531,19 +2532,19 @@ function ScenesTab({ scenes, setScenes, sceneDragId, sceneOverIdx, handleSceneDr
                       <input
                         type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
                         placeholder="Scene title"
-                        style={{width:"100%", padding:"8px", marginBottom:"8px", border:"1px solid var(--border-pink)", borderRadius:"4px", fontSize:"0.95em", boxSizing:"border-box"}}
+                        style={{width:"100%", padding:"8px", marginBottom:"8px", border:"none", borderRadius:"8px", fontSize:"0.9em", boxSizing:"border-box", background:"white", color:"#ea258d"}}
                         autoFocus
                       />
                       <textarea
                         value={editDesc} onChange={e => setEditDesc(e.target.value)}
                         placeholder="Scene description"
-                        style={{width:"100%", padding:"8px", marginBottom:"8px", border:"1px solid var(--border-pink)", borderRadius:"4px", fontSize:"0.95em", minHeight:"70px", boxSizing:"border-box", resize:"vertical"}}
+                        style={{width:"100%", padding:"8px", marginBottom:"8px", border:"none", borderRadius:"8px", fontSize:"0.9em", minHeight:"70px", boxSizing:"border-box", resize:"vertical", background:"white", color:"#555"}}
                       />
                       <div style={{display:"flex", gap:"8px"}}>
                         <button onClick={saveEdit} disabled={!editTitle.trim()}
-                          style={{flex:1, backgroundColor: editTitle.trim() ? "var(--neon-pink)" : "#ccc", color:"white", border:"none", padding:"8px", borderRadius:"4px", cursor: editTitle.trim() ? "pointer" : "not-allowed", fontWeight:"bold"}}>Save</button>
+                          style={{flex:1, backgroundColor: editTitle.trim() ? "#ea258d" : "#ccc", color:"white", border:"none", padding:"8px", borderRadius:"10px", cursor: editTitle.trim() ? "pointer" : "not-allowed", fontWeight:"bold"}}>Save</button>
                         <button onClick={cancelEdit}
-                          style={{flex:1, backgroundColor:"#f5d5d8", color:"#d9647f", border:"none", padding:"8px", borderRadius:"4px", cursor:"pointer", fontWeight:"bold"}}>Cancel</button>
+                          style={{flex:1, backgroundColor:"white", color:"#ea258d", border:"none", padding:"8px", borderRadius:"10px", cursor:"pointer", fontWeight:"bold"}}>Cancel</button>
                       </div>
                     </div>
                   )}
