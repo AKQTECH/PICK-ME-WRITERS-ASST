@@ -952,7 +952,7 @@ const DBX = (() => {
 DBX.load();
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const APP_VERSION = '20260421g';
+const APP_VERSION = '20260421h';
 
 // ─── CONSOLIDATED STATE KEY + AUTO SYNC ──────────────────────────────────────
 const PICKME_STATE_KEY = 'pickme_state_v1';
@@ -2488,20 +2488,20 @@ function ScenesTab({ scenes, setScenes }) {
             return (
               <div
                 key={scene.id}
-                style={{display:"flex", alignItems:"stretch", borderRadius:"20px", border:"2px solid transparent", background:"#fec3e4", minHeight:"0", boxSizing:"border-box"}}
+                style={{display:"flex", alignItems:"center", borderRadius:"20px", border:"2px solid transparent", background:"#fec3e4", minHeight:"0", boxSizing:"border-box"}}
               >
-                {/* ▲ / ▼ reorder buttons — 44px tap targets for iOS */}
-                <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flexShrink:0}}>
+                {/* ▲ / ▼ reorder — compact, same footprint as desktop drag handle */}
+                <div style={{display:"flex", flexDirection:"column", gap:"2px", alignItems:"center", justifyContent:"center", padding:"0 8px 0 12px", flexShrink:0}}>
                   <button
                     onClick={e => { e.stopPropagation(); moveScene(idx, -1); }}
                     disabled={isFirst}
-                    style={{display:"flex", alignItems:"center", justifyContent:"center", minWidth:"44px", minHeight:"44px", background:"none", border:"none", color:"#ea258d", fontSize:"0.7em", opacity: isFirst ? 0.2 : 0.6, cursor: isFirst ? "default" : "pointer", padding:0, lineHeight:1}}
+                    style={{display:"block", background:"none", border:"none", color:"#f093c5", fontSize:"0.6em", opacity: isFirst ? 0.3 : 1, cursor: isFirst ? "default" : "pointer", padding:"3px 5px", lineHeight:1}}
                     title="Move up"
                   >▲</button>
                   <button
                     onClick={e => { e.stopPropagation(); moveScene(idx, 1); }}
                     disabled={isLast}
-                    style={{display:"flex", alignItems:"center", justifyContent:"center", minWidth:"44px", minHeight:"44px", background:"none", border:"none", color:"#ea258d", fontSize:"0.7em", opacity: isLast ? 0.2 : 0.6, cursor: isLast ? "default" : "pointer", padding:0, lineHeight:1}}
+                    style={{display:"block", background:"none", border:"none", color:"#f093c5", fontSize:"0.6em", opacity: isLast ? 0.3 : 1, cursor: isLast ? "default" : "pointer", padding:"3px 5px", lineHeight:1}}
                     title="Move down"
                   >▼</button>
                 </div>
