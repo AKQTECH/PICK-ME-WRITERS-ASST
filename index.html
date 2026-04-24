@@ -952,7 +952,24 @@ const DBX = (() => {
 DBX.load();
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const APP_VERSION = '20260421j';
+const APP_VERSION = '20260421k';
+
+// ─── DEDUPE UTILITY ──────────────────────────────────────────────────────────
+function dedupeById(arr) {
+  if (!Array.isArray(arr)) return arr;
+  const seen = new Set();
+  return arr.map(item => {
+    const key = String(item.id);
+    if (seen.has(key)) {
+      const newId = Date.now() + Math.floor(Math.random() * 10000);
+      console.warn('[PICKME] Duplicate ID detected and reassigned:', key, '→', newId, 'title:', item.title || item.name || item.scene || '?');
+      seen.add(String(newId));
+      return { ...item, id: newId };
+    }
+    seen.add(key);
+    return item;
+  });
+}
 
 // ─── CONSOLIDATED STATE KEY + AUTO SYNC ──────────────────────────────────────
 const PICKME_STATE_KEY = 'pickme_state_v1';
@@ -2172,7 +2189,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
   const addScene = () => {
     const name = prompt("Enter scene name:");
     if (!name) return;
-    const newId = `scene-${Date.now()}`;
+    const newId = `scene-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     setSceneNotes(prev => prev.map(seq =>
       seq.id === selectedSequenceId
         ? { ...seq, scenes: [...seq.scenes, { id: newId, name: name.trim(), content: "" }] }
@@ -2203,7 +2220,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
     if (!scene) return;
     setSceneNotes(prev => prev.map(seq => {
       if (seq.id === selectedSequenceId) return { ...seq, scenes: seq.scenes.filter(s => s.id !== sceneId) };
-      if (seq.id === targetSeqId) return { ...seq, scenes: [...seq.scenes, { ...scene, id: scene.id + "-" + Date.now() }] };
+      if (seq.id === targetSeqId) return { ...seq, scenes: [...seq.scenes, { ...scene, id: scene.id + "-" + Date.now() + "-" + Math.floor(Math.random() * 10000) }] };
       return seq;
     }));
     const remaining = currentSequence?.scenes?.filter(s => s.id !== sceneId);
@@ -2242,8 +2259,8 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
   );
 
   const addSequence = () => {
-    const newSeqId = "seq-" + Date.now();
-    const newSceneId = "sc-" + Date.now();
+    const newSeqId = `seq-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const newSceneId = `sc-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     const newSeq = { id: newSeqId, name: "New Sequence", scenes: [{ id: newSceneId, name: "New Scene", content: "" }] };
     setSceneNotes(prev => [...prev, newSeq]);
     setSelectedSequenceId(newSeqId);
@@ -2400,7 +2417,7 @@ function ScenesTab({ scenes, setScenes }) {
 
   const addScene = () => {
     if (!newTitle.trim()) return;
-    const id = Date.now();
+    const id = Date.now() + Math.floor(Math.random() * 10000);
     setScenes(prev => [...prev, { id, title: newTitle.trim(), description: newDesc.trim() }]);
     setNewTitle("");
     setNewDesc("");
@@ -2442,6 +2459,11 @@ function ScenesTab({ scenes, setScenes }) {
   };
 
   const cancelEdit = () => setEditingId(null);
+
+  const _sceneIds = scenes.map(s => String(s.id));
+  if (_sceneIds.length !== new Set(_sceneIds).size) {
+    console.error('[PICKME] ScenesTab rendered with duplicate scene IDs:', _sceneIds);
+  }
 
   return (
     <div>
@@ -2684,15 +2706,15 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
         console.log("Has notes?", !!data.notes, "Count:", data.notes?.length);
 
         if (data.songs && data.songs.length > 0) {
-          setSongs(data.songs);
+          setSongs(dedupeById(data.songs));
           console.log("Set songs to:", data.songs.length);
         }
         if (data.scenes) {
-          setScenes(data.scenes);
+          setScenes(dedupeById(data.scenes));
           console.log("Set scenes to:", data.scenes.length);
         }
         if (data.notes) {
-          setNotes(data.notes);
+          setNotes(dedupeById(data.notes));
           console.log("Set notes to:", data.notes.length);
         }
         if (data.sequences) {
@@ -3256,9 +3278,9 @@ function App() {
   });
   const [scenes, setScenes] = useState(() => {
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) return p.scenes; } catch(e){} }
+    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) return dedupeById(p.scenes); } catch(e){} }
     const saved = localStorage.getItem("pickMeData");
-    return saved ? JSON.parse(saved).scenes : [];
+    return saved ? dedupeById(JSON.parse(saved).scenes) : [];
   });
   const PICK_ME_DEFAULT_NOTES = [
     { id: 0, scene: "CURRENT SCENE NOTES", content: "" },
@@ -3341,10 +3363,13 @@ function App() {
       window.dispatchEvent(new Event("notesUpdated"));
       return;
     }
-    const state = { songs, scenes, notes, sequences, sceneNotes, lastModified: new Date().toISOString() };
+    const cleanSongs = dedupeById(songs);
+    const cleanScenes = dedupeById(scenes);
+    const cleanNotes = dedupeById(notes);
+    const state = { songs: cleanSongs, scenes: cleanScenes, notes: cleanNotes, sequences, sceneNotes, lastModified: new Date().toISOString() };
     localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(state));
     localStorage.setItem("pick-me-sequences", JSON.stringify(sequences));
-    localStorage.setItem("pickMeData", JSON.stringify({ songs, scenes, notes }));
+    localStorage.setItem("pickMeData", JSON.stringify({ songs: cleanSongs, scenes: cleanScenes, notes: cleanNotes }));
     localStorage.setItem("pickMeSceneNotes", JSON.stringify(sceneNotes));
     localStorage.setItem("draft-notes", notes.map(n => `${n.scene ? n.scene + ": " : ""}${n.content}`).join("\n\n"));
     window.dispatchEvent(new Event("notesUpdated"));
@@ -3372,9 +3397,9 @@ function App() {
       _skipPushRef.current = true;
       clearTimeout(_dbxPushTimer);
       ReactDOM.unstable_batchedUpdates(() => {
-        if (d.songs?.length>0) setSongs(d.songs);
-        if (d.scenes) setScenes(d.scenes);
-        if (d.notes?.length>0) setNotes(d.notes);
+        if (d.songs?.length>0) setSongs(dedupeById(d.songs));
+        if (d.scenes) setScenes(dedupeById(d.scenes));
+        if (d.notes?.length>0) setNotes(dedupeById(d.notes));
         if (d.sequences) setSequences(d.sequences);
         if (d.sceneNotes?.length>0) setSceneNotes(d.sceneNotes);
       });
