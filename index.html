@@ -952,7 +952,7 @@ const DBX = (() => {
 DBX.load();
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const APP_VERSION = '20260421d';
+const APP_VERSION = '20260421g';
 
 // ─── CONSOLIDATED STATE KEY + AUTO SYNC ──────────────────────────────────────
 const PICKME_STATE_KEY = 'pickme_state_v1';
@@ -2387,11 +2387,9 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
 
 // ─── SCENES TO WRITE TAB (NEW) ───────────────────────────────────────────────
 
-let nextSceneId = 1;
+// IDs use Date.now() — avoids collisions after page reload when saved scenes already occupy IDs 1..N
 
 function ScenesTab({ scenes, setScenes }) {
-  const dragIdRef = React.useRef(null);
-  const [overIdx, setOverIdx] = React.useState(null);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -2402,7 +2400,7 @@ function ScenesTab({ scenes, setScenes }) {
 
   const addScene = () => {
     if (!newTitle.trim()) return;
-    const id = nextSceneId++;
+    const id = Date.now();
     setScenes(prev => [...prev, { id, title: newTitle.trim(), description: newDesc.trim() }]);
     setNewTitle("");
     setNewDesc("");
@@ -2414,6 +2412,17 @@ function ScenesTab({ scenes, setScenes }) {
     setScenes(prev => prev.filter(s => s.id !== id));
     if (expandedId === id) setExpandedId(null);
     if (editingId === id) setEditingId(null);
+  };
+
+  // dir: -1 = move up, +1 = move down
+  const moveScene = (idx, dir) => {
+    setScenes(prev => {
+      const next = [...prev];
+      const targetIdx = idx + dir;
+      if (targetIdx < 0 || targetIdx >= next.length) return prev;
+      [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
+      return next;
+    });
   };
 
   const toggleExpand = (id) => setExpandedId(prev => prev === id ? null : id);
@@ -2437,7 +2446,7 @@ function ScenesTab({ scenes, setScenes }) {
   return (
     <div>
       <div style={{display:"flex",gap:"10px",marginBottom:"22px",flexWrap:"wrap",alignItems:"center"}}>
-        <button className="btn btn-primary" onClick={() => setShowForm(f => !f)}>
+        <button className="btn btn-primary" onClick={() => { if (showForm) { setNewTitle(""); setNewDesc(""); } setShowForm(f => !f); }}>
           {showForm ? "✕ Cancel" : "+ New Scene"}
         </button>
         {scenes.length > 0 && (
@@ -2474,42 +2483,27 @@ function ScenesTab({ scenes, setScenes }) {
           {scenes.map((scene, idx) => {
             const isExpanded = expandedId === scene.id;
             const isEditing = editingId === scene.id;
+            const isFirst = idx === 0;
+            const isLast = idx === scenes.length - 1;
             return (
               <div
                 key={scene.id}
-                draggable
-                onDragStart={e => {
-                  dragIdRef.current = scene.id;
-                  e.dataTransfer.effectAllowed = "move";
-                  e.dataTransfer.setData("text/plain", String(idx));
-                }}
-                onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setOverIdx(idx); }}
-                onDrop={e => {
-                  e.preventDefault();
-                  const fromId = dragIdRef.current;
-                  if (fromId == null || fromId === scene.id) { dragIdRef.current = null; setOverIdx(null); return; }
-                  setScenes(prev => {
-                    const next = [...prev];
-                    const fromIdx = next.findIndex(s => s.id === fromId);
-                    const toIdx = next.findIndex(s => s.id === scene.id);
-                    if (fromIdx === -1 || toIdx === -1) return prev;
-                    const [moved] = next.splice(fromIdx, 1);
-                    next.splice(toIdx, 0, moved);
-                    return next;
-                  });
-                  dragIdRef.current = null;
-                  setOverIdx(null);
-                }}
-                onDragEnd={() => { dragIdRef.current = null; setOverIdx(null); }}
-                style={{display:"flex", alignItems:"center", gap:"0", padding:"0", borderRadius:"20px", border: overIdx === idx && dragIdRef.current !== scene.id ? "2px dashed #ea258d" : "2px solid transparent", background:"#fec3e4", cursor:"grab", minHeight:"0", boxSizing:"border-box"}}
+                style={{display:"flex", alignItems:"stretch", borderRadius:"20px", border:"2px solid transparent", background:"#fec3e4", minHeight:"0", boxSizing:"border-box"}}
               >
-                {/* Drag handle — visual only */}
-                <div
-                  style={{display:"flex", flexDirection:"column", gap:"3px", alignItems:"center", padding:"0 10px 0 14px", flexShrink:0, pointerEvents:"none"}}
-                >
-                  <span style={{display:"block",width:"10px",height:"1.5px",background:"#f093c5",borderRadius:"2px"}}/>
-                  <span style={{display:"block",width:"10px",height:"1.5px",background:"#f093c5",borderRadius:"2px"}}/>
-                  <span style={{display:"block",width:"10px",height:"1.5px",background:"#f093c5",borderRadius:"2px"}}/>
+                {/* ▲ / ▼ reorder buttons — 44px tap targets for iOS */}
+                <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flexShrink:0}}>
+                  <button
+                    onClick={e => { e.stopPropagation(); moveScene(idx, -1); }}
+                    disabled={isFirst}
+                    style={{display:"flex", alignItems:"center", justifyContent:"center", minWidth:"44px", minHeight:"44px", background:"none", border:"none", color:"#ea258d", fontSize:"0.7em", opacity: isFirst ? 0.2 : 0.6, cursor: isFirst ? "default" : "pointer", padding:0, lineHeight:1}}
+                    title="Move up"
+                  >▲</button>
+                  <button
+                    onClick={e => { e.stopPropagation(); moveScene(idx, 1); }}
+                    disabled={isLast}
+                    style={{display:"flex", alignItems:"center", justifyContent:"center", minWidth:"44px", minHeight:"44px", background:"none", border:"none", color:"#ea258d", fontSize:"0.7em", opacity: isLast ? 0.2 : 0.6, cursor: isLast ? "default" : "pointer", padding:0, lineHeight:1}}
+                    title="Move down"
+                  >▼</button>
                 </div>
 
                 {/* Content */}
@@ -2521,9 +2515,7 @@ function ScenesTab({ scenes, setScenes }) {
                   >
                     <span style={{fontWeight:"700", fontSize:"0.9em", color:"#ea258d", flex:1, letterSpacing:"0.02em"}}>{scene.title}</span>
                     <div style={{display:"flex", alignItems:"center", gap:"6px", flexShrink:0}}>
-                      {scene.description && (
-                        <span style={{fontSize:"0.7em", color:"#ea258d", opacity:0.7}}>{isExpanded ? "▲" : "▼"}</span>
-                      )}
+                      <span style={{fontSize:"0.7em", color:"#ea258d", opacity:0.7}}>{isExpanded ? "▲" : "▼"}</span>
                       <button
                         onClick={e => { e.stopPropagation(); deleteScene(scene.id); }}
                         style={{background:"none", border:"none", color:"#ea258d", opacity:0.5, cursor:"pointer", fontSize:"1em", lineHeight:1, padding:"0 4px"}}
@@ -3332,9 +3324,6 @@ function App() {
     const saved = localStorage.getItem("pick-me-sequences");
     return saved ? JSON.parse(saved) : {};
   });
-  const [sceneDragId, setSceneDragId] = useState(null);
-  const [sceneOverIdx, setSceneOverIdx] = useState(null);
-
   // ── Consolidated save: writes pickme_state_v1 + legacy keys, auto-push ──
   React.useEffect(() => {
     // Skip first render so auto-pull can compare timestamps without local overwriting remote
@@ -3382,11 +3371,13 @@ function App() {
       const d = e.detail;
       _skipPushRef.current = true;
       clearTimeout(_dbxPushTimer);
-      if (d.songs?.length>0) setSongs(d.songs);
-      if (d.scenes) setScenes(d.scenes);
-      if (d.notes?.length>0) setNotes(d.notes);
-      if (d.sequences) setSequences(d.sequences);
-      if (d.sceneNotes?.length>0) setSceneNotes(d.sceneNotes);
+      ReactDOM.unstable_batchedUpdates(() => {
+        if (d.songs?.length>0) setSongs(d.songs);
+        if (d.scenes) setScenes(d.scenes);
+        if (d.notes?.length>0) setNotes(d.notes);
+        if (d.sequences) setSequences(d.sequences);
+        if (d.sceneNotes?.length>0) setSceneNotes(d.sceneNotes);
+      });
     };
     window.addEventListener('pickme_state_updated', handler);
     return () => window.removeEventListener('pickme_state_updated', handler);
@@ -3430,31 +3421,6 @@ function App() {
       } catch(e) { console.warn("DBX callback:", e); }
     })();
   }, []); // eslint-disable-line
-
-  const handleSceneDragStart = (e, id) => {
-    setSceneDragId(id);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/html", "");
-  };
-  const handleSceneDragOver = (e, idx) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    setSceneOverIdx(idx);
-  };
-  const handleSceneDrop = (e, targetIdx) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (sceneDragId === null) return;
-    const fromIdx = scenes.findIndex(s => s.id === sceneDragId);
-    if (fromIdx === targetIdx || fromIdx === -1) { setSceneDragId(null); setSceneOverIdx(null); return; }
-    const next = [...scenes];
-    const [moved] = next.splice(fromIdx, 1);
-    next.splice(targetIdx, 0, moved);
-    setScenes(next);
-    setSceneDragId(null);
-    setSceneOverIdx(null);
-  };
-  const handleSceneDragEnd = () => { setSceneDragId(null); setSceneOverIdx(null); };
 
   const { msg: toastMsg, visible: toastVisible, show: showToast } = useToast();
 
