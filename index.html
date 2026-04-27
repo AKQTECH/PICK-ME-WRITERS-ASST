@@ -955,7 +955,7 @@ DBX.load();
 // ⚠️  ALWAYS bump APP_VERSION on EVERY edit — format: YYYYMMDD + letter (a, b, c…)
 // ⚠️  MOBILE (index.html) and DESKTOP (pick_me_writers_assistant_DESKTOP_SEQUENCES_LOCALSTORAGE.html)
 //     MUST always be on the EXACT same version number. Update both files every time.
-const APP_VERSION = '20260426d';
+const APP_VERSION = '20260427a';
 
 // ─── DEDUPE UTILITY ──────────────────────────────────────────────────────────
 function dedupeById(arr) {
@@ -2431,7 +2431,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
 // ─── SCENE MODAL ─────────────────────────────────────────────────────────────
 // ─── SCENES TO WRITE TAB (MOBILE) ────────────────────────────────────────────
 function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
-  const CATS = ["next","later","completed","cut","maybe"];
+  const CATS = Object.keys(categoryNames);
   const [newTitle, setNewTitle] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
   const [detailScene, setDetailScene] = useState(null);
@@ -2439,11 +2439,13 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
   const [detailCat, setDetailCat] = useState("next");
   const [editingCat, setEditingCat] = useState(null);
   const [editingCatVal, setEditingCatVal] = useState("");
+  const [addingCat, setAddingCat] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
 
   const addScene = () => {
     if (!newTitle.trim()) return;
     const id = Date.now() + Math.floor(Math.random() * 10000);
-    setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: activeCategory || "next" }]);
+    setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: activeCategory || CATS[0] || "next" }]);
     setNewTitle("");
   };
 
@@ -2477,6 +2479,14 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
   const saveEditCat = () => {
     if (editingCat && editingCatVal.trim()) setCategoryNames(prev => ({...prev, [editingCat]: editingCatVal.trim()}));
     setEditingCat(null);
+  };
+  const saveNewCat = () => {
+    const name = newCatName.trim();
+    if (!name) { setAddingCat(false); setNewCatName(""); return; }
+    const key = 'cat_' + Date.now();
+    setCategoryNames(prev => ({...prev, [key]: name}));
+    setAddingCat(false);
+    setNewCatName("");
   };
 
   // ── Detail view (replaces grid when a scene is tapped) ──────────────────────
@@ -2535,13 +2545,13 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
       </div>
 
       {/* ── Filter tabs ── */}
-      <div style={{display:"flex",borderBottom:"2px solid #FFD4F2",marginBottom:"12px",alignItems:"flex-end",gap:0,overflowX:"auto"}}>
+      <div style={{display:"flex",borderBottom:"2px solid #FFD4F2",marginBottom:"12px",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div onClick={()=>setActiveCategory(null)}
-          style={{fontSize:"0.68em",fontWeight:700,padding:"4px 8px",cursor:"pointer",color:activeCategory===null?"#e667a6":"#FFB6D9",borderBottom:activeCategory===null?"2px solid #e667a6":"2px solid transparent",marginBottom:"-2px",whiteSpace:"nowrap",flexShrink:0}}
+          style={{display:"flex",alignItems:"center",fontSize:"0.84em",fontWeight:700,padding:"4px 8px",cursor:"pointer",color:activeCategory===null?"#e667a6":"#FFB6D9",borderBottom:activeCategory===null?"2px solid #e667a6":"2px solid transparent",whiteSpace:"nowrap",flexShrink:0}}
         >All</div>
         {CATS.map(cat=>(
           <div key={cat}
-            style={{display:"flex",alignItems:"center",gap:"2px",fontSize:"0.68em",fontWeight:700,padding:"4px 8px",cursor:"pointer",color:activeCategory===cat?"#e667a6":"#FFB6D9",borderBottom:activeCategory===cat?"2px solid #e667a6":"2px solid transparent",marginBottom:"-2px",whiteSpace:"nowrap",flexShrink:0}}
+            style={{display:"flex",alignItems:"center",gap:"2px",fontSize:"0.84em",fontWeight:700,padding:"4px 8px",cursor:"pointer",color:activeCategory===cat?"#e667a6":"#FFB6D9",borderBottom:activeCategory===cat?"2px solid #e667a6":"2px solid transparent",whiteSpace:"nowrap",flexShrink:0}}
             onClick={()=>setActiveCategory(cat)}
           >
             {editingCat===cat ? (
@@ -2557,6 +2567,22 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
             )}
           </div>
         ))}
+        {addingCat ? (
+          <span style={{display:"flex",alignItems:"center",gap:"3px",padding:"4px 8px",flexShrink:0}}>
+            <input autoFocus value={newCatName} onChange={e=>setNewCatName(e.target.value)}
+              onKeyDown={e=>{if(e.key==="Enter")saveNewCat();if(e.key==="Escape"){setAddingCat(false);setNewCatName("");}}}
+              placeholder="Name..."
+              style={{border:"none",borderBottom:"1.5px solid #e667a6",fontSize:"0.84em",fontWeight:700,color:"#e667a6",width:"70px",outline:"none",background:"transparent",padding:"1px 2px",fontFamily:"inherit"}}
+            />
+            <span onClick={saveNewCat} style={{color:"#e667a6",cursor:"pointer",fontSize:"10px",fontWeight:700}}>✓</span>
+            <span onClick={()=>{setAddingCat(false);setNewCatName("");}} style={{color:"#FFB6D9",cursor:"pointer",fontSize:"10px",fontWeight:700}}>✕</span>
+          </span>
+        ) : (
+          <div onClick={()=>setAddingCat(true)}
+            style={{display:"flex",alignItems:"center",fontSize:"0.84em",fontWeight:700,padding:"4px 8px",cursor:"pointer",color:"#FFB6D9",whiteSpace:"nowrap",flexShrink:0,userSelect:"none",lineHeight:1}}
+            title="Add a new category"
+          >+</div>
+        )}
       </div>
 
       {/* ── Card grid ── */}
