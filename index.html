@@ -952,7 +952,7 @@ const DBX = (() => {
 DBX.load();
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-const APP_VERSION = '20260421k';
+const APP_VERSION = '20260426b';
 
 // ─── DEDUPE UTILITY ──────────────────────────────────────────────────────────
 function dedupeById(arr) {
@@ -1871,9 +1871,9 @@ function initializeSceneNotes(legacyNotes) {
 // Uses contenteditable so Bold / Italic / Highlight actually render visually.
 
 const HIGHLIGHT_COLORS = [
-  { color: "#FEC3E4", label: "Pink" },
-  { color: "#b2c0f9", label: "Periwinkle" },
-  { color: "#f2ffd5", label: "Lime" }
+  { color: "#ffd4f2", label: "Pink" },
+  { color: "#d6cffc", label: "Periwinkle" },
+  { color: "#f2ffd6", label: "Lime" }
 ];
 
 // ─── CATEGORY ICON (SVG, no emoji) ────────────────────────────────────────────
@@ -2077,8 +2077,31 @@ function RichTextEditor({ content, onChange }) {
     ...extra
   });
 
+  const highlights = [
+    { color: "#f2ffd6", label: "Lime" },
+    { color: "#ffd4f2", label: "Pink" },
+    { color: "#d6cffc", label: "Periwinkle" },
+  ];
+
   return (
     <div style={{ marginBottom: "16px" }}>
+      {/* Mini toolbar: bullet + highlight dots */}
+      <div style={{ display:"flex", alignItems:"center", gap:"5px", marginBottom:"5px", paddingLeft:"2px" }}>
+        <button
+          onMouseDown={e=>{ e.preventDefault(); insertBullet(); }}
+          title="Insert bullet"
+          style={{ background:"none", border:"none", cursor:"pointer", fontSize:"0.65em", color:"#000", padding:"1px 4px", lineHeight:1, fontWeight:700 }}
+        >•</button>
+        <span style={{ width:"1px", height:"10px", background:"#f0c0da", display:"inline-block", margin:"0 1px" }}/>
+        {highlights.map(h=>(
+          <button
+            key={h.color}
+            onMouseDown={e=>{ e.preventDefault(); applyHighlight(h.color); }}
+            title={"Highlight " + h.label}
+            style={{ width:"11px", height:"11px", borderRadius:"50%", background:h.color, border:"1px solid rgba(0,0,0,0.12)", cursor:"pointer", padding:0, flexShrink:0, display:"inline-block" }}
+          />
+        ))}
+      </div>
 
       <div
         ref={editorRef}
@@ -2402,189 +2425,161 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
 }
 
 
-// ─── SCENES TO WRITE TAB (NEW) ───────────────────────────────────────────────
-
-// IDs use Date.now() — avoids collisions after page reload when saved scenes already occupy IDs 1..N
-
-function ScenesTab({ scenes, setScenes }) {
+// ─── SCENE MODAL ─────────────────────────────────────────────────────────────
+// ─── SCENES TO WRITE TAB (MOBILE) ────────────────────────────────────────────
+function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
+  const CATS = ["next","later","completed","cut","maybe"];
   const [newTitle, setNewTitle] = useState("");
-  const [newDesc, setNewDesc] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [expandedId, setExpandedId] = useState(null);
-  const [editingId, setEditingId] = useState(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDesc, setEditDesc] = useState("");
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [detailScene, setDetailScene] = useState(null);
+  const [detailDesc, setDetailDesc] = useState("");
+  const [detailCat, setDetailCat] = useState("next");
+  const [editingCat, setEditingCat] = useState(null);
+  const [editingCatVal, setEditingCatVal] = useState("");
 
   const addScene = () => {
     if (!newTitle.trim()) return;
     const id = Date.now() + Math.floor(Math.random() * 10000);
-    setScenes(prev => [...prev, { id, title: newTitle.trim(), description: newDesc.trim() }]);
+    setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: activeCategory || "next" }]);
     setNewTitle("");
-    setNewDesc("");
-    setShowForm(false);
-    setExpandedId(id);
   };
 
   const deleteScene = id => {
     setScenes(prev => prev.filter(s => s.id !== id));
-    if (expandedId === id) setExpandedId(null);
-    if (editingId === id) setEditingId(null);
+    if (detailScene?.id === id) setDetailScene(null);
   };
 
-  // dir: -1 = move up, +1 = move down
-  const moveScene = (idx, dir) => {
-    setScenes(prev => {
-      const next = [...prev];
-      const targetIdx = idx + dir;
-      if (targetIdx < 0 || targetIdx >= next.length) return prev;
-      [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
-      return next;
-    });
+  const openDetail = scene => {
+    setDetailScene(scene);
+    setDetailDesc(scene.description || "");
+    setDetailCat(scene.category || "next");
   };
 
-  const toggleExpand = (id) => setExpandedId(prev => prev === id ? null : id);
-
-  const startEditing = (scene) => {
-    setEditingId(scene.id);
-    setEditTitle(scene.title);
-    setEditDesc(scene.description);
-  };
-
-  const saveEdit = () => {
-    if (!editTitle.trim()) return;
+  const saveDetail = () => {
     setScenes(prev => prev.map(s =>
-      s.id === editingId ? { ...s, title: editTitle.trim(), description: editDesc.trim() } : s
+      s.id === detailScene.id ? { ...s, description: detailDesc.trim(), category: detailCat } : s
     ));
-    setEditingId(null);
+    setDetailScene(null);
   };
 
-  const cancelEdit = () => setEditingId(null);
+  const viewScenes = activeCategory === null ? scenes : scenes.filter(s => s.category === activeCategory);
 
+  // ── Diagnostic ──────────────────────────────────────────────────────────────
   const _sceneIds = scenes.map(s => String(s.id));
   if (_sceneIds.length !== new Set(_sceneIds).size) {
-    console.error('[PICKME] ScenesTab rendered with duplicate scene IDs:', _sceneIds);
+    console.error('[PICKME] ScenesTab duplicate scene IDs:', _sceneIds);
+  }
+
+  const startEditCat = cat => { setEditingCat(cat); setEditingCatVal(categoryNames[cat] || cat); };
+  const saveEditCat = () => {
+    if (editingCat && editingCatVal.trim()) setCategoryNames(prev => ({...prev, [editingCat]: editingCatVal.trim()}));
+    setEditingCat(null);
+  };
+
+  // ── Detail view (replaces grid when a scene is tapped) ──────────────────────
+  if (detailScene) {
+    return (
+      <div>
+        <div style={{display:"flex",alignItems:"center",gap:"6px",marginBottom:"14px"}}>
+          <button onClick={()=>setDetailScene(null)}
+            style={{background:"none",border:"none",color:"#FFB6D9",cursor:"pointer",fontSize:"1em",fontWeight:700,padding:"0 4px 0 0"}}
+          >←</button>
+          <span style={{fontSize:"0.78em",color:"#FFB6D9",fontWeight:600}}>Scenes to Write</span>
+        </div>
+        <div style={{fontWeight:800,fontSize:"1em",color:"#e667a6",textTransform:"uppercase",letterSpacing:"0.03em",lineHeight:1.2,marginBottom:"12px"}}>
+          {detailScene.title}
+        </div>
+        <textarea
+          value={detailDesc}
+          onChange={e=>setDetailDesc(e.target.value)}
+          placeholder="Notes about this scene..."
+          style={{width:"100%",border:"none",borderBottom:"1px solid #FFE8F5",padding:"4px 0 10px",marginBottom:"16px",fontSize:"0.82em",color:"#e667a6",outline:"none",resize:"none",boxSizing:"border-box",minHeight:"70px",background:"transparent",fontFamily:"inherit"}}
+        />
+        <div style={{fontSize:"0.68em",fontWeight:700,color:"#FFB6D9",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"8px"}}>Move to</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"20px"}}>
+          {CATS.map(c=>(
+            <button key={c} onClick={()=>setDetailCat(c)}
+              style={{fontSize:"0.72em",fontWeight:800,color:detailCat===c?"white":"#e667a6",background:detailCat===c?"#e667a6":"white",border:"1px solid #FFD4F2",padding:"5px 10px",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em"}}
+            >{categoryNames[c]||c}</button>
+          ))}
+        </div>
+        <div style={{display:"flex",gap:"8px"}}>
+          <button onClick={saveDetail}
+            style={{flex:1,background:"#e667a6",color:"white",border:"none",padding:"10px",fontWeight:700,fontSize:"0.88em",cursor:"pointer",borderRadius:"6px"}}
+          >Save</button>
+          <button onClick={()=>{ deleteScene(detailScene.id); }}
+            style={{background:"none",border:"1px solid #FFD4F2",color:"#FFB6D9",padding:"10px 14px",cursor:"pointer",fontSize:"0.88em",borderRadius:"6px"}}
+          >Delete</button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div>
-      <div style={{display:"flex",gap:"10px",marginBottom:"22px",flexWrap:"wrap",alignItems:"center"}}>
-        <button className="btn btn-primary" onClick={() => { if (showForm) { setNewTitle(""); setNewDesc(""); } setShowForm(f => !f); }}>
-          {showForm ? "✕ Cancel" : "+ New Scene"}
-        </button>
-        {scenes.length > 0 && (
-          <span className="song-count-badge">{scenes.length} scene{scenes.length !== 1 ? "s" : ""}</span>
-        )}
+      {/* ── Input row ── */}
+      <div style={{display:"flex",gap:"8px",marginBottom:"12px",alignItems:"center"}}>
+        <input
+          value={newTitle}
+          onChange={e=>setNewTitle(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&addScene()}
+          placeholder="New scene title..."
+          style={{flex:1,border:"1px solid #FFD4F2",borderRadius:"6px",padding:"5px 12px",fontSize:"0.85em",color:"#e667a6",outline:"none",height:"32px",boxSizing:"border-box",fontFamily:"inherit"}}
+        />
+        <button onClick={addScene} disabled={!newTitle.trim()}
+          style={{background:"#FFF0FA",border:"1px solid #FFD4F2",borderRadius:"6px",padding:"5px 14px",fontSize:"0.85em",fontWeight:800,color:"#e667a6",cursor:newTitle.trim()?"pointer":"default",height:"32px",whiteSpace:"nowrap"}}
+        >+ Add</button>
       </div>
 
-      {showForm && (
-        <div className="add-note-form">
-          <div className="add-note-form-grid" style={{marginBottom:"12px"}}>
-            <div>
-              <label>Scene title</label>
-              <input type="text" value={newTitle} placeholder="e.g. The Confrontation"
-                onChange={e => setNewTitle(e.target.value)} autoFocus
-                onKeyDown={e => e.key === "Enter" && addScene()} />
-            </div>
-            <div>
-              <label>Scene description (optional)</label>
-              <textarea value={newDesc} placeholder="What happens in this scene? What beats need to be hit..."
-                onChange={e => setNewDesc(e.target.value)} style={{minHeight:"80px"}} />
-            </div>
+      {/* ── Filter tabs ── */}
+      <div style={{display:"flex",borderBottom:"2px solid #FFD4F2",marginBottom:"12px",alignItems:"flex-end",gap:0,overflowX:"auto"}}>
+        <div onClick={()=>setActiveCategory(null)}
+          style={{fontSize:"0.68em",fontWeight:700,padding:"4px 8px",cursor:"pointer",color:activeCategory===null?"#e667a6":"#FFB6D9",borderBottom:activeCategory===null?"2px solid #e667a6":"2px solid transparent",marginBottom:"-2px",whiteSpace:"nowrap",flexShrink:0}}
+        >All</div>
+        {CATS.map(cat=>(
+          <div key={cat}
+            style={{display:"flex",alignItems:"center",gap:"2px",fontSize:"0.68em",fontWeight:700,padding:"4px 8px",cursor:"pointer",color:activeCategory===cat?"#e667a6":"#FFB6D9",borderBottom:activeCategory===cat?"2px solid #e667a6":"2px solid transparent",marginBottom:"-2px",whiteSpace:"nowrap",flexShrink:0}}
+            onClick={()=>setActiveCategory(cat)}
+          >
+            {editingCat===cat ? (
+              <span onClick={e=>e.stopPropagation()} style={{display:"flex",alignItems:"center",gap:"3px"}}>
+                <input autoFocus value={editingCatVal} onChange={e=>setEditingCatVal(e.target.value)}
+                  onKeyDown={e=>{if(e.key==="Enter")saveEditCat();if(e.key==="Escape")setEditingCat(null);}}
+                  style={{border:"none",borderBottom:"1.5px solid #e667a6",fontSize:"inherit",fontWeight:700,color:"#e667a6",width:"50px",outline:"none",background:"transparent",padding:"1px 2px",fontFamily:"inherit"}}
+                />
+                <span onClick={saveEditCat} style={{color:"#e667a6",cursor:"pointer",fontSize:"9px",fontWeight:700}}>✓</span>
+              </span>
+            ) : (
+              <>{categoryNames[cat]||cat}</>
+            )}
           </div>
-          <button className="btn btn-primary" onClick={addScene} disabled={!newTitle.trim()}>Add Scene</button>
-        </div>
-      )}
+        ))}
+      </div>
 
-      {scenes.length === 0 ? (
+      {/* ── Card grid ── */}
+      {viewScenes.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon"></div>
-          <div className="empty-state-text">No scenes planned yet. Add scenes above to decide which one to write next.</div>
+          <div className="empty-state-text">No scenes yet. Add one above.</div>
         </div>
       ) : (
-        <div style={{display:"flex", flexDirection:"column", gap:"8px"}}>
-          {scenes.map((scene, idx) => {
-            const isExpanded = expandedId === scene.id;
-            const isEditing = editingId === scene.id;
-            const isFirst = idx === 0;
-            const isLast = idx === scenes.length - 1;
-            return (
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:"12px"}}>
+          {viewScenes.map(scene=>(
+            <div key={scene.id} style={{position:"relative"}}>
+              <div style={{position:"absolute",top:"3px",left:"3px",right:"-3px",bottom:"-3px",background:"#FFD4F2",pointerEvents:"none"}}/>
               <div
-                key={scene.id}
-                style={{display:"flex", alignItems:"center", borderRadius:"20px", border:"2px solid transparent", background:"#fec3e4", minHeight:"0", boxSizing:"border-box"}}
+                onClick={()=>openDetail(scene)}
+                style={{position:"relative",aspectRatio:"1",background:"#fff",borderRadius:"0",padding:"12px 8px 8px",boxSizing:"border-box",cursor:"pointer",border:"1px solid #FFD4F2",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",userSelect:"none"}}
               >
-                {/* ▲ / ▼ reorder — compact, same footprint as desktop drag handle */}
-                <div style={{display:"flex", flexDirection:"column", gap:"2px", alignItems:"center", justifyContent:"center", padding:"0 8px 0 12px", flexShrink:0}}>
-                  <button
-                    onClick={e => { e.stopPropagation(); moveScene(idx, -1); }}
-                    disabled={isFirst}
-                    style={{display:"block", background:"none", border:"none", color:"#f093c5", fontSize:"0.6em", opacity: isFirst ? 0.3 : 1, cursor: isFirst ? "default" : "pointer", padding:"3px 5px", lineHeight:1}}
-                    title="Move up"
-                  >▲</button>
-                  <button
-                    onClick={e => { e.stopPropagation(); moveScene(idx, 1); }}
-                    disabled={isLast}
-                    style={{display:"block", background:"none", border:"none", color:"#f093c5", fontSize:"0.6em", opacity: isLast ? 0.3 : 1, cursor: isLast ? "default" : "pointer", padding:"3px 5px", lineHeight:1}}
-                    title="Move down"
-                  >▼</button>
-                </div>
-
-                {/* Content */}
-                <div style={{flex:1, minWidth:0}}>
-                  {/* Title row */}
-                  <div
-                    onClick={() => !isEditing && toggleExpand(scene.id)}
-                    style={{display:"flex", alignItems:"center", justifyContent:"space-between", padding:"11px 12px 11px 0", cursor:"pointer", userSelect:"none"}}
-                  >
-                    <span style={{fontWeight:"700", fontSize:"0.9em", color:"#ea258d", flex:1, letterSpacing:"0.02em"}}>{scene.title}</span>
-                    <div style={{display:"flex", alignItems:"center", gap:"6px", flexShrink:0}}>
-                      <span style={{fontSize:"0.7em", color:"#ea258d", opacity:0.7}}>{isExpanded ? "▲" : "▼"}</span>
-                      <button
-                        onClick={e => { e.stopPropagation(); deleteScene(scene.id); }}
-                        style={{background:"none", border:"none", color:"#ea258d", opacity:0.5, cursor:"pointer", fontSize:"1em", lineHeight:1, padding:"0 4px"}}
-                        title="Delete"
-                      >×</button>
-                    </div>
-                  </div>
-
-                  {/* Expanded details */}
-                  {isExpanded && !isEditing && (
-                    <div style={{paddingRight:"12px", paddingBottom:"12px"}}>
-                      {scene.description && (
-                        <div style={{fontSize:"0.85em", color:"#c0457a", whiteSpace:"pre-wrap", lineHeight:"1.55", marginBottom:"10px"}}>{scene.description}</div>
-                      )}
-                      <button
-                        onClick={() => startEditing(scene)}
-                        style={{fontSize:"0.8em", background:"white", border:"none", borderRadius:"10px", color:"#ea258d", padding:"4px 12px", cursor:"pointer", fontWeight:"600"}}
-                      >Edit</button>
-                    </div>
-                  )}
-
-                  {/* Edit form */}
-                  {isEditing && (
-                    <div style={{paddingRight:"12px", paddingBottom:"12px"}}>
-                      <input
-                        type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                        placeholder="Scene title"
-                        style={{width:"100%", padding:"8px", marginBottom:"8px", border:"none", borderRadius:"8px", fontSize:"0.9em", boxSizing:"border-box", background:"white", color:"#ea258d"}}
-                        autoFocus
-                      />
-                      <textarea
-                        value={editDesc} onChange={e => setEditDesc(e.target.value)}
-                        placeholder="Scene description"
-                        style={{width:"100%", padding:"8px", marginBottom:"8px", border:"none", borderRadius:"8px", fontSize:"0.9em", minHeight:"70px", boxSizing:"border-box", resize:"vertical", background:"white", color:"#555"}}
-                      />
-                      <div style={{display:"flex", gap:"8px"}}>
-                        <button onClick={saveEdit} disabled={!editTitle.trim()}
-                          style={{flex:1, backgroundColor: editTitle.trim() ? "#ea258d" : "#ccc", color:"white", border:"none", padding:"8px", borderRadius:"10px", cursor: editTitle.trim() ? "pointer" : "not-allowed", fontWeight:"bold"}}>Save</button>
-                        <button onClick={cancelEdit}
-                          style={{flex:1, backgroundColor:"white", color:"#ea258d", border:"none", padding:"8px", borderRadius:"10px", cursor:"pointer", fontWeight:"bold"}}>Cancel</button>
-                      </div>
-                    </div>
-                  )}
+                <button onClick={e=>{e.stopPropagation();deleteScene(scene.id);}}
+                  style={{position:"absolute",top:"4px",right:"5px",background:"none",border:"none",color:"#FFB6D9",cursor:"pointer",fontSize:"0.75em",lineHeight:1,padding:"2px 3px",fontWeight:700}}
+                >×</button>
+                <div style={{fontWeight:800,fontSize:"0.8em",color:"#e667a6",lineHeight:1.2,overflow:"hidden",textAlign:"center",textTransform:"uppercase",letterSpacing:"0.02em",display:"-webkit-box",WebkitLineClamp:4,WebkitBoxOrient:"vertical"}}>
+                  {scene.title}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -2837,6 +2832,55 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
             </>
           )}
         </div>
+      </div>
+
+      {/* ── Keyboard Shortcuts ── */}
+      <div style={{marginTop:"40px",borderTop:"1px solid var(--border-pink)",paddingTop:"30px"}}>
+        {(() => {
+          const kbdStyle = {
+            display:"inline-block", background:"#f5f0f9", border:"1px solid #e0d0ee",
+            borderRadius:"4px", padding:"2px 8px", fontSize:"0.82em", fontFamily:"monospace",
+            color:"#555", whiteSpace:"nowrap", letterSpacing:"0"
+          };
+          const row = (key, desc) => (
+            <React.Fragment key={key}>
+              <kbd style={kbdStyle}>{key}</kbd>
+              <span style={{color:"#555",fontSize:"0.88em",lineHeight:"1.4",alignSelf:"center"}}>{desc}</span>
+            </React.Fragment>
+          );
+          return (
+            <>
+              <div style={{fontSize:"1em",fontWeight:700,color:"var(--hot-pink,#eb2e90)",marginBottom:"18px"}}>Keyboard Shortcuts</div>
+
+              <div style={{fontSize:"0.8em",fontWeight:700,color:"#ea258d",marginBottom:"8px",textTransform:"uppercase",letterSpacing:"0.06em"}}>Scene Notes Editor</div>
+              <div style={{display:"grid",gridTemplateColumns:"auto 1fr",gap:"8px 16px",marginBottom:"22px",alignItems:"start"}}>
+                {row("⌘ B", "Bold")}
+                {row("⌘ I", "Italic")}
+                {row("⌘ S", "Strikethrough")}
+                {row("- Space", "Auto-convert dash to bullet •")}
+                {row("Tab", "Indent to sub-bullet ○")}
+                {row("⇧ Tab", "Promote sub-bullet back to bullet")}
+                {row("Enter", "Continue bullet / sub-bullet list; empty bullet exits")}
+                {row("• button", "Insert bullet at cursor position")}
+                {row("Color dot", "Highlight selected text (select first, then tap)")}
+              </div>
+
+              <div style={{fontSize:"0.8em",fontWeight:700,color:"#ea258d",marginBottom:"8px",textTransform:"uppercase",letterSpacing:"0.06em"}}>Scenes To Write</div>
+              <div style={{display:"grid",gridTemplateColumns:"auto 1fr",gap:"8px 16px",marginBottom:"22px",alignItems:"start"}}>
+                {row("Tap card", "Open scene details / edit / file to stack")}
+                {row("▲ / ▼", "Reorder scenes within current view")}
+                {row("Esc", "Close scene modal")}
+                {row("Tap outside", "Close scene modal")}
+                {row("× on card", "Quick-delete without opening modal")}
+              </div>
+
+              <div style={{fontSize:"0.8em",fontWeight:700,color:"#ea258d",marginBottom:"8px",textTransform:"uppercase",letterSpacing:"0.06em"}}>General</div>
+              <div style={{display:"grid",gridTemplateColumns:"auto 1fr",gap:"8px 16px",alignItems:"start"}}>
+                {row("⌘ V", "Paste into Notion after Copy & Open")}
+              </div>
+            </>
+          );
+        })()}
       </div>
 
       {/* ── Version ── */}
@@ -3278,9 +3322,9 @@ function App() {
   });
   const [scenes, setScenes] = useState(() => {
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) return dedupeById(p.scenes); } catch(e){} }
+    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) return dedupeById(p.scenes).map(s=>s.category?s:{...s,category:"next"}); } catch(e){} }
     const saved = localStorage.getItem("pickMeData");
-    return saved ? dedupeById(JSON.parse(saved).scenes) : [];
+    return saved ? dedupeById(JSON.parse(saved).scenes).map(s=>s.category?s:{...s,category:"next"}) : [];
   });
   const PICK_ME_DEFAULT_NOTES = [
     { id: 0, scene: "CURRENT SCENE NOTES", content: "" },
@@ -3346,6 +3390,11 @@ function App() {
     const saved = localStorage.getItem("pick-me-sequences");
     return saved ? JSON.parse(saved) : {};
   });
+  const [categoryNames, setCategoryNames] = useState(() => {
+    const v1 = localStorage.getItem(PICKME_STATE_KEY);
+    if (v1) { try { const p=JSON.parse(v1); if(p.categoryNames) return p.categoryNames; } catch(e){} }
+    return { next:"Next", later:"Later", completed:"Completed", cut:"Cut", maybe:"Maybe" };
+  });
   // ── Consolidated save: writes pickme_state_v1 + legacy keys, auto-push ──
   React.useEffect(() => {
     // Skip first render so auto-pull can compare timestamps without local overwriting remote
@@ -3366,7 +3415,7 @@ function App() {
     const cleanSongs = dedupeById(songs);
     const cleanScenes = dedupeById(scenes);
     const cleanNotes = dedupeById(notes);
-    const state = { songs: cleanSongs, scenes: cleanScenes, notes: cleanNotes, sequences, sceneNotes, lastModified: new Date().toISOString() };
+    const state = { songs: cleanSongs, scenes: cleanScenes, notes: cleanNotes, sequences, sceneNotes, categoryNames, lastModified: new Date().toISOString() };
     localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(state));
     localStorage.setItem("pick-me-sequences", JSON.stringify(sequences));
     localStorage.setItem("pickMeData", JSON.stringify({ songs: cleanSongs, scenes: cleanScenes, notes: cleanNotes }));
@@ -3374,7 +3423,7 @@ function App() {
     localStorage.setItem("draft-notes", notes.map(n => `${n.scene ? n.scene + ": " : ""}${n.content}`).join("\n\n"));
     window.dispatchEvent(new Event("notesUpdated"));
     scheduleDropboxPush();
-  }, [songs, scenes, notes, sequences, sceneNotes]); // eslint-disable-line
+  }, [songs, scenes, notes, sequences, sceneNotes, categoryNames]); // eslint-disable-line
 
   // ── Listen for dbxSyncStatus events (from auto-push/pull) ───────────────
   React.useEffect(() => {
@@ -3402,6 +3451,7 @@ function App() {
         if (d.notes?.length>0) setNotes(dedupeById(d.notes));
         if (d.sequences) setSequences(d.sequences);
         if (d.sceneNotes?.length>0) setSceneNotes(d.sceneNotes);
+        if (d.categoryNames) setCategoryNames(d.categoryNames);
       });
     };
     window.addEventListener('pickme_state_updated', handler);
@@ -3552,7 +3602,7 @@ function App() {
           <EvalTab notionUrl={notionUrl} showToast={showToast} />
         )}
         {activeTab === "scenes" && (
-          <ScenesTab scenes={scenes} setScenes={setScenes} />
+          <ScenesTab scenes={scenes} setScenes={setScenes} categoryNames={categoryNames} setCategoryNames={setCategoryNames} />
         )}
         {activeTab === "ritual" && (
           <PreWritingRitualTab />
