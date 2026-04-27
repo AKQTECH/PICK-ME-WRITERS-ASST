@@ -955,7 +955,7 @@ DBX.load();
 // ⚠️  ALWAYS bump APP_VERSION on EVERY edit — format: YYYYMMDD + letter (a, b, c…)
 // ⚠️  MOBILE (index.html) and DESKTOP (pick_me_writers_assistant_DESKTOP_SEQUENCES_LOCALSTORAGE.html)
 //     MUST always be on the EXACT same version number. Update both files every time.
-const APP_VERSION = '20260426c';
+const APP_VERSION = '20260426d';
 
 // ─── DEDUPE UTILITY ──────────────────────────────────────────────────────────
 function dedupeById(arr) {
@@ -2566,13 +2566,13 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
           <div className="empty-state-text">No scenes yet. Add one above.</div>
         </div>
       ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:"12px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(100px,1fr))",gap:"10px"}}>
           {viewScenes.map(scene=>(
             <div key={scene.id} style={{position:"relative"}}>
               <div style={{position:"absolute",top:"3px",left:"3px",right:"-3px",bottom:"-3px",background:"#FFD4F2",pointerEvents:"none"}}/>
               <div
                 onClick={()=>openDetail(scene)}
-                style={{position:"relative",aspectRatio:"1",background:"#fff",borderRadius:"0",padding:"12px 8px 8px",boxSizing:"border-box",cursor:"pointer",border:"1px solid #FFD4F2",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",userSelect:"none"}}
+                style={{position:"relative",aspectRatio:"4/3",background:"#fff",borderRadius:"0",padding:"10px 8px 8px",boxSizing:"border-box",cursor:"pointer",border:"1px solid #FFD4F2",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",userSelect:"none"}}
               >
                 <button onClick={e=>{e.stopPropagation();deleteScene(scene.id);}}
                   style={{position:"absolute",top:"4px",right:"5px",background:"none",border:"none",color:"#FFB6D9",cursor:"pointer",fontSize:"0.75em",lineHeight:1,padding:"2px 3px",fontWeight:700}}
