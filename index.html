@@ -1011,8 +1011,24 @@ async function performDropboxPull() {
       } catch(e) {}
     }
     // Remote is newer — write to localStorage and notify React
-    localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(remote));
-    window.dispatchEvent(new CustomEvent('pickme_state_updated', { detail: remote }));
+    const prev = JSON.parse(localStorage.getItem(PICKME_STATE_KEY) || "{}");
+localStorage.setItem(PICKME_STATE_KEY, JSON.stringify({
+  ...prev,
+  ...remote,
+  categoryNames: {
+    ...(prev.categoryNames || {}),
+    ...(remote.categoryNames || {})
+  }
+}));
+    window.dispatchEvent(new CustomEvent('pickme_state_updated', {
+  detail: {
+    ...remote,
+    categoryNames: {
+      ...(prev.categoryNames || {}),
+      ...(remote.categoryNames || {})
+    }
+  }
+}));
     return true;
   } catch(e) {
     console.warn('DBX pull failed:', e);
@@ -2431,7 +2447,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
 // ─── SCENE MODAL ─────────────────────────────────────────────────────────────
 // ─── SCENES TO WRITE TAB (MOBILE) ────────────────────────────────────────────
 function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
-  const CATS = Object.keys(categoryNames);
+  const CATS = Object.keys(categoryNames || {});
   const [newTitle, setNewTitle] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
   const [detailScene, setDetailScene] = useState(null);
@@ -2475,16 +2491,24 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
     console.error('[PICKME] ScenesTab duplicate scene IDs:', _sceneIds);
   }
 
-  const startEditCat = cat => { setEditingCat(cat); setEditingCatVal(categoryNames[cat] || cat); };
+  const startEditCat = cat => { setEditingCat(cat); setEditingCatVal(categoryNames?.[cat] ?? cat); };
   const saveEditCat = () => {
-    if (editingCat && editingCatVal.trim()) setCategoryNames(prev => ({...prev, [editingCat]: editingCatVal.trim()}));
-    setEditingCat(null);
-  };
+  if (editingCat && editingCatVal.trim()) {
+ setCategoryNames(prev => {
+  const safe = prev || {};
+  return { ...safe, [editingCat]: editingCatVal.trim() };
+});
+}
+setEditingCat(null);
+};
   const saveNewCat = () => {
     const name = newCatName.trim();
     if (!name) { setAddingCat(false); setNewCatName(""); return; }
     const key = 'cat_' + Date.now();
-    setCategoryNames(prev => ({...prev, [key]: name}));
+    setCategoryNames(prev => {
+  const safe = prev || {};
+  return { ...safe, [key]: name };
+});
     setAddingCat(false);
     setNewCatName("");
   };
@@ -2510,10 +2534,10 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
         />
         <div style={{fontSize:"0.68em",fontWeight:700,color:"#FFB6D9",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"8px"}}>Move to</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"20px"}}>
-          {CATS.map(c=>(
+          {CATS.map(([c, label]) => (
             <button key={c} onClick={()=>setDetailCat(c)}
               style={{fontSize:"0.72em",fontWeight:800,color:detailCat===c?"white":"#e667a6",background:detailCat===c?"#e667a6":"white",border:"1px solid #FFD4F2",padding:"5px 10px",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em"}}
-            >{categoryNames[c]||c}</button>
+       >{categoryNames[c] || c}</button>
           ))}
         </div>
         <div style={{display:"flex",gap:"8px"}}>
@@ -2618,7 +2642,22 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
 
 // ─── SETTINGS TAB (UPDATED WITH SAVE/LOAD) ────────────────────────────────────
 
-function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences, sceneNotes, setSongs, setScenes, setNotes, setSequences, setSceneNotes }) {
+function SettingsTab({
+  notionUrl,
+  setNotionUrl,
+  songs,
+  scenes,
+  notes,
+  sequences,
+  sceneNotes,
+  categoryNames,
+  setCategoryNames,
+  setSongs,
+  setScenes,
+  setNotes,
+  setSequences,
+  setSceneNotes
+}) {
   const [draft, setDraft] = useState(notionUrl);
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef(null);
@@ -2640,7 +2679,15 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
     setDbxSyncing(true); setDbxMsg("Syncing...");
     window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
     try {
-      const state = { songs, scenes, notes, sequences, sceneNotes, lastModified: new Date().toISOString() };
+      const state = {
+        songs,
+        scenes,
+        notes,
+        sequences,
+        sceneNotes,
+        categoryNames,
+        lastModified: new Date().toISOString()
+  };
       localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(state));
       await DBX.uploadSmart(JSON.stringify(state, null, 2));
       window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
@@ -2693,14 +2740,16 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
   };
 
   const downloadAllData = () => {
-    const data = {
-      songs: songs,
-      scenes: scenes,
-      notes: notes,
-      sequences: sequences,
-      sceneNotes: sceneNotes,
-      exportedAt: new Date().toISOString()
-    };
+    const raw = localStorage.getItem(PICKME_STATE_KEY);
+
+    if (!raw) {
+      alert("No saved data found.");
+      return;
+}
+
+const data = JSON.parse(raw);
+
+data.exportedAt = new Date().toISOString();
     const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -2733,7 +2782,11 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
           setSongs(dedupeById(data.songs));
           console.log("Set songs to:", data.songs.length);
         }
-        if (data.scenes) {
+if (data.categoryNames) {
+  setCategoryNames(data.categoryNames);
+}
+
+if (data.scenes) {
           setScenes(dedupeById(data.scenes));
           console.log("Set scenes to:", data.scenes.length);
         }
@@ -2750,6 +2803,10 @@ function SettingsTab({ notionUrl, setNotionUrl, songs, scenes, notes, sequences,
           localStorage.setItem("pickMeSceneNotes", JSON.stringify(data.sceneNotes));
           console.log("Set sceneNotes to:", data.sceneNotes.length, "sequences");
         }
+          localStorage.setItem(
+          PICKME_STATE_KEY,
+          JSON.stringify(data)
+        );
         localStorage.setItem("pickMeData", JSON.stringify(data));
         alert("✓ Data loaded! Songs: " + (data.songs?.length || 0) + ", Scenes: " + (data.scenes?.length || 0) + ", Notes: " + (data.notes?.length || 0) + ", Scene Sequences: " + (data.sceneNotes?.length || 0) + ", Progress: " + (Object.keys(data.sequences || {}).length || 0));
         e.target.value = "";
@@ -3400,7 +3457,7 @@ function App() {
   });
   const [sceneNotes, setSceneNotes] = useState(() => {
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.sceneNotes?.length>0) return p.sceneNotes; } catch(e){} }
+    if (v1) { try { const p=JSON.parse(v1); if (Array.isArray(p.sceneNotes)) return p.sceneNotes; } catch(e){} }
     const saved = localStorage.getItem("pickMeSceneNotes");
     if (saved) {
       try {
@@ -3474,15 +3531,18 @@ function App() {
       const d = e.detail;
       _skipPushRef.current = true;
       clearTimeout(_dbxPushTimer);
-      ReactDOM.unstable_batchedUpdates(() => {
-        if (d.songs?.length>0) setSongs(dedupeById(d.songs));
-        if (d.scenes) setScenes(dedupeById(d.scenes));
-        if (d.notes?.length>0) setNotes(dedupeById(d.notes));
-        if (d.sequences) setSequences(d.sequences);
-        if (d.sceneNotes?.length>0) setSceneNotes(d.sceneNotes);
-        if (d.categoryNames) setCategoryNames(d.categoryNames);
-      });
-    };
+ReactDOM.unstable_batchedUpdates(() => {
+  if (Array.isArray(d.songs)) setSongs(dedupeById(d.songs));
+  if (Array.isArray(d.scenes)) setScenes(dedupeById(d.scenes));
+  if (Array.isArray(d.notes)) setNotes(dedupeById(d.notes));
+  if (d.sequences) setSequences(d.sequences);
+  if (Array.isArray(d.sceneNotes)) setSceneNotes(d.sceneNotes);
+
+  if (d.categoryNames) {
+  setCategoryNames(d.categoryNames || {});
+}
+});
+};
     window.addEventListener('pickme_state_updated', handler);
     return () => window.removeEventListener('pickme_state_updated', handler);
   }, []); // eslint-disable-line
@@ -3643,7 +3703,7 @@ function App() {
           <SceneNotesTab sceneNotes={sceneNotes} setSceneNotes={setSceneNotes} showToast={showToast} />
         )}
         {activeTab === "settings" && (
-          <SettingsTab notionUrl={notionUrl} setNotionUrl={setNotionUrl} songs={songs} scenes={scenes} notes={notes} sequences={sequences} sceneNotes={sceneNotes} setSongs={setSongs} setScenes={setScenes} setNotes={setNotes} setSequences={setSequences} setSceneNotes={setSceneNotes} />
+          <SettingsTab notionUrl={notionUrl} setNotionUrl={setNotionUrl} songs={songs} scenes={scenes} notes={notes} sequences={sequences} sceneNotes={sceneNotes} setSongs={setSongs} setScenes={setScenes} setNotes={setNotes} setSequences={setSequences} setSceneNotes={setSceneNotes} categoryNames={categoryNames} setCategoryNames={setCategoryNames} />
         )}
       </div>
 
