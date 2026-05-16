@@ -955,7 +955,7 @@ DBX.load();
 // ⚠️  ALWAYS bump APP_VERSION on EVERY edit — format: YYYYMMDD + letter (a, b, c…)
 // ⚠️  MOBILE (index.html) and DESKTOP (pick_me_writers_assistant_DESKTOP_SEQUENCES_LOCALSTORAGE.html)
 //     MUST always be on the EXACT same version number. Update both files every time.
-const APP_VERSION = '20260427a';
+const APP_VERSION = 'APRILEDITV1';
 
 // ─── DEDUPE UTILITY ──────────────────────────────────────────────────────────
 function dedupeById(arr) {
@@ -1334,8 +1334,8 @@ function SequenceProgressTab({ sequences, setSequences }) {
     ["s2", "MEET ETHAN / THE DEAL", 7],
     ["s3", "THE INTERVENTION", 4],
     ["s4", "THE MEET CUTE → YES", 10],
-    ["s5", "ETHAN AS PRODUCER", 28],
-    ["s6", "ETHAN AS CONTESTANT", 28],
+    ["s5", "GAME TIME", 28],
+    ["s6", "THE SQUEEZE", 28],
     ["s7", "THE UNRAVELING", 7],
     ["s8", "THE LOW POINT", 4],
     ["s9", "THE TURNING POINT", 10],
@@ -1778,8 +1778,8 @@ function initializeSceneNotes(legacyNotes) {
       ]
     },
     {
-      id: "ethan-producer",
-      name: "ETHAN AS PRODUCER (Pages 28-56)",
+      id: "game-time",
+      name: "GAME TIME (Pages 28-56)",
       scenes: [
         { id: "shoot", name: "THE SHOOT", content: "- Three Prongs walk through / Media Training Montage / Photoshoot\n- cut the prep sequence, now the high low of polished trailer brutal photoshoot\n- ethan more directly involved in photoshoot posing — Bite your lip stick your arse out\n- he has a signal with a pa for when to throw roses\n- \"Talking to you feels like I'm playing English Madlibs, literally what the fuck are you talking about.\"\n- They argue about name of show during the photoshoot\n- 9 pages current / 3 pages target" },
         { id: "night-one", name: "NIGHT ONE", content: "- Autumn stressed, Ethan being monitored, Victoria on his mind\n- Autumn meets Jonathan/starts getting into it\n- Cut night one compliment he just looks thrown off\n- Autumn watches crew setting up but doesn't see cameras / Omar says they are hidden\n- while talking to JN first time we hear scary *voice of God that makes them both jump*\n- **at some point Ethan rips his headset off**\n- Ethan's veneer cracks literally he cracks a tooth\n- *could cut lie detector he gets her to open up by force at the challenge the next day?*\n- They were right about you Bobby, you ARE unfuckable\n- moment where ethan is proud of her while she's on a date with someone else\n- maybe when kostas cries to his mother on the phone ethan comforts him\n- 4.5 pages current / 1 page target" },
@@ -1795,8 +1795,8 @@ function initializeSceneNotes(legacyNotes) {
       ]
     },
     {
-      id: "ethan-contestant",
-      name: "ETHAN AS CONTESTANT (Pages 56-84)",
+      id: "the-squeeze",
+      name: "THE SQUEEZE (Pages 56-84)",
       scenes: [
         { id: "meet-again", name: "MEET ETHAN AGAIN", content: "- [Ethan's commercial, omar now in control]\n- 3 pages target" },
         { id: "spa", name: "THE SPA", content: "- Spa scene, Ethan trying to convince Autumn that him joining as a contestant won't be a mistake\n- 5.5 pages current / 4 pages target" },
@@ -2446,13 +2446,22 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
 
 // ─── SCENE MODAL ─────────────────────────────────────────────────────────────
 // ─── SCENES TO WRITE TAB (MOBILE) ────────────────────────────────────────────
+const UI_TO_DATA = {
+  EDIT: "next",
+  NEW: "later",
+  NEED: "maybe",
+  X: "cut",
+  "?": "completed"
+};
+
 function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
-  const CATS = Object.keys(categoryNames || {});
+  const CATS = Object.keys(UI_TO_DATA);
   const [newTitle, setNewTitle] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
+  console.log("ACTIVE CATEGORY CHANGES:", activeCategory);
   const [detailScene, setDetailScene] = useState(null);
   const [detailDesc, setDetailDesc] = useState("");
-  const [detailCat, setDetailCat] = useState("next");
+  const [detailCat, setDetailCat] = useState(CATS[0] || "");
   const [editingCat, setEditingCat] = useState(null);
   const [editingCatVal, setEditingCatVal] = useState("");
   const [addingCat, setAddingCat] = useState(false);
@@ -2461,7 +2470,7 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
   const addScene = () => {
     if (!newTitle.trim()) return;
     const id = Date.now() + Math.floor(Math.random() * 10000);
-    setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: activeCategory || CATS[0] || "next" }]);
+    setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: UI_TO_DATA[activeCategory] || CATS[0] || "next" }]);
     setNewTitle("");
   };
 
@@ -2478,12 +2487,17 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
 
   const saveDetail = () => {
     setScenes(prev => prev.map(s =>
-      s.id === detailScene.id ? { ...s, description: detailDesc.trim(), category: detailCat } : s
+      s.id === detailScene.id ? { ...s, description: detailDesc.trim(), category: UI_TO_DATA[detailCat] || detailCat } : s
     ));
     setDetailScene(null);
   };
 
-  const viewScenes = activeCategory === null ? scenes : scenes.filter(s => s.category === activeCategory);
+  const viewScenes =
+  activeCategory === null
+    ? scenes
+    : scenes.filter(s => s.category === UI_TO_DATA[activeCategory]);
+  console.log("ALL SCENE CATEGORIES:", scenes.map(s => s.category));
+  console.log("ACTIVE CATEGORY:", activeCategory);
 
   // ── Diagnostic ──────────────────────────────────────────────────────────────
   const _sceneIds = scenes.map(s => String(s.id));
@@ -2534,8 +2548,10 @@ setEditingCat(null);
         />
         <div style={{fontSize:"0.68em",fontWeight:700,color:"#FFB6D9",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"8px"}}>Move to</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"20px"}}>
-          {CATS.map(([c, label]) => (
-            <button key={c} onClick={()=>setDetailCat(c)}
+          {Object.keys(UI_TO_DATA).map(c => (
+      <button
+      key={c}
+      onClick={() => setDetailCat(c)}
               style={{fontSize:"0.72em",fontWeight:800,color:detailCat===c?"white":"#e667a6",background:detailCat===c?"#e667a6":"white",border:"1px solid #FFD4F2",padding:"5px 10px",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em"}}
        >{categoryNames[c] || c}</button>
           ))}
@@ -2571,13 +2587,27 @@ setEditingCat(null);
       {/* ── Filter tabs ── */}
       <div style={{display:"flex",borderBottom:"2px solid #FFD4F2",marginBottom:"12px",alignItems:"center",gap:0,overflowX:"auto"}}>
         <div onClick={()=>setActiveCategory(null)}
-          style={{display:"flex",alignItems:"center",fontSize:"0.84em",fontWeight:700,padding:"4px 8px",cursor:"pointer",color:activeCategory===null?"#e667a6":"#FFB6D9",borderBottom:activeCategory===null?"2px solid #e667a6":"2px solid transparent",whiteSpace:"nowrap",flexShrink:0}}
-        >All</div>
+  style={{
+    display:"flex",
+    alignItems:"center",
+    fontSize:"0.84em",
+    fontWeight:700,
+    padding:"4px 8px",
+    cursor:"pointer",
+    color:activeCategory===null?"#e667a6":"#FFB6D9",
+    borderBottom:activeCategory===null?"2px solid #e667a6":"2px solid transparent",
+    whiteSpace:"nowrap",
+    flexShrink:0
+  }}
+>All</div>
         {CATS.map(cat=>(
           <div key={cat}
             style={{display:"flex",alignItems:"center",gap:"2px",fontSize:"0.84em",fontWeight:700,padding:"4px 8px",cursor:"pointer",color:activeCategory===cat?"#e667a6":"#FFB6D9",borderBottom:activeCategory===cat?"2px solid #e667a6":"2px solid transparent",whiteSpace:"nowrap",flexShrink:0}}
-            onClick={()=>setActiveCategory(cat)}
-          >
+            onClick={() => {
+  console.log("CLICKED TAB FIRED:", cat);
+  setActiveCategory(cat);
+  console.log("SET ACTIVE CATEGORY TO:", cat);
+}}          >
             {editingCat===cat ? (
               <span onClick={e=>e.stopPropagation()} style={{display:"flex",alignItems:"center",gap:"3px"}}>
                 <input autoFocus value={editingCatVal} onChange={e=>setEditingCatVal(e.target.value)}
@@ -3418,8 +3448,8 @@ function App() {
     { id: 2, scene: "MEET ETHAN (Pages 7-14)", content: "- cut mirrours and start on pick up\n- maybe Victoria \"sue me for not wanting to be with just some guy's son\"" },
     { id: 3, scene: "THE INTERVENTION (Pages 14-18)", content: "- make Musu a serial dater\n- \"how will you afford that place on your end\"\n- help the audience - Autumn find a man or ...." },
     { id: 4, scene: "THE MEET CUTE → YES (Pages 18-28)", content: "- Ethan mentions the show is on HBO\n- bring back Autumn fantasy sequence while Kiya's talking about it?\n- Adjust autumn's reasoning:\n    - Make Nowai's move-out date SPECIFIC (\"I'm out by the end of the month\")\n    - Maybe - Have Musu mention money during intervention (\"How are you going to afford that place alone?\")\n    - She needs rent money (concrete)\n    - Make the show's UPFRONT payment clear (she gets X just for participating, regardless of outcome) BUT maybe she has to repay the money if she doesn't make it to the end of the season/quits?\n    - Ma Kebbeh's intervention (emotional)\n    - Nowai moving out (abandonment)\n    - The show pays\n    - Money need gives her an out from admitting she really wants it\n- Stuff everyone when she delivers to his house, he reveals he googled her, saw she was a postmate, ordered random stuff until he got her\n- ETHAN: \"is there really no part of you that wants more?\"" },
-    { id: 5, scene: "ETHAN AS PRODUCER (Pages 28-56)", content: "THE SHOOT\n- cut the prep sequence, now the high low of polished trailer brutal photoshoot\n- ethan more directly involved in photoshoot posing - Bite your lip stick your arse out\n- he has a signal with a pa for when to throw roses\n- \"Talking to you feels like I'm playing English Madlibs, literally what the fuck are you talking about.\"\n- They argue about name of show during the photoshoot\n\nNIGHT ONE\n- Cut night one compliment he just looks thrown off\n- Autumn watches crew setting up but doesn't see cameras / Omar says they are hidden\n- while talking to JN first time we hear scary *voice of God that makes them both jump*\n- **at some point Ethan rips his headset off**\n- than's veneer cracks literally he cracks a tooth\n- *could cut lie detector he gets her to open up by force at the challenge the next day?*\n- They were right about you Bobby, you ARE unfuckable\n- moment where ethan is proud of her while she's on a date with someone else\n- maybe when kostas cries to his mother on the phone ethan comforts him\n\nGOOD MORNING MUHAMMED\n- Ethan, Omar + story producers monitoring feeds\n- Establish god-mode control button that lets him talk to anyone anywhere in the hotel\n- OR Later she goes to tell Ethan about it he says he saw it and shows her the footage\n\nCONFESSIONAL\n- Producers show her insanely private footage which is how she finds out just how many cameras there really are\n- Cutting Khalid but a new moment of her being vulnerable needs to happen that makes show buzzy here\n- He wants her to open up and say what she wants and she won't, he says he will stay here all night he doesn't care how long it takes, he threatens to order in curry\n\nROLLERSKATING\n- Ethan asks why she doesn't act anymore — we see how she sidelines herself and then blames everyone else\n- \"But when you don't know anyone is watching, that's when it's undeniable.\"\n- When Ethan tells cyrano story autumn is like wait what if she liked you back? He denies the possibility and she clocks, that's the saddest thing I've ever heard\n- I just didn't think I'm someone people stay for / you didn't? / I don't\n\nAUDIENCE MONTAGE\n- The **rodell drive guy** doing a podcast throughout the movie about the show\n- Watch parties start to happen\n- niche trivia games like HR\n- people contestants barely know selling stories to tabloids\n\nMISC SHOW MOMENTS\n- Autumn starts to get into it - asks to do the clapper, Monica is like you can do whatever you want (stepping into her power)\n- Ethan's hands shaking while adjusting Autumn's mic\n\nAVOIDING PASSIVE ETHAN\n- He sees something on the monitor and he's in the room before Omar can stop him\n- naturally creates the structure where they are always in direct contact even when the show's logic says they shouldn't be\n- Autumn says something in the earpiece that isn't for the show, just for Ethan, and he quietly responds while Omar clocks" },
-    { id: 6, scene: "ETHAN AS CONTESTANT (Pages 56-84)", content: "LIE DETECTOR\n- He's struggling to give up control to omar - don't forget to do etc?\n- Xavier pushes past the surface answer and asks what he actually wants and machine doesn't shock him because he's not lying, he genuinely doesn't know what he wants\n\nWE UP\n- She mentions Nathan Fielder in her DMs and Ethan is seething jealous, he's like \"you're not available\"\n- at billboard he asks about bonnet, says those are the biggest glasses he's ever seen and asks to try them on\n- ***set up they have a weed promo that's where she gets the mints???***\n\nOVERNIGHTS\n- Add \"America voted\" to Monica bit\n- add beat where he registers that she pulled-back\n- ethan pokes a bit more on her dagger thing has anyone ever actually used it?\" She changes the subject\n- She throws a fry at him after Fizz Wiz and he dodges it\n- **In fred62 ethan refuses the fries. Then after they talk he allows himself to eat it even though his dad would frown upon it**\n- \"Did your dad ever actually say thank you for the lipstick idea?\" / \"I think using it was the thank you.\" / Awkward beat. They sit in it\n- Autumn calls it \"the night of attachment style horrors\"\n- *Re: GERD — \"she moans you're getting me hot\" / \"stop flirting with me\" / \"I'm just being your producer\" / \"you're not my producer anymore.\"*\n- in bed autumn shows ethan her most embarassing commercial, he says how come she didn't advocate for herself the way he did for her he's never seen her get that worked up before. it was sexy. if you're angry you should be angry. who the fuck cares\n- \"and if anyone has a problem with it i've got your back\n- In hotel he watches her sleep — perhaps with CPAP\n\nCOOKING DATE\n- ***still need a comedy game for the cooking date***\n- now swap so first Ethan gives JN advice, then JN has date and suspiciously saying stuff he could have only heard from Ethan while Omar clocks and is like wtf\n\nHOMETOWNS\n- maybe also big banner at MSP\n- ***Need new reason for Ethan to get invited to the wedding now that old ma isn't passing out / maybe he just gets along with family at the fair?***\n- at the wedding - Autumn helps ethan when he is choking from pepper sauce\n- She watches him for a beat before coming out to the parking lot\n- **Now Ethan kisses Autumn**\n- Ethan - how do you keep tricking me into complimenting you" },
+    { id: 5, scene: "GAME TIME (Pages 28-56)", content: "THE SHOOT\n- cut the prep sequence, now the high low of polished trailer brutal photoshoot\n- ethan more directly involved in photoshoot posing - Bite your lip stick your arse out\n- he has a signal with a pa for when to throw roses\n- \"Talking to you feels like I'm playing English Madlibs, literally what the fuck are you talking about.\"\n- They argue about name of show during the photoshoot\n\nNIGHT ONE\n- Cut night one compliment he just looks thrown off\n- Autumn watches crew setting up but doesn't see cameras / Omar says they are hidden\n- while talking to JN first time we hear scary *voice of God that makes them both jump*\n- **at some point Ethan rips his headset off**\n- than's veneer cracks literally he cracks a tooth\n- *could cut lie detector he gets her to open up by force at the challenge the next day?*\n- They were right about you Bobby, you ARE unfuckable\n- moment where ethan is proud of her while she's on a date with someone else\n- maybe when kostas cries to his mother on the phone ethan comforts him\n\nGOOD MORNING MUHAMMED\n- Ethan, Omar + story producers monitoring feeds\n- Establish god-mode control button that lets him talk to anyone anywhere in the hotel\n- OR Later she goes to tell Ethan about it he says he saw it and shows her the footage\n\nCONFESSIONAL\n- Producers show her insanely private footage which is how she finds out just how many cameras there really are\n- Cutting Khalid but a new moment of her being vulnerable needs to happen that makes show buzzy here\n- He wants her to open up and say what she wants and she won't, he says he will stay here all night he doesn't care how long it takes, he threatens to order in curry\n\nROLLERSKATING\n- Ethan asks why she doesn't act anymore — we see how she sidelines herself and then blames everyone else\n- \"But when you don't know anyone is watching, that's when it's undeniable.\"\n- When Ethan tells cyrano story autumn is like wait what if she liked you back? He denies the possibility and she clocks, that's the saddest thing I've ever heard\n- I just didn't think I'm someone people stay for / you didn't? / I don't\n\nAUDIENCE MONTAGE\n- The **rodell drive guy** doing a podcast throughout the movie about the show\n- Watch parties start to happen\n- niche trivia games like HR\n- people contestants barely know selling stories to tabloids\n\nMISC SHOW MOMENTS\n- Autumn starts to get into it - asks to do the clapper, Monica is like you can do whatever you want (stepping into her power)\n- Ethan's hands shaking while adjusting Autumn's mic\n\nAVOIDING PASSIVE ETHAN\n- He sees something on the monitor and he's in the room before Omar can stop him\n- naturally creates the structure where they are always in direct contact even when the show's logic says they shouldn't be\n- Autumn says something in the earpiece that isn't for the show, just for Ethan, and he quietly responds while Omar clocks" },
+    { id: 6, scene: "THE SQUEEZE (Pages 56-84)", content: "LIE DETECTOR\n- He's struggling to give up control to omar - don't forget to do etc?\n- Xavier pushes past the surface answer and asks what he actually wants and machine doesn't shock him because he's not lying, he genuinely doesn't know what he wants\n\nWE UP\n- She mentions Nathan Fielder in her DMs and Ethan is seething jealous, he's like \"you're not available\"\n- at billboard he asks about bonnet, says those are the biggest glasses he's ever seen and asks to try them on\n- ***set up they have a weed promo that's where she gets the mints???***\n\nOVERNIGHTS\n- Add \"America voted\" to Monica bit\n- add beat where he registers that she pulled-back\n- ethan pokes a bit more on her dagger thing has anyone ever actually used it?\" She changes the subject\n- She throws a fry at him after Fizz Wiz and he dodges it\n- **In fred62 ethan refuses the fries. Then after they talk he allows himself to eat it even though his dad would frown upon it**\n- \"Did your dad ever actually say thank you for the lipstick idea?\" / \"I think using it was the thank you.\" / Awkward beat. They sit in it\n- Autumn calls it \"the night of attachment style horrors\"\n- *Re: GERD — \"she moans you're getting me hot\" / \"stop flirting with me\" / \"I'm just being your producer\" / \"you're not my producer anymore.\"*\n- in bed autumn shows ethan her most embarassing commercial, he says how come she didn't advocate for herself the way he did for her he's never seen her get that worked up before. it was sexy. if you're angry you should be angry. who the fuck cares\n- \"and if anyone has a problem with it i've got your back\n- In hotel he watches her sleep — perhaps with CPAP\n\nCOOKING DATE\n- ***still need a comedy game for the cooking date***\n- now swap so first Ethan gives JN advice, then JN has date and suspiciously saying stuff he could have only heard from Ethan while Omar clocks and is like wtf\n\nHOMETOWNS\n- maybe also big banner at MSP\n- ***Need new reason for Ethan to get invited to the wedding now that old ma isn't passing out / maybe he just gets along with family at the fair?***\n- at the wedding - Autumn helps ethan when he is choking from pepper sauce\n- She watches him for a beat before coming out to the parking lot\n- **Now Ethan kisses Autumn**\n- Ethan - how do you keep tricking me into complimenting you" },
     { id: 7, scene: "THE UNRAVELING (Pages 84-91)", content: "- revisit all audience reactions from before (rodell guy), but now they are over Autumn\n- RUPERT: \"I had my team go in and add cameras to the places you missed. What part of 'this is MY show' do you not understand? This is gold. We have to air it. It proves she was real the whole time.\"\n- Ethan shoots down the idea of airing it\n- Rupert accuses Ethan of being overprotective of Autumn — \"hope it's worth it when you lose your inheritance and she still doesn't choose you\"\n- *The betrayal MUST read as a callback (to high school + Victoria)*" },
     { id: 8, scene: "THE LOW POINT (Pages 91-95)", content: "ETHAN\n- Scene where Ethan is in hell auditioning new leads\n- Instead of drunk dial Ethan shows up\n- while still drunk he openly blames Rupert for fucking him up and costing him Autumn (because of him Ethan learned to destroy good things before they could leave him)\n- then hungover next morning has full convo of forfeiting everything\n- Add detail in Ethan/Rupert last conversation where we can see Rupert kind of panic at not having anything to hold over Ethan anymore — he thought the money was the thing keeping him around\n\nAUTUMN\n- Ethan couriers box of apology Post-its to Autumn\n- \"I miss you\" \"I'm sorry\"\n- then I didn't think that you would stay\n- She shoves them in closet\n- while watching gilmore girls she throws a piece of candy at the screen then after reading ethan's post it she picks it up from floor and eats it\n- Nowai flies Samuel in, they talk, he leaves her with the footage" },
     { id: 9, scene: "THE TURNING POINT (Pages 95-105)", content: "- fans actually supporting her after seeing spa footage on social media but phone is OFF\n- ugly cry mirror scene" },
