@@ -955,7 +955,7 @@ DBX.load();
 // ⚠️  ALWAYS bump APP_VERSION on EVERY edit — format: YYYYMMDD + letter (a, b, c…)
 // ⚠️  MOBILE (index.html) and DESKTOP (pick_me_writers_assistant_DESKTOP_SEQUENCES_LOCALSTORAGE.html)
 //     MUST always be on the EXACT same version number. Update both files every time.
-const APP_VERSION = 'APRILEDITV1';
+const APP_VERSION = 'APRILEDITV2';
 
 // ─── DEDUPE UTILITY ──────────────────────────────────────────────────────────
 function dedupeById(arr) {
@@ -2446,16 +2446,8 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
 
 // ─── SCENE MODAL ─────────────────────────────────────────────────────────────
 // ─── SCENES TO WRITE TAB (MOBILE) ────────────────────────────────────────────
-const UI_TO_DATA = {
-  EDIT: "next",
-  NEW: "later",
-  NEED: "maybe",
-  X: "cut",
-  "?": "completed"
-};
-
 function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
-  const CATS = Object.keys(UI_TO_DATA);
+  const CATS = ["EDIT", "NEW", "NEED", "X", "?"];
   const [newTitle, setNewTitle] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
   console.log("ACTIVE CATEGORY CHANGES:", activeCategory);
@@ -2468,39 +2460,59 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
   const [newCatName, setNewCatName] = useState("");
 
   const addScene = () => {
-    if (!newTitle.trim()) return;
-    const id = Date.now() + Math.floor(Math.random() * 10000);
-    setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: UI_TO_DATA[activeCategory] || CATS[0] || "next" }]);
-    setNewTitle("");
-  };
+  if (!newTitle.trim()) return;
+  const id = Date.now() + Math.floor(Math.random() * 10000);
+  setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: activeCategory || CATS[0] || "NEED" }]);
+  setNewTitle("");
+};
 
   const deleteScene = id => {
-    setScenes(prev => prev.filter(s => s.id !== id));
+    setScenes(prev => (prev || []).filter(s => s.id !== id));
     if (detailScene?.id === id) setDetailScene(null);
   };
 
   const openDetail = scene => {
     setDetailScene(scene);
     setDetailDesc(scene.description || "");
-    setDetailCat(scene.category || "next");
+    
+    // Normalize old category keys safely when opening detail popup
+    let currentCat = scene.category || "EDIT";
+    if (currentCat === "maybe") currentCat = "?";
+    if (currentCat === "completed") currentCat = "NEED";
+    if (currentCat === "next") currentCat = "EDIT";
+    if (currentCat === "later") currentCat = "NEW";
+    if (currentCat === "cut") currentCat = "X";
+    setDetailCat(currentCat);
   };
 
   const saveDetail = () => {
-    setScenes(prev => prev.map(s =>
-      s.id === detailScene.id ? { ...s, description: detailDesc.trim(), category: UI_TO_DATA[detailCat] || detailCat } : s
+    setScenes(prev => (prev || []).map(s =>
+      s.id === detailScene.id ? { ...s, description: detailDesc.trim(), category: detailCat } : s
     ));
     setDetailScene(null);
   };
 
-  const viewScenes =
-  activeCategory === null
-    ? scenes
-    : scenes.filter(s => s.category === UI_TO_DATA[activeCategory]);
-  console.log("ALL SCENE CATEGORIES:", scenes.map(s => s.category));
+  // Safe data bridging to prevent crashes and fix the NEED / ? swap completely
+  const safeScenes = (scenes || []).map(s => {
+  if (!s) return s;
+  let cat = s.category;
+  if (cat === "maybe") cat = "?";
+  if (cat === "completed") cat = "NEED";
+    if (cat === "next") cat = "EDIT";
+    if (cat === "later") cat = "NEW";
+    if (cat === "cut") cat = "X";
+    return { ...s, category: cat };
+  });
+
+const viewScenes = activeCategory === null
+    ? safeScenes
+    : safeScenes.filter(s => s && s.category === activeCategory);
+
+  console.log("ALL SCENE CATEGORIES:", (scenes || []).map(s => s.category));
   console.log("ACTIVE CATEGORY:", activeCategory);
 
   // ── Diagnostic ──────────────────────────────────────────────────────────────
-  const _sceneIds = scenes.map(s => String(s.id));
+  const _sceneIds = (scenes || []).map(s => String(s.id));
   if (_sceneIds.length !== new Set(_sceneIds).size) {
     console.error('[PICKME] ScenesTab duplicate scene IDs:', _sceneIds);
   }
@@ -2548,12 +2560,12 @@ setEditingCat(null);
         />
         <div style={{fontSize:"0.68em",fontWeight:700,color:"#FFB6D9",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"8px"}}>Move to</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"20px"}}>
-          {Object.keys(UI_TO_DATA).map(c => (
-      <button
-      key={c}
-      onClick={() => setDetailCat(c)}
+          {CATS.map(c => (
+            <button
+              key={c}
+              onClick={() => setDetailCat(c)}
               style={{fontSize:"0.72em",fontWeight:800,color:detailCat===c?"white":"#e667a6",background:detailCat===c?"#e667a6":"white",border:"1px solid #FFD4F2",padding:"5px 10px",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em"}}
-       >{categoryNames[c] || c}</button>
+            >{categoryNames[c] || c}</button>
           ))}
         </div>
         <div style={{display:"flex",gap:"8px"}}>
@@ -2770,16 +2782,18 @@ function SettingsTab({
   };
 
   const downloadAllData = () => {
-    const raw = localStorage.getItem(PICKME_STATE_KEY);
+    // Explicitly bundle everything live on your screen right now
+    const data = {
+      songs,
+      scenes,
+      notes,
+      sequences,
+      sceneNotes,
+      categoryNames, // Ensures EDIT, NEW, NEED, X, ? are locked into the file
+      notionUrl,
+      exportedAt: new Date().toISOString()
+    };
 
-    if (!raw) {
-      alert("No saved data found.");
-      return;
-}
-
-const data = JSON.parse(raw);
-
-data.exportedAt = new Date().toISOString();
     const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -3437,10 +3451,29 @@ function App() {
     return saved ? JSON.parse(saved).songs : INITIAL_SONGS;
   });
   const [scenes, setScenes] = useState(() => {
+    // This permanently migrates any old backend data to your new labels
+    const mapLegacyCategory = (cat) => {
+  if (!cat) return "EDIT";
+  if (cat === "next") return "EDIT";
+  if (cat === "later") return "NEW";
+  if (cat === "maybe") return "?";
+  if (cat === "cut") return "X";
+  if (cat === "completed") return "NEED";
+  return cat;
+};
+
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) return dedupeById(p.scenes).map(s=>s.category?s:{...s,category:"next"}); } catch(e){} }
+    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) return dedupeById(p.scenes).map(s => ({
+  ...s,
+  category: mapLegacyCategory(s.category)
+})); } catch(e){} }
     const saved = localStorage.getItem("pickMeData");
-    return saved ? dedupeById(JSON.parse(saved).scenes).map(s=>s.category?s:{...s,category:"next"}) : [];
+    return saved
+  ? dedupeById(JSON.parse(saved).scenes).map(s => ({
+      ...s,
+      category: mapLegacyCategory(s.category)
+    }))
+  : [];
   });
   const PICK_ME_DEFAULT_NOTES = [
     { id: 0, scene: "CURRENT SCENE NOTES", content: "" },
@@ -3506,10 +3539,12 @@ function App() {
     const saved = localStorage.getItem("pick-me-sequences");
     return saved ? JSON.parse(saved) : {};
   });
-  const [categoryNames, setCategoryNames] = useState(() => {
+ const [categoryNames, setCategoryNames] = useState(() => {
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.categoryNames) return p.categoryNames; } catch(e){} }
-    return { next:"Next", later:"Later", completed:"Completed", cut:"Cut", maybe:"Maybe" };
+    if (v1) { try { const p = JSON.parse(v1); if (p.categoryNames) return p.categoryNames; } catch (e) {} }
+    const saved = localStorage.getItem("pickMeData");
+    if (saved) { try { const p = JSON.parse(saved); if (p.categoryNames) return p.categoryNames; } catch (e) {} }
+    return { "EDIT": "EDIT", "NEW": "NEW", "NEED": "NEED", "X": "X", "?": "?" };
   });
   // ── Consolidated save: writes pickme_state_v1 + legacy keys, auto-push ──
   React.useEffect(() => {
