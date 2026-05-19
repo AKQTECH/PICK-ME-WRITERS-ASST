@@ -955,7 +955,7 @@ DBX.load();
 // ⚠️  ALWAYS bump APP_VERSION on EVERY edit — format: YYYYMMDD + letter (a, b, c…)
 // ⚠️  MOBILE (index.html) and DESKTOP (pick_me_writers_assistant_DESKTOP_SEQUENCES_LOCALSTORAGE.html)
 //     MUST always be on the EXACT same version number. Update both files every time.
-const APP_VERSION = '4.0 AKQ PICK ME APP MOBILE';
+const APP_VERSION = '4.1 AKQ PICK ME APP MOBILE';
 
 // ─── DEDUPE UTILITY ──────────────────────────────────────────────────────────
 function dedupeById(arr) {
@@ -3592,20 +3592,14 @@ function App() {
       clearTimeout(_dbxPushTimer);
 ReactDOM.unstable_batchedUpdates(() => {
   if (Array.isArray(d.songs)) setSongs(dedupeById(d.songs));
-const migratedScenes = (data.scenes || []).map(scene => {
-  let cat = scene.category;
-  // migrate legacy inverted categories
-  if (cat === "maybe") cat = "NEED";
-  else if (cat === "completed") cat = "?";
-  else if (cat === "next") cat = "EDIT";
-  else if (cat === "later") cat = "NEW";
-  else if (cat === "cut") cat = "X";
+const migratedScenes = (d.scenes || []).map(scene => ({
+  ...scene,
+  category: scene.category || "next"
+}));
+if (Array.isArray(migratedScenes)) {
+  setScenes(dedupeById(migratedScenes));
+}
 
-  return {
-    ...scene,
-    category: cat
-  };
-});  
   if (Array.isArray(d.notes)) setNotes(dedupeById(d.notes));
   if (d.sequences) setSequences(d.sequences);
   if (Array.isArray(d.sceneNotes)) setSceneNotes(d.sceneNotes);
