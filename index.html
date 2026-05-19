@@ -955,7 +955,7 @@ DBX.load();
 // ⚠️  ALWAYS bump APP_VERSION on EVERY edit — format: YYYYMMDD + letter (a, b, c…)
 // ⚠️  MOBILE (index.html) and DESKTOP (pick_me_writers_assistant_DESKTOP_SEQUENCES_LOCALSTORAGE.html)
 //     MUST always be on the EXACT same version number. Update both files every time.
-const APP_VERSION = 'APRILEDITV2';
+const APP_VERSION = '4.0 AKQ PICK ME APP MOBILE';
 
 // ─── DEDUPE UTILITY ──────────────────────────────────────────────────────────
 function dedupeById(arr) {
@@ -2447,7 +2447,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
 // ─── SCENE MODAL ─────────────────────────────────────────────────────────────
 // ─── SCENES TO WRITE TAB (MOBILE) ────────────────────────────────────────────
 function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
-  const CATS = ["EDIT", "NEW", "NEED", "X", "?"];
+  const CATS = ["next", "later", "completed", "cut", "maybe"];
   const [newTitle, setNewTitle] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
   console.log("ACTIVE CATEGORY CHANGES:", activeCategory);
@@ -2462,7 +2462,7 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
   const addScene = () => {
   if (!newTitle.trim()) return;
   const id = Date.now() + Math.floor(Math.random() * 10000);
-  setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: activeCategory || CATS[0] || "NEED" }]);
+  setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: activeCategory || "next" }]);
   setNewTitle("");
 };
 
@@ -2476,13 +2476,7 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
     setDetailDesc(scene.description || "");
     
     // Normalize old category keys safely when opening detail popup
-    let currentCat = scene.category || "EDIT";
-    if (currentCat === "maybe") currentCat = "?";
-    if (currentCat === "completed") currentCat = "NEED";
-    if (currentCat === "next") currentCat = "EDIT";
-    if (currentCat === "later") currentCat = "NEW";
-    if (currentCat === "cut") currentCat = "X";
-    setDetailCat(currentCat);
+    setDetailCat(scene.category || "next");
   };
 
   const saveDetail = () => {
@@ -2492,21 +2486,12 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
     setDetailScene(null);
   };
 
-  // Safe data bridging to prevent crashes and fix the NEED / ? swap completely
-  const safeScenes = (scenes || []).map(s => {
-  if (!s) return s;
-  let cat = s.category;
-  if (cat === "maybe") cat = "?";
-  if (cat === "completed") cat = "NEED";
-    if (cat === "next") cat = "EDIT";
-    if (cat === "later") cat = "NEW";
-    if (cat === "cut") cat = "X";
-    return { ...s, category: cat };
-  });
+  const safeScenes = scenes || [];
 
-const viewScenes = activeCategory === null
-    ? safeScenes
-    : safeScenes.filter(s => s && s.category === activeCategory);
+const viewScenes =
+  activeCategory === null
+    ? scenes || []
+    : (scenes || []).filter(s => s && s.category === activeCategory);
 
   console.log("ALL SCENE CATEGORIES:", (scenes || []).map(s => s.category));
   console.log("ACTIVE CATEGORY:", activeCategory);
@@ -2842,7 +2827,7 @@ if (data.scenes) {
           setSequences(data.sequences);
           console.log("Set sequences to:", Object.keys(data.sequences).length, "items");
         }
-        if (data.sceneNotes && Array.isArray(data.sceneNotes) && data.sceneNotes.length > 0) {
+        if (Array.isArray(data.sceneNotes)) {
           setSceneNotes(data.sceneNotes);
           localStorage.setItem("pickMeSceneNotes", JSON.stringify(data.sceneNotes));
           console.log("Set sceneNotes to:", data.sceneNotes.length, "sequences");
@@ -3454,11 +3439,12 @@ function App() {
     // This permanently migrates any old backend data to your new labels
     const mapLegacyCategory = (cat) => {
   if (!cat) return "EDIT";
+  if (cat === "maybe") return "NEED";
+  if (cat === "completed") return "?";
   if (cat === "next") return "EDIT";
   if (cat === "later") return "NEW";
-  if (cat === "maybe") return "?";
   if (cat === "cut") return "X";
-  if (cat === "completed") return "NEED";
+  
   return cat;
 };
 
@@ -3525,7 +3511,7 @@ function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {
         console.warn("Failed to parse sceneNotes:", e);
       }
@@ -3557,7 +3543,15 @@ function App() {
       // State came from a pull — keep remote lastModified, just update legacy keys
       _skipPushRef.current = false;
       localStorage.setItem("pick-me-sequences", JSON.stringify(sequences));
-      localStorage.setItem("pickMeData", JSON.stringify({ songs, scenes, notes }));
+      localStorage.setItem("pickMeData", JSON.stringify({
+  songs,
+  scenes,
+  notes,
+  sequences,
+  sceneNotes,
+  categoryNames,
+  exportedAt: new Date().toISOString()
+}));
       localStorage.setItem("pickMeSceneNotes", JSON.stringify(sceneNotes));
       localStorage.setItem("draft-notes", notes.map(n => `${n.scene ? n.scene + ": " : ""}${n.content}`).join("\n\n"));
       window.dispatchEvent(new Event("notesUpdated"));
@@ -3598,7 +3592,20 @@ function App() {
       clearTimeout(_dbxPushTimer);
 ReactDOM.unstable_batchedUpdates(() => {
   if (Array.isArray(d.songs)) setSongs(dedupeById(d.songs));
-  if (Array.isArray(d.scenes)) setScenes(dedupeById(d.scenes));
+const migratedScenes = (data.scenes || []).map(scene => {
+  let cat = scene.category;
+  // migrate legacy inverted categories
+  if (cat === "maybe") cat = "NEED";
+  else if (cat === "completed") cat = "?";
+  else if (cat === "next") cat = "EDIT";
+  else if (cat === "later") cat = "NEW";
+  else if (cat === "cut") cat = "X";
+
+  return {
+    ...scene,
+    category: cat
+  };
+});  
   if (Array.isArray(d.notes)) setNotes(dedupeById(d.notes));
   if (d.sequences) setSequences(d.sequences);
   if (Array.isArray(d.sceneNotes)) setSceneNotes(d.sceneNotes);
