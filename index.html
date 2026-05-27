@@ -1010,30 +1010,69 @@ async function performDropboxPull() {
         if (local.lastModified && remote.lastModified <= local.lastModified) return false;
       } catch(e) {}
     }
-    // Remote is newer — write to localStorage and notify React
-    const prev = JSON.parse(localStorage.getItem(PICKME_STATE_KEY) || "{}");
-localStorage.setItem(PICKME_STATE_KEY, JSON.stringify({
-  ...prev,
-  ...remote,
-  categoryNames: {
-    ...(prev.categoryNames || {}),
-    ...(remote.categoryNames || {})
-  }
-}));
-    window.dispatchEvent(new CustomEvent('pickme_state_updated', {
-  detail: {
-    ...remote,
-    categoryNames: {
-      ...(prev.categoryNames || {}),
-      ...(remote.categoryNames || {})
-    }
-  }
-}));
+    // ─── MERGE instead of overwrite ───
+    const merged = mergeStateWithRemote(remote, localRaw ? JSON.parse(localRaw) : null);
+    merged.lastModified = Date.now();
+    localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(merged));
+    window.dispatchEvent(new CustomEvent('pickme_state_updated', { detail: merged }));
     return true;
   } catch(e) {
     console.warn('DBX pull failed:', e);
     return false;
   }
+}
+
+function mergeStateWithRemote(remote, local) {
+  if (!local) return remote;
+  const merged = { ...local };
+  merged.lastModified = Math.max(remote.lastModified || 0, local.lastModified || 0);
+
+  if (remote.scenes && Array.isArray(remote.scenes)) {
+    const localMap = {};
+    if (local.scenes) local.scenes.forEach(s => { localMap[s.id] = s; });
+
+    merged.scenes = remote.scenes.map(remoteScene => {
+      const localScene = localMap[remoteScene.id];
+      if (!localScene) return remoteScene;
+      const remoteTime = remoteScene.lastModified || 0;
+      const localTime = localScene.lastModified || 0;
+      return remoteTime > localTime ? remoteScene : localScene;
+    });
+
+    Object.keys(localMap).forEach(id => {
+      if (!merged.scenes.find(s => s.id == id)) {
+        merged.scenes.push(localMap[id]);
+      }
+    });
+  }
+
+  if (remote.notes && Array.isArray(remote.notes)) {
+    const localMap = {};
+    if (local.notes) local.notes.forEach(n => { localMap[n.id] = n; });
+
+    merged.notes = remote.notes.map(remoteNote => {
+      const localNote = localMap[remoteNote.id];
+      if (!localNote) return remoteNote;
+      const remoteTime = remoteNote.lastModified || 0;
+      const localTime = localNote.lastModified || 0;
+      return remoteTime > localTime ? remoteNote : localNote;
+    });
+
+    Object.keys(localMap).forEach(id => {
+      if (!merged.notes.find(n => n.id == id)) {
+        merged.notes.push(localMap[id]);
+      }
+    });
+  }
+
+  if (remote.songs) merged.songs = remote.songs;
+  if (remote.sequences) merged.sequences = remote.sequences;
+  if (remote.sceneNotes) merged.sceneNotes = remote.sceneNotes;
+  if (remote.categoryNames) {
+    merged.categoryNames = { ...(local.categoryNames || {}), ...remote.categoryNames };
+  }
+
+  return merged;
 }
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
@@ -2447,7 +2486,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, showToast }) {
 // ─── SCENE MODAL ─────────────────────────────────────────────────────────────
 // ─── SCENES TO WRITE TAB (MOBILE) ────────────────────────────────────────────
 function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
-  const CATS = ["next", "later", "completed", "cut", "maybe"];
+  const CATS = ["EDIT", "NEW", "NEED", "?", "X"];
   const [newTitle, setNewTitle] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
   console.log("ACTIVE CATEGORY CHANGES:", activeCategory);
@@ -2462,7 +2501,7 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
   const addScene = () => {
   if (!newTitle.trim()) return;
   const id = Date.now() + Math.floor(Math.random() * 10000);
-  setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: activeCategory || "next" }]);
+  setScenes(prev => [...prev, { id, title: newTitle.trim(), description: "", category: activeCategory || "EDIT" }]);
   setNewTitle("");
 };
 
@@ -2476,7 +2515,7 @@ function ScenesTab({ scenes, setScenes, categoryNames, setCategoryNames }) {
     setDetailDesc(scene.description || "");
     
     // Normalize old category keys safely when opening detail popup
-    setDetailCat(scene.category || "next");
+    setDetailCat(mapLegacyCategory(scene.category));
   };
 
   const saveDetail = () => {
@@ -2713,7 +2752,7 @@ function SettingsTab({
         sequences,
         sceneNotes,
         categoryNames,
-        lastModified: new Date().toISOString()
+        lastModified: Date.now()
   };
       localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(state));
       await DBX.uploadSmart(JSON.stringify(state, null, 2));
@@ -2829,14 +2868,13 @@ if (data.scenes) {
         }
         if (Array.isArray(data.sceneNotes)) {
           setSceneNotes(data.sceneNotes);
-          localStorage.setItem("pickMeSceneNotes", JSON.stringify(data.sceneNotes));
           console.log("Set sceneNotes to:", data.sceneNotes.length, "sequences");
         }
+          data.lastModified = Date.now();
           localStorage.setItem(
           PICKME_STATE_KEY,
           JSON.stringify(data)
         );
-        localStorage.setItem("pickMeData", JSON.stringify(data));
         alert("✓ Data loaded! Songs: " + (data.songs?.length || 0) + ", Scenes: " + (data.scenes?.length || 0) + ", Notes: " + (data.notes?.length || 0) + ", Scene Sequences: " + (data.sceneNotes?.length || 0) + ", Progress: " + (Object.keys(data.sequences || {}).length || 0));
         e.target.value = "";
       } catch (err) {
@@ -3028,7 +3066,6 @@ function DraftNotesTab({ showToast, notes, setNotes }) {
   }, [notes]);
 
   const handleSave = () => {
-    localStorage.setItem("draft-notes", editContent);
     setIsEditing(false);
     showToast("Scene notes saved! 💋");
   };
@@ -3422,6 +3459,17 @@ function PreWritingRitualTab() {
 
 // ─── MAIN APP (UPDATED) ────────────────────────────────────────────────────
 
+// Translate any old desktop category values to mobile labels
+function mapLegacyCategory(cat) {
+  if (!cat) return "EDIT";
+  if (cat === "maybe") return "?";
+  if (cat === "completed") return "NEED";
+  if (cat === "next") return "EDIT";
+  if (cat === "later") return "NEW";
+  if (cat === "cut") return "X";
+  return cat;
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState("ritual");
   const [dbxSyncStatus, setDbxSyncStatus] = useState('idle'); // 'idle'|'syncing'|'error'
@@ -3432,34 +3480,28 @@ function App() {
   const [songs, setSongs] = useState(() => {
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
     if (v1) { try { const p=JSON.parse(v1); if(p.songs?.length>0) return p.songs; } catch(e){} }
-    const saved = localStorage.getItem("pickMeData");
-    return saved ? JSON.parse(saved).songs : INITIAL_SONGS;
+    return INITIAL_SONGS;
   });
   const [scenes, setScenes] = useState(() => {
-    // This permanently migrates any old backend data to your new labels
-    const mapLegacyCategory = (cat) => {
-  if (!cat) return "EDIT";
-  if (cat === "maybe") return "NEED";
-  if (cat === "completed") return "?";
-  if (cat === "next") return "EDIT";
-  if (cat === "later") return "NEW";
-  if (cat === "cut") return "X";
-  
-  return cat;
-};
-
+    // One-time swap: a previous bad mapping put NEED↔? backwards in storage
+    const swapDone = localStorage.getItem("pickme_need_q_swap_done");
+    const fixSwappedCategory = (cat) => {
+      if (swapDone) return cat;
+      if (cat === "NEED") return "?";
+      if (cat === "?") return "NEED";
+      return cat;
+    };
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) return dedupeById(p.scenes).map(s => ({
-  ...s,
-  category: mapLegacyCategory(s.category)
-})); } catch(e){} }
-    const saved = localStorage.getItem("pickMeData");
-    return saved
-  ? dedupeById(JSON.parse(saved).scenes).map(s => ({
-      ...s,
-      category: mapLegacyCategory(s.category)
-    }))
-  : [];
+    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) {
+      const fixed = dedupeById(p.scenes).map(s => ({
+        ...s,
+        category: fixSwappedCategory(mapLegacyCategory(s.category))
+      }));
+      localStorage.setItem("pickme_need_q_swap_done", "1");
+      return fixed;
+    } } catch(e){} }
+    localStorage.setItem("pickme_need_q_swap_done", "1");
+    return [];
   });
   const PICK_ME_DEFAULT_NOTES = [
     { id: 0, scene: "CURRENT SCENE NOTES", content: "" },
@@ -3522,8 +3564,7 @@ function App() {
   const [sequences, setSequences] = useState(() => {
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
     if (v1) { try { const p=JSON.parse(v1); if(p.sequences) return p.sequences; } catch(e){} }
-    const saved = localStorage.getItem("pick-me-sequences");
-    return saved ? JSON.parse(saved) : {};
+    return {};
   });
  const [categoryNames, setCategoryNames] = useState(() => {
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
@@ -3532,40 +3573,36 @@ function App() {
     if (saved) { try { const p = JSON.parse(saved); if (p.categoryNames) return p.categoryNames; } catch (e) {} }
     return { "EDIT": "EDIT", "NEW": "NEW", "NEED": "NEED", "X": "X", "?": "?" };
   });
-  // ── Consolidated save: writes pickme_state_v1 + legacy keys, auto-push ──
+  // ── Consolidated save: single source of truth, auto-push ──
   React.useEffect(() => {
     // Skip first render so auto-pull can compare timestamps without local overwriting remote
     if (_isFirstRender.current) {
       _isFirstRender.current = false;
       return;
     }
+
+    // If Dropbox pull just happened, skip this push to avoid race
     if (_skipPushRef.current) {
-      // State came from a pull — keep remote lastModified, just update legacy keys
       _skipPushRef.current = false;
-      localStorage.setItem("pick-me-sequences", JSON.stringify(sequences));
-      localStorage.setItem("pickMeData", JSON.stringify({
-  songs,
-  scenes,
-  notes,
-  sequences,
-  sceneNotes,
-  categoryNames,
-  exportedAt: new Date().toISOString()
-}));
-      localStorage.setItem("pickMeSceneNotes", JSON.stringify(sceneNotes));
-      localStorage.setItem("draft-notes", notes.map(n => `${n.scene ? n.scene + ": " : ""}${n.content}`).join("\n\n"));
-      window.dispatchEvent(new Event("notesUpdated"));
       return;
     }
+
+    // ─── SINGLE CONSOLIDATED WRITE ───
     const cleanSongs = dedupeById(songs);
     const cleanScenes = dedupeById(scenes);
     const cleanNotes = dedupeById(notes);
-    const state = { songs: cleanSongs, scenes: cleanScenes, notes: cleanNotes, sequences, sceneNotes, categoryNames, lastModified: new Date().toISOString() };
+
+    const state = {
+      songs: cleanSongs,
+      scenes: cleanScenes,
+      notes: cleanNotes,
+      sequences,
+      sceneNotes,
+      categoryNames,
+      lastModified: Date.now()
+    };
+
     localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(state));
-    localStorage.setItem("pick-me-sequences", JSON.stringify(sequences));
-    localStorage.setItem("pickMeData", JSON.stringify({ songs: cleanSongs, scenes: cleanScenes, notes: cleanNotes }));
-    localStorage.setItem("pickMeSceneNotes", JSON.stringify(sceneNotes));
-    localStorage.setItem("draft-notes", notes.map(n => `${n.scene ? n.scene + ": " : ""}${n.content}`).join("\n\n"));
     window.dispatchEvent(new Event("notesUpdated"));
     scheduleDropboxPush();
   }, [songs, scenes, notes, sequences, sceneNotes, categoryNames]); // eslint-disable-line
@@ -3594,7 +3631,7 @@ ReactDOM.unstable_batchedUpdates(() => {
   if (Array.isArray(d.songs)) setSongs(dedupeById(d.songs));
 const migratedScenes = (d.scenes || []).map(scene => ({
   ...scene,
-  category: scene.category || "next"
+  category: mapLegacyCategory(scene.category)
 }));
 if (Array.isArray(migratedScenes)) {
   setScenes(dedupeById(migratedScenes));
@@ -3616,25 +3653,35 @@ if (Array.isArray(migratedScenes)) {
   // ── Auto-pull: on boot + every 10s + on tab visibility ──────────────────
   React.useEffect(() => {
     if (!dbxConnected) return;
+
+    function isUserTyping() {
+      const active = document.activeElement;
+      return active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+    }
+
     // Boot pull
     (async () => {
+      if (isUserTyping()) return;
       window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
       await performDropboxPull();
       window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
     })();
+
     const iv = setInterval(async () => {
-      if (document.hidden) return;
+      if (document.hidden || isUserTyping()) return;
       window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
       await performDropboxPull();
       window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
     }, 10000);
+
     const onVis = async () => {
-      if (!document.hidden) {
+      if (!document.hidden && !isUserTyping()) {
         window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
         await performDropboxPull();
         window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
       }
     };
+
     document.addEventListener('visibilitychange', onVis);
     return () => { clearInterval(iv); document.removeEventListener('visibilitychange', onVis); };
   }, [dbxConnected]); // eslint-disable-line
