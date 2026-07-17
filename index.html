@@ -805,6 +805,394 @@
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.4; transform: scale(0.8); }
         }
+
+
+
+        /* CLASSIC PICK ME SKIN RESTORE - 20260717e */
+        :root {
+            --neon-pink: #EA258D;
+            --hot-pink: #FF1493;
+            --light-pink: #F37EB3;
+            --bright-yellow: #FFEB3B;
+            --golden: #F5952D;
+            --lavender: #CACBDF;
+            --mauve: #FFB6D9;
+            --dusty-rose: #FFC0CB;
+            --white: #FFFFFF;
+            --cream: #FFFBF8;
+            --black: #000000;
+            --dark-gray: #1A1A1A;
+            --card-bg: #FFFFFF;
+            --text-dark: #000000;
+            --text-mid: #333333;
+            --text-light: #666666;
+            --border-pink: #FFB6D9;
+            --accent-pink: #EA258D;
+            --accent-yellow: #FFEB3B;
+            --accent-lavender: #CACBDF;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            background: #FFB6D9 !important;
+            color: var(--text-dark) !important;
+            position: relative;
+        }
+
+        .header {
+            text-align: center !important;
+            background: var(--white) !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            display: block !important;
+            overflow: visible !important;
+        }
+
+        .header-lip {
+            line-height: 1 !important;
+        }
+
+        .header h1 {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            font-weight: 900 !important;
+            color: var(--black) !important;
+            letter-spacing: -0.02em !important;
+            text-transform: uppercase !important;
+            position: relative !important;
+            z-index: 1 !important;
+        }
+
+        .header-sub {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            color: var(--text-light) !important;
+            font-style: italic !important;
+            font-weight: 500 !important;
+        }
+
+        .tab-select {
+            border: 2px solid var(--black) !important;
+            background: var(--white) !important;
+            color: var(--text-dark) !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            font-weight: 700 !important;
+            border-radius: 6px !important;
+            letter-spacing: 0.02em !important;
+        }
+
+        .tab-select:hover,
+        .tab-select:focus {
+            border-color: var(--neon-pink) !important;
+            background: var(--white) !important;
+            color: var(--text-dark) !important;
+            box-shadow: none !important;
+        }
+
+        .card {
+            background: var(--white) !important;
+            border: none !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+        }
+
+        .btn {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            letter-spacing: 0.02em !important;
+        }
+
+        .btn-primary {
+            background: #fec3e4 !important;
+            color: #ea258d !important;
+            box-shadow: 0 4px 12px rgba(254, 195, 228, 0.3) !important;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 16px rgba(254, 195, 228, 0.4) !important;
+        }
+
+        .btn-secondary {
+            background: var(--white) !important;
+            color: var(--black) !important;
+            border: 2px solid var(--neon-pink) !important;
+            box-shadow: none !important;
+        }
+
+        .btn-secondary:hover {
+            background: var(--light-pink) !important;
+            color: var(--black) !important;
+        }
+
+        input,
+        textarea,
+        select {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            border: 2px solid var(--black) !important;
+            border-radius: 6px !important;
+            background: #FFFFFF !important;
+            color: var(--text-dark) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--neon-pink) !important;
+            box-shadow: none !important;
+            background: #FFFFFF !important;
+        }
+
+        .sequence-focus-bar {
+            border-bottom: 2px solid var(--black) !important;
+            gap: 16px !important;
+        }
+
+        .sequence-kicker,
+        .scene-label,
+        .scene-field-label,
+        .scene-context-drawer summary,
+        .scene-status-text {
+            color: var(--neon-pink) !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.08em !important;
+            text-transform: uppercase !important;
+        }
+
+        .sequence-select {
+            font-size: 1em !important;
+            font-weight: 800 !important;
+            min-height: 48px !important;
+            border: 2px solid var(--black) !important;
+            background: var(--white) !important;
+        }
+
+        .sequence-focus-note {
+            color: var(--text-mid) !important;
+        }
+
+        .scene-notebook .scene-workbench {
+            display: grid !important;
+            align-items: start !important;
+        }
+
+        .scene-list-panel,
+        .scene-editor-panel {
+            border: 1px solid var(--border-pink) !important;
+            background: var(--white) !important;
+        }
+
+        .scene-list-title {
+            color: var(--neon-pink) !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            font-weight: 800 !important;
+        }
+
+        .scene-count,
+        .scene-row-meta {
+            color: var(--text-light) !important;
+        }
+
+        .scene-results {
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        .scene-row {
+            border: 1px solid var(--border-pink) !important;
+            background: #FFFFFF !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .scene-row:hover {
+            background: #fff3f9 !important;
+        }
+
+        .scene-row.is-active {
+            border: 2px solid var(--neon-pink) !important;
+            background: #fff3f9 !important;
+        }
+
+        .scene-row-title,
+        .scene-title-input {
+            color: var(--black) !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            font-weight: 800 !important;
+        }
+
+        .type-pill {
+            border-color: var(--neon-pink) !important;
+            color: var(--neon-pink) !important;
+            background: #FFFFFF !important;
+        }
+
+        .scene-title-input,
+        .scene-notes-field,
+        .scene-small-field,
+        .scene-thread-field,
+        .scene-change-input {
+            border: 1px solid var(--border-pink) !important;
+            background: #FFFFFF !important;
+        }
+
+        .scene-context-drawer {
+            border-top: 1px solid var(--border-pink) !important;
+            border-bottom: 1px solid var(--border-pink) !important;
+        }
+
+        .scene-empty-note {
+            border: 1px dashed var(--border-pink) !important;
+            background: #FFFFFF !important;
+            color: var(--text-light) !important;
+        }
+
+        /* PWA keeps the old compact mobile-first shape. */
+        body { padding: 10px 8px !important; }
+        .container { max-width: 640px !important; margin: 0 auto !important; }
+        .header { margin-bottom: 14px !important; padding: 14px 12px 10px !important; }
+        .header-lip { font-size: 1.8em !important; margin: 0 0 8px !important; }
+        .header h1 { font-size: 1.4em !important; line-height: 1.2 !important; margin-bottom: 10px !important; }
+        .header-sub { font-size: 0.78em !important; }
+        .card { padding: 14px 10px !important; margin-bottom: 10px !important; }
+        .scene-notebook { gap: 14px !important; }
+        .sequence-focus-bar { grid-template-columns: 1fr !important; padding: 0 0 14px !important; }
+        .sequence-focus-note { text-align: left !important; max-width: none !important; font-size: 0.82em !important; }
+        .scene-notebook .scene-workbench { grid-template-columns: 1fr !important; gap: 16px !important; }
+        .scene-editor-panel { min-height: 0 !important; }
+        .scene-move-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+        .scene-move-grid label:first-child { grid-column: 1 / -1; }
+        .scene-results { max-height: 48vh !important; min-height: 260px !important; }
+        .scene-title-row { grid-template-columns: 1fr !important; }
+        .scene-change-row { grid-template-columns: 1fr !important; }
+
+        /* SEQUENCE NOTEBOOK MODE - 20260717e */
+        .companion-workbench {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+            align-items: start;
+        }
+
+        .companion-results {
+            max-height: 64vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 4px;
+        }
+
+        .scene-notebook {
+            display: grid;
+            gap: 18px;
+        }
+
+        .sequence-focus-bar {
+            display: grid;
+            grid-template-columns: minmax(260px, 1fr) auto;
+            gap: 16px;
+            align-items: end;
+            padding: 0 0 18px;
+            border-bottom: 1px solid #F1BCD7;
+        }
+
+        .sequence-kicker {
+            color: #DA005F;
+            font-size: 0.72em;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .sequence-select {
+            font-size: 1.05em !important;
+            font-weight: 800;
+            min-height: 48px;
+            background: #FFFDFC;
+        }
+
+        .sequence-focus-note {
+            color: #7E6B66;
+            font-size: 0.9em;
+            line-height: 1.45;
+            text-align: right;
+            max-width: 260px;
+        }
+
+        .scene-notebook .scene-workbench {
+            grid-template-columns: minmax(300px, 0.8fr) minmax(500px, 1.2fr);
+        }
+
+        .scene-empty-note {
+            border: 1px dashed #F1BCD7;
+            color: #7E6B66;
+            line-height: 1.5;
+            padding: 16px;
+            background: #FFFDFC;
+        }
+
+        .scene-move-grid {
+            display: grid;
+            grid-template-columns: minmax(210px, 1fr) 90px 120px;
+            gap: 10px;
+            margin: 12px 0 18px;
+            align-items: end;
+        }
+
+        .scene-field-label {
+            color: #7E6B66;
+            display: block;
+            font-size: 0.72em;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .scene-context-drawer {
+            border-top: 1px solid #F1BCD7;
+            border-bottom: 1px solid #F1BCD7;
+            margin: 14px 0;
+            padding: 10px 0;
+        }
+
+        .scene-context-drawer summary {
+            color: #DA005F;
+            cursor: pointer;
+            font-size: 0.82em;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            list-style-position: outside;
+            text-transform: uppercase;
+        }
+
+        .scene-context-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .scene-kind-field {
+            max-width: 180px;
+        }
+
+        @media (max-width: 780px) {
+            .sequence-focus-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .sequence-focus-note {
+                text-align: left;
+                max-width: none;
+            }
+
+            .scene-move-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
     </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ea258d">
@@ -976,7 +1364,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260716d";
+const APP_VERSION = "20260717e";
 const APP_BUILD = "MOBILE";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -4431,34 +4819,51 @@ function runDataChecks(stateInput) {
     maybeRecordsInCounts: []
   };
 }
+function isRewriteTaskRecord(record) {
+  return !!(record && (
+    record.isRewriteTask === true ||
+    record.rewriteTask === true ||
+    record.taskType === "rewrite" ||
+    record.kind === "REWRITE_TASK"
+  ));
+}
 function computeProgressStats(stateInput) {
   const state = normalizeState(stateInput);
   const decisions = getDecisionMap(state.scenes);
   const bySequence = {};
-  SEQUENCE_ORDER.forEach(seq => { bySequence[seq] = { total:0, done:0, waiting:0 }; });
-  let total = 0, done = 0, waiting = 0;
-  const addThing = (seq, isDone, isWaiting) => {
-    total += 1; if (isDone) done += 1; if (isWaiting) waiting += 1;
-    if (seq && bySequence[seq]) { bySequence[seq].total += 1; if (isDone) bySequence[seq].done += 1; if (isWaiting) bySequence[seq].waiting += 1; }
+  SEQUENCE_ORDER.forEach(seq => { bySequence[seq] = { totalRewriteTasks:0, completedRewriteTasks:0, waiting:0 }; });
+  let totalRewriteTasks = 0, completedRewriteTasks = 0, waiting = 0;
+  const addRewriteTask = (seq, isDone, isWaiting) => {
+    totalRewriteTasks += 1;
+    if (isDone) completedRewriteTasks += 1;
+    if (isWaiting) waiting += 1;
+    if (seq && bySequence[seq]) {
+      bySequence[seq].totalRewriteTasks += 1;
+      if (isDone) bySequence[seq].completedRewriteTasks += 1;
+      if (isWaiting) bySequence[seq].waiting += 1;
+    }
   };
   state.scenes.forEach(card => {
     if (card.archived || card.maybe) return;
-    if (card.kind === "DECISION") { addThing(card.sequence, card.status === "done", false); return; }
-    if (card.kind === "THREAD") {
-      safeArray(card.moments).forEach(moment => {
-        if (moment.archived || moment.maybe) return;
-        addThing(moment.sequence, !!moment.done, isWaitingOnDecision(moment, decisions));
-      });
-      return;
+    if (isRewriteTaskRecord(card)) {
+      addRewriteTask(card.sequence, card.status === "done", isWaitingOnDecision(card, decisions));
     }
-    const activeChanges = safeArray(card.changes).filter(change => !change.archived && !change.maybe);
-    if (activeChanges.length) {
-      activeChanges.forEach(change => addThing(card.sequence, !!change.done, isWaitingOnDecision(change, decisions)));
-    } else {
-      addThing(card.sequence, card.status === "done", isWaitingOnDecision(card, decisions));
-    }
+    safeArray(card.changes).forEach(change => {
+      if (change.archived || change.maybe || !isRewriteTaskRecord(change)) return;
+      addRewriteTask(card.sequence, !!change.done, isWaitingOnDecision(change, decisions));
+    });
+    safeArray(card.moments).forEach(moment => {
+      if (moment.archived || moment.maybe || !isRewriteTaskRecord(moment)) return;
+      addRewriteTask(moment.sequence || card.sequence, !!moment.done, isWaitingOnDecision(moment, decisions));
+    });
   });
-  return { totalThings: total, completedThings: done, thingsLeft: Math.max(0, total - done), waiting, bySequence };
+  return {
+    totalRewriteTasks,
+    completedRewriteTasks,
+    rewriteTasksLeft: Math.max(0, totalRewriteTasks - completedRewriteTasks),
+    waiting,
+    bySequence
+  };
 }
 function formatDateShort(ts) {
   if (!ts) return "Not yet";
@@ -6917,7 +7322,7 @@ function NowBar({ scenes, setScenes, nowState, setNowState }) {
 }
 
 function TypePill({ children }) {
-  return <span style={{fontSize:"0.68em",fontWeight:800,letterSpacing:"0.08em",border:"1px solid #eb2e90",color:"#eb2e90",padding:"3px 7px",borderRadius:"999px",whiteSpace:"nowrap"}}>{children}</span>;
+  return <span className="type-pill" style={{fontSize:"0.68em",fontWeight:800,letterSpacing:"0.08em",border:"1px solid #eb2e90",color:"#eb2e90",padding:"3px 7px",borderRadius:"999px",whiteSpace:"nowrap"}}>{children}</span>;
 }
 
 
@@ -7002,7 +7407,7 @@ function ScriptCompanionTab({ scenes }) {
         </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:"14px",alignItems:"start"}}>
+      <div className="companion-workbench">
         <div style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"12px"}}>
           <div style={{fontWeight:800,color:"var(--neon-pink)",marginBottom:"8px"}}>Script Companion</div>
           <div style={{fontSize:"0.86em",color:"var(--text-light)",marginBottom:"12px"}}>{filtered.length} of {companionCards.length} cards shown</div>
@@ -7020,7 +7425,7 @@ function ScriptCompanionTab({ scenes }) {
             <option value="ALL">All sequences</option>
             {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
           </select>
-          <div style={{maxHeight:"64vh",overflowY:"auto",WebkitOverflowScrolling:"touch",paddingRight:"4px"}}>
+          <div className="companion-results" style={{maxHeight:"64vh",overflowY:"auto",WebkitOverflowScrolling:"touch",paddingRight:"4px"}}>
             {filtered.length === 0 && <div style={{fontSize:"0.9em",color:"var(--text-light)",padding:"14px",border:"1px dashed var(--border-pink)"}}>No companion cards match.</div>}
             {filtered.map(card => {
               const active = selected && selected.id === card.id;
@@ -7028,14 +7433,15 @@ function ScriptCompanionTab({ scenes }) {
               return (
                 <button
                   key={card.id}
+                  
                   onClick={() => setActiveId(card.id)}
                   style={{width:"100%",textAlign:"left",display:"block",border:active ? "2px solid var(--neon-pink)" : "1px solid var(--border-pink)",background:active ? "#fff3f9" : "#fff",padding:"10px",marginBottom:"8px",cursor:"pointer"}}
                 >
                   <div style={{display:"flex",gap:"8px",alignItems:"center",justifyContent:"space-between"}}>
-                    <span style={{fontWeight:800,color:"#1C1410",fontSize:"0.92em"}}>{card.title || "Untitled"}</span>
+                    <span  style={{fontWeight:800,color:"#1C1410",fontSize:"0.92em"}}>{card.title || "Untitled"}</span>
                     <TypePill>{card.kind}</TypePill>
                   </div>
-                  <div style={{fontSize:"0.78em",color:"var(--text-light)",marginTop:"5px"}}>
+                  <div  style={{fontSize:"0.78em",color:"var(--text-light)",marginTop:"5px"}}>
                     {card.sequence ? SEQUENCE_TITLES[card.sequence] : "Unplaced"}{card.page ? " | p. " + card.page : (card.pageRange ? " | " + card.pageRange : "")} | {card.status || "todo"}{open ? " | " + open + " open" : ""}
                   </div>
                 </button>
@@ -7096,7 +7502,7 @@ function ScriptCompanionTab({ scenes }) {
 
 function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
   const [query, setQuery] = React.useState("");
-  const [sequenceFilter, setSequenceFilter] = React.useState("ALL");
+  const [sequenceFilter, setSequenceFilter] = React.useState(() => localStorage.getItem("pickme_scene_sequence_focus") || "AUTO");
   const [activeId, setActiveId] = React.useState(null);
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [newSceneTitle, setNewSceneTitle] = React.useState("");
@@ -7104,9 +7510,19 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
 
   const state = normalizeState({ scenes });
   const allSceneCards = sortSceneCards(state.scenes.filter(card => !card.archived && !card.maybe && (card.kind === "SCENE" || card.kind === "TWEAK")));
+  const counts = { UNPLACED:0, ALL:allSceneCards.length };
+  SEQUENCE_ORDER.forEach(seq => counts[seq] = 0);
+  allSceneCards.forEach(card => {
+    if (card.sequence && counts[card.sequence] !== undefined) counts[card.sequence] += 1;
+    else counts.UNPLACED += 1;
+  });
+  const firstFocusedSequence = (counts.UNPLACED > 0 && "UNPLACED") || SEQUENCE_ORDER.find(seq => counts[seq] > 0) || "ALL";
+  const effectiveSequenceFilter = sequenceFilter === "AUTO" ? firstFocusedSequence : sequenceFilter;
+  const sequenceLabel = effectiveSequenceFilter === "ALL" ? "All scenes" : effectiveSequenceFilter === "UNPLACED" ? "Unplaced" : SEQUENCE_TITLES[effectiveSequenceFilter];
   const q = query.trim().toLowerCase();
   const filtered = allSceneCards.filter(card => {
-    if (sequenceFilter !== "ALL" && (card.sequence || "") !== sequenceFilter) return false;
+    if (effectiveSequenceFilter === "UNPLACED" && card.sequence) return false;
+    if (effectiveSequenceFilter !== "ALL" && effectiveSequenceFilter !== "UNPLACED" && (card.sequence || "") !== effectiveSequenceFilter) return false;
     if (!q) return true;
     const haystack = [
       card.title,
@@ -7119,10 +7535,14 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
     ].join(" ").toLowerCase();
     return haystack.includes(q);
   });
-  const selected = filtered.find(card => card.id === activeId) || filtered[0] || allSceneCards.find(card => card.id === activeId) || allSceneCards[0] || null;
+  const selected = filtered.find(card => card.id === activeId) || filtered[0] || null;
   const titleDraft = selected ? (titleDrafts[selected.id] !== undefined ? titleDrafts[selected.id] : selected.title) : "";
   const visibleChanges = selected ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
-  const doneCount = allSceneCards.filter(card => card.status === "done").length;
+  const doneCount = filtered.filter(card => card.status === "done").length;
+
+  React.useEffect(() => {
+    localStorage.setItem("pickme_scene_sequence_focus", effectiveSequenceFilter);
+  }, [effectiveSequenceFilter]);
 
   React.useEffect(() => {
     if (selected && activeId !== selected.id) setActiveId(selected.id);
@@ -7164,12 +7584,19 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
     const title = newSceneTitle.trim();
     if (!title) return;
     const id = "card-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
-    const sequence = sequenceFilter !== "ALL" ? sequenceFilter : null;
+    const sequence = SEQUENCE_ORDER.includes(effectiveSequenceFilter) ? effectiveSequenceFilter : null;
     const card = touchRecord(normalizeCard({ id, title, kind:"SCENE", status:"todo", sequence, changes:[], description:"" }, allSceneCards.length));
     setScenes(prev => [...safeArray(prev), card]);
     setActiveId(id);
     setNewSceneTitle("");
     if (showToast) showToast("Scene added");
+  };
+
+  const moveSelectedToSequence = (value) => {
+    if (!selected) return;
+    const sequence = value || null;
+    patchCard(selected.id, { sequence });
+    setSequenceFilter(sequence || "UNPLACED");
   };
 
   const addChange = () => {
@@ -7178,7 +7605,7 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
     if (!text) return;
     patchCard(selected.id, card => {
       const next = normalizeCard(card, 0);
-      ensureChange(next, "ADJUST", text, { id:"change-" + slugify(next.id) + "-" + Date.now().toString(36) });
+      ensureChange(next, "ADJUST", text, { id:"change-" + slugify(next.id) + "-" + Date.now().toString(36), isRewriteTask:true });
       return { changes:next.changes, status:next.status === "done" ? "drafted" : next.status };
     });
     setNewChangeText("");
@@ -7201,52 +7628,67 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
   const statusLabel = selected && selected.status === "done" ? "Done" : selected && selected.status === "drafted" ? "Drafted" : "To do";
 
   return (
-    <div>
+    <div className="scene-notebook">
       <NowBar scenes={scenes} setScenes={setScenes} nowState={nowState} setNowState={setNowState} />
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:"14px",alignItems:"start"}}>
-        <div style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"12px"}}>
-          <div style={{fontWeight:800,color:"var(--neon-pink)",marginBottom:"8px"}}>Scene List</div>
-          <div style={{fontSize:"0.86em",color:"var(--text-light)",marginBottom:"12px"}}>{doneCount} of {allSceneCards.length} scene cards done</div>
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Search scenes or notes"
-            style={{width:"100%",fontSize:"16px",padding:"10px",border:"1px solid var(--border-pink)",boxSizing:"border-box",marginBottom:"8px"}}
-          />
-          <select
-            value={sequenceFilter}
-            onChange={e => setSequenceFilter(e.target.value)}
-            style={{width:"100%",fontSize:"16px",padding:"10px",border:"1px solid var(--border-pink)",boxSizing:"border-box",marginBottom:"10px"}}
-          >
-            <option value="ALL">All sequences</option>
-            {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
+
+      <div className="sequence-focus-bar">
+        <div>
+          <div className="sequence-kicker">Looking at one sequence</div>
+          <select className="sequence-select" value={effectiveSequenceFilter} onChange={e => setSequenceFilter(e.target.value)}>
+            <option value="UNPLACED">Unplaced ({counts.UNPLACED})</option>
+            {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]} ({counts[seq]})</option>)}
+            <option value="ALL">All scenes ({counts.ALL})</option>
           </select>
-          <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:"8px",marginBottom:"12px"}}>
+        </div>
+        <div className="sequence-focus-note">
+          {filtered.length} card{filtered.length === 1 ? "" : "s"} in {sequenceLabel}. {doneCount} done.
+        </div>
+      </div>
+
+      <div className="scene-workbench">
+        <div className="scene-list-panel" style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"12px"}}>
+          <div className="scene-list-heading">
+            <div className="scene-list-title" style={{fontWeight:800,color:"var(--neon-pink)",marginBottom:"8px"}}>{sequenceLabel}</div>
+            <div className="scene-count" style={{fontSize:"0.86em",color:"var(--text-light)",marginBottom:"12px"}}>{filtered.length} of {allSceneCards.length}</div>
+          </div>
+
+          <div className="scene-search-stack">
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder={"Search within " + sequenceLabel.toLowerCase()}
+              style={{width:"100%",fontSize:"16px",padding:"10px",border:"1px solid var(--border-pink)",boxSizing:"border-box",marginBottom:"8px"}}
+            />
+          </div>
+
+          <div className="scene-add-row" style={{display:"grid",gridTemplateColumns:"1fr auto",gap:"8px",marginBottom:"12px"}}>
             <input
               value={newSceneTitle}
               onChange={e => setNewSceneTitle(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") addScene(); }}
-              placeholder="New scene title"
+              placeholder={"Add a card to " + (effectiveSequenceFilter === "ALL" ? "Unplaced" : sequenceLabel)}
               style={{fontSize:"16px",padding:"10px",border:"1px solid var(--border-pink)",boxSizing:"border-box"}}
             />
             <button className="btn btn-primary" disabled={!newSceneTitle.trim()} onClick={addScene} style={{opacity:newSceneTitle.trim() ? 1 : 0.45, cursor:newSceneTitle.trim() ? "pointer" : "not-allowed"}}>Add</button>
           </div>
-          <div style={{maxHeight:"64vh",overflowY:"auto",WebkitOverflowScrolling:"touch",paddingRight:"4px"}}>
-            {filtered.length === 0 && <div style={{fontSize:"0.9em",color:"var(--text-light)",padding:"14px",border:"1px dashed var(--border-pink)"}}>No scenes match.</div>}
+
+          <div className="scene-results" style={{maxHeight:"64vh",overflowY:"auto",WebkitOverflowScrolling:"touch",paddingRight:"4px"}}>
+            {filtered.length === 0 && <div className="scene-empty-note">Nothing is in this sequence yet. Add a card here, or move an existing card into this sequence from the right panel.</div>}
             {filtered.map(card => {
               const openChanges = safeArray(card.changes).filter(change => !change.archived && !change.maybe && !change.done).length;
               const active = selected && selected.id === card.id;
               return (
                 <button
                   key={card.id}
+                  className={active ? "scene-row is-active" : "scene-row"}
                   onClick={() => setActiveId(card.id)}
                   style={{width:"100%",textAlign:"left",display:"block",border:active ? "2px solid var(--neon-pink)" : "1px solid var(--border-pink)",background:active ? "#fff3f9" : "#fff",padding:"10px",marginBottom:"8px",cursor:"pointer"}}
                 >
                   <div style={{display:"flex",gap:"8px",alignItems:"center",justifyContent:"space-between"}}>
-                    <span style={{fontWeight:800,color:"#1C1410",fontSize:"0.92em"}}>{card.title || "Untitled"}</span>
+                    <span className="scene-row-title" style={{fontWeight:800,color:"#1C1410",fontSize:"0.92em"}}>{card.title || "Untitled"}</span>
                     <TypePill>{card.kind}</TypePill>
                   </div>
-                  <div style={{fontSize:"0.78em",color:"var(--text-light)",marginTop:"5px"}}>
+                  <div className="scene-row-meta" style={{fontSize:"0.78em",color:"var(--text-light)",marginTop:"5px"}}>
                     {card.sequence ? SEQUENCE_TITLES[card.sequence] : "Unplaced"}{card.page ? " | p. " + card.page : (card.pageRange ? " | " + card.pageRange : "")} | {card.status || "todo"}{openChanges ? " | " + openChanges + " open" : ""}
                   </div>
                 </button>
@@ -7255,19 +7697,20 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
           </div>
         </div>
 
-        <div style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"14px",minHeight:"420px"}}>
+        <div className="scene-editor-panel" style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"14px",minHeight:"420px"}}>
           {!selected ? (
-            <div style={{fontSize:"0.95em",color:"var(--text-light)"}}>Add or select a scene.</div>
+            <div style={{fontSize:"0.95em",color:"var(--text-light)"}}>Pick a card in this sequence, or add one.</div>
           ) : (
             <>
-              <div style={{display:"flex",gap:"8px",alignItems:"center",justifyContent:"space-between",marginBottom:"12px"}}>
+              <div className="scene-editor-top" style={{display:"flex",gap:"8px",alignItems:"center",justifyContent:"space-between",marginBottom:"12px"}}>
                 <TypePill>{selected.kind}</TypePill>
-                <div style={{fontSize:"0.82em",fontWeight:800,color:selected.status === "done" ? "#63B6A4" : "var(--neon-pink)"}}>{statusLabel}</div>
+                <div className="scene-status-text" style={{fontSize:"0.82em",fontWeight:800,color:selected.status === "done" ? "#63B6A4" : "var(--neon-pink)"}}>{statusLabel}</div>
               </div>
 
-              <label style={{display:"block",fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"5px"}}>Scene title</label>
-              <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:"8px",marginBottom:"8px"}}>
+              <label className="scene-label" style={{display:"block",fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"5px"}}>Scene title</label>
+              <div className="scene-title-row" style={{display:"grid",gridTemplateColumns:"1fr auto",gap:"8px",marginBottom:"8px"}}>
                 <input
+                  className="scene-title-input"
                   value={titleDraft}
                   onChange={e => setTitleDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
                   onKeyDown={e => { if (e.key === "Enter") saveTitle(); }}
@@ -7278,25 +7721,29 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
               {safeArray(selected.formerTitles).length > 0 && (
                 <div style={{fontSize:"0.82em",color:"var(--text-light)",marginBottom:"6px"}}>Formerly: {safeArray(selected.formerTitles).join(", ")}</div>
               )}
-              {selected.pageRange && (
-                <div style={{fontSize:"0.82em",color:"var(--text-light)",marginBottom:"12px"}}>Pages: {selected.pageRange}</div>
-              )}
 
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:"8px",marginBottom:"12px"}}>
-                <select value={selected.sequence || ""} onChange={e => patchCard(selected.id, { sequence:e.target.value || null })}>{["",...SEQUENCE_ORDER].map(seq => <option key={seq} value={seq}>{seq ? SEQUENCE_TITLES[seq] : "Unplaced"}</option>)}</select>
-                <input type="number" value={selected.page || ""} onChange={e => patchCard(selected.id, { page:e.target.value ? Number(e.target.value) : null })} placeholder="Page" />
-                <select value={selected.kind} onChange={e => patchCard(selected.id, { kind:e.target.value })}>{["SCENE","TWEAK"].map(k => <option key={k}>{k}</option>)}</select>
-                <select value={selected.status} onChange={e => patchCard(selected.id, { status:e.target.value })}>{STATUS_VALUES.map(s => <option key={s} value={s}>{s}</option>)}</select>
+              <div className="scene-move-grid">
+                <label>
+                  <span className="scene-field-label">Move to sequence</span>
+                  <select value={selected.sequence || ""} onChange={e => moveSelectedToSequence(e.target.value)}>
+                    <option value="">Unplaced</option>
+                    {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span className="scene-field-label">Page</span>
+                  <input type="number" value={selected.page || ""} onChange={e => patchCard(selected.id, { page:e.target.value ? Number(e.target.value) : null })} placeholder="Page" />
+                </label>
+                <label>
+                  <span className="scene-field-label">Status</span>
+                  <select value={selected.status} onChange={e => patchCard(selected.id, { status:e.target.value })}>{STATUS_VALUES.map(s => <option key={s} value={s}>{s}</option>)}</select>
+                </label>
               </div>
 
-              {selected.kind !== "SCENE" && (
-                <button className="btn btn-secondary" onClick={() => patchCard(selected.id, { kind:"SCENE" })} style={{marginBottom:"12px"}}>Make this a scene</button>
-              )}
+              <label className="scene-label" style={{display:"block",fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"5px"}}>Notebook</label>
+              <textarea className="scene-notes-field" value={selected.description || ""} onChange={e => patchCard(selected.id, { description:e.target.value })} style={{width:"100%",minHeight:"105px",fontSize:"16px",padding:"10px",boxSizing:"border-box",border:"1px solid var(--border-pink)",marginBottom:"12px"}} />
 
-              <label style={{display:"block",fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"5px"}}>What happens now / notes</label>
-              <textarea value={selected.description || ""} onChange={e => patchCard(selected.id, { description:e.target.value })} style={{width:"100%",minHeight:"105px",fontSize:"16px",padding:"10px",boxSizing:"border-box",border:"1px solid var(--border-pink)",marginBottom:"12px"}} />
-
-              <label style={{display:"block",fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"5px"}}>Changes to make</label>
+              <label className="scene-label" style={{display:"block",fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"5px"}}>To do in script</label>
               {visibleChanges.map(change => (
                 <div key={change.id} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:"8px",alignItems:"center",marginBottom:"7px"}}>
                   <input type="checkbox" checked={!!change.done} onChange={e => patchChange(change.id, { done:e.target.checked })} />
@@ -7304,27 +7751,41 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
                   <button className="btn btn-secondary" onClick={() => patchChange(change.id, { archived:true })}>Archive</button>
                 </div>
               ))}
-              <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:"8px",marginBottom:"12px"}}>
+              <div className="scene-change-row" style={{display:"grid",gridTemplateColumns:"1fr auto",gap:"8px",marginBottom:"12px"}}>
                 <input
                   value={newChangeText}
                   onChange={e => setNewChangeText(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter") addChange(); }}
-                  placeholder="Add one concrete change"
+                  placeholder="Add one concrete rewrite task"
+                  className="scene-change-input"
                   style={{fontSize:"16px",padding:"10px",border:"1px solid var(--border-pink)",boxSizing:"border-box"}}
                 />
                 <button className="btn btn-primary" disabled={!newChangeText.trim()} onClick={addChange} style={{opacity:newChangeText.trim() ? 1 : 0.45, cursor:newChangeText.trim() ? "pointer" : "not-allowed"}}>Add</button>
               </div>
 
-              <label style={{display:"block",fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"5px"}}>Questions / blockers</label>
-              <textarea value={selected.openQuestions || ""} onChange={e => patchCard(selected.id, { openQuestions:e.target.value })} placeholder="What still needs deciding?" style={{width:"100%",minHeight:"76px",fontSize:"16px",padding:"10px",boxSizing:"border-box",border:"1px solid var(--border-pink)",marginBottom:"12px"}} />
+              <details className="scene-context-drawer">
+                <summary>More context</summary>
+                <div className="scene-context-grid">
+                  <label>
+                    <span className="scene-field-label">Questions / blockers</span>
+                    <textarea className="scene-small-field" value={selected.openQuestions || ""} onChange={e => patchCard(selected.id, { openQuestions:e.target.value })} placeholder="What still needs deciding?" style={{width:"100%",minHeight:"76px",fontSize:"16px",padding:"10px",boxSizing:"border-box",border:"1px solid var(--border-pink)",marginBottom:"12px"}} />
+                  </label>
+                  <label>
+                    <span className="scene-field-label">Ripple effects</span>
+                    <textarea className="scene-small-field" value={selected.rippleEffects || ""} onChange={e => patchCard(selected.id, { rippleEffects:e.target.value })} placeholder="What else changes if this changes?" style={{width:"100%",minHeight:"76px",fontSize:"16px",padding:"10px",boxSizing:"border-box",border:"1px solid var(--border-pink)",marginBottom:"12px"}} />
+                  </label>
+                  <label>
+                    <span className="scene-field-label">Characters / storylines touched</span>
+                    <input className="scene-thread-field" value={selected.storyThreads || ""} onChange={e => patchCard(selected.id, { storyThreads:e.target.value })} placeholder="Autumn, Ethan, Nowai, Musu..." style={{width:"100%",fontSize:"16px",padding:"10px",boxSizing:"border-box",border:"1px solid var(--border-pink)",marginBottom:"14px"}} />
+                  </label>
+                  <label className="scene-kind-field">
+                    <span className="scene-field-label">Card type</span>
+                    <select value={selected.kind} onChange={e => patchCard(selected.id, { kind:e.target.value })}>{["SCENE","TWEAK"].map(k => <option key={k}>{k}</option>)}</select>
+                  </label>
+                </div>
+              </details>
 
-              <label style={{display:"block",fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"5px"}}>Ripple effects</label>
-              <textarea value={selected.rippleEffects || ""} onChange={e => patchCard(selected.id, { rippleEffects:e.target.value })} placeholder="What else changes if this changes?" style={{width:"100%",minHeight:"76px",fontSize:"16px",padding:"10px",boxSizing:"border-box",border:"1px solid var(--border-pink)",marginBottom:"12px"}} />
-
-              <label style={{display:"block",fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"5px"}}>Characters / storylines touched</label>
-              <input value={selected.storyThreads || ""} onChange={e => patchCard(selected.id, { storyThreads:e.target.value })} placeholder="Autumn, Ethan, Nowai, Musu..." style={{width:"100%",fontSize:"16px",padding:"10px",boxSizing:"border-box",border:"1px solid var(--border-pink)",marginBottom:"14px"}} />
-
-              <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
+              <div className="scene-actions" style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
                 <button className="btn btn-primary" onClick={() => setNowState({ cardId:selected.id, subId:null, updatedAt:nowStamp(), updatedBy:getDeviceId() })}>Work this</button>
                 <button className="btn btn-secondary" onClick={() => patchCard(selected.id, { status:selected.status === "done" ? "drafted" : "done" })}>{selected.status === "done" ? "Reopen" : "Mark done"}</button>
                 <button className="btn btn-secondary" onClick={archiveSelected}>Archive</button>
@@ -7336,6 +7797,7 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
     </div>
   );
 }
+
 
 function ScriptRailTab({ scenes, setScenes, nowState, setNowState }) {
   const [expanded, setExpanded] = React.useState({});
@@ -7559,15 +8021,15 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
   const stats = computeProgressStats(state);
   const pagesDone = SEQUENCE_ORDER.reduce((sum, seq) => sum + Number(sequences && sequences[seq] || 0), 0);
   const pctPages = Math.min(100, Math.round((pagesDone / 117) * 100));
-  const pctThings = stats.totalThings ? Math.round((stats.completedThings / stats.totalThings) * 100) : 0;
+  const pctRewriteTasks = stats.totalRewriteTasks ? Math.round((stats.completedRewriteTasks / stats.totalRewriteTasks) * 100) : 0;
   const bar = (pct, color) => <div style={{height:"9px",background:"#f6d0f6",borderRadius:"999px",overflow:"hidden"}}><div style={{height:"100%",width:pct + "%",background:color}} /></div>;
   return (
     <div>
       <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",marginBottom:"10px"}}>{pagesDone} / 117 pages</div>
       {bar(pctPages, "#DA005F")}
-      <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.thingsLeft} / {stats.totalThings} things left</div>
-      {bar(pctThings, "#63B6A4")}
-      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>{stats.waiting} waiting on a decision</div>
+      <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} rewrite tasks left</div>
+      {bar(pctRewriteTasks, "#63B6A4")}
+      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>{stats.waiting} rewrite task{stats.waiting === 1 ? "" : "s"} waiting on a decision</div>
       {SEQUENCE_ORDER.map(seq => (
         <div key={seq} style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"12px",marginTop:"12px"}}>
           <div style={{display:"flex",justifyContent:"space-between",gap:"10px",alignItems:"center"}}>
@@ -7575,7 +8037,7 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
             <input type="number" value={sequences && sequences[seq] !== undefined ? sequences[seq] : ""} onChange={e => setSequences(prev => ({ ...(prev || {}), [seq]: e.target.value === "" ? "" : Number(e.target.value) }))} style={{width:"80px",fontSize:"16px"}} />
           </div>
           <div style={{fontSize:"0.88em",marginTop:"6px"}}>{Number(sequences && sequences[seq] || 0)} / {SEQUENCE_TARGETS[seq]} pages</div>
-          <div style={{fontSize:"0.88em"}}>{(stats.bySequence[seq]?.total || 0) - (stats.bySequence[seq]?.done || 0)} / {stats.bySequence[seq]?.total || 0} things left</div>
+          <div style={{fontSize:"0.88em"}}>{(stats.bySequence[seq]?.totalRewriteTasks || 0) - (stats.bySequence[seq]?.completedRewriteTasks || 0)} / {stats.bySequence[seq]?.totalRewriteTasks || 0} rewrite tasks left</div>
           <div style={{fontSize:"0.78em",color:"var(--text-light)"}}>Last touched {formatDateShort(state.sequenceMeta && state.sequenceMeta[seq] && state.sequenceMeta[seq].lastTouchedAt)}</div>
         </div>
       ))}
@@ -7917,7 +8379,7 @@ function App() {
         </select>
       </div>
 
-      {showSequenceBar && (
+      {activeTab !== "scene-list" && showSequenceBar && (
         <div className="progress-bar-container">
           {Object.keys(sequences).length > 0 ? (
             <>
@@ -7966,7 +8428,7 @@ function App() {
         </div>
       )}
 
-      {!showSequenceBar && (
+      {activeTab !== "scene-list" && !showSequenceBar && (
         <div style={{display: "flex", justifyContent: "flex-end", marginBottom: "20px"}}>
           <button className="progress-toggle-btn" onClick={() => setShowSequenceBar(true)} title="Show progress">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 7 L5 3 L9 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -8025,7 +8487,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260716d').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260717e').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
