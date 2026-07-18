@@ -1083,6 +1083,9 @@
         .scene-notebook .scene-workbench { grid-template-columns: minmax(300px, 0.84fr) minmax(480px, 1.16fr) !important; gap: 26px !important; }
         .scene-results { max-height: 64vh !important; min-height: 360px !important; }
         .scene-move-grid { grid-template-columns: minmax(210px, 1fr) 90px 120px !important; }
+
+
+
         @media (max-width: 780px) {
             body { padding: 12px 8px !important; }
             .container { max-width: 100% !important; }
@@ -2046,6 +2049,34 @@
                 width: 100% !important;
             }
         }
+        /* SCENE LIST OUTLINE UNIFICATION 20260718O */
+        .scene-notebook .sequence-kicker,
+        .scene-notebook .scene-label {
+            border: 1px solid #F6A3CC !important;
+            border-radius: 8px !important;
+            box-sizing: border-box !important;
+            color: #E668A7 !important;
+        }
+
+        .scene-notebook .sequence-select,
+        .scene-notebook .sequence-select:hover,
+        .scene-notebook .sequence-select:focus {
+            border: 1px solid #F6A3CC !important;
+            border-radius: 16px !important;
+            box-sizing: border-box !important;
+            color: #E668A7 !important;
+        }
+
+        .scene-notebook .sequence-focus-actions button.btn.soft-pink-btn:not(.scene-archive-text-btn):not(.archive-icon-btn),
+        .scene-notebook .sequence-focus-actions button.btn.soft-pink-btn:not(.scene-archive-text-btn):not(.archive-icon-btn):hover,
+        .scene-notebook .sequence-focus-actions button.btn.soft-pink-btn:not(.scene-archive-text-btn):not(.archive-icon-btn):focus {
+            border: 1px solid #F6A3CC !important;
+            border-radius: 16px !important;
+            box-sizing: border-box !important;
+            color: #E668A7 !important;
+        }
+
+
 
 
 
@@ -2285,7 +2316,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260718l";
+const APP_VERSION = "20260718o";
 const APP_BUILD = "DESKTOP";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -9716,7 +9747,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260718l').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260718o').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
