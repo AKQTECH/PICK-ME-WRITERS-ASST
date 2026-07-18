@@ -1962,6 +1962,7 @@
         .scene-notebook .scene-empty-note,
         .scene-notebook select:not(.sequence-select),
         .scene-notebook textarea,
+        .scene-notebook .scene-task-textarea,
         .scene-notebook input:not([type="checkbox"]),
         .scene-notebook .scene-title-row .soft-pink-btn,
         .scene-notebook .scene-change-row .soft-pink-btn {
@@ -2076,15 +2077,106 @@
             color: #E668A7 !important;
         }
 
+        /* SCENE LIST OPTION A OUTLINES 20260718P */
+        .scene-notebook {
+            --scene-line: #E668A7;
+            --scene-hot: #E668A7;
+            --scene-soft: #E668A7;
+            --scene-task: #E668A7;
+            --scene-muted: #E668A7;
+            --scene-border: #F6A3CC;
+            --scene-outline: #F6A3CC;
+            --scene-fill: #FDE0F0;
+            --scene-rule: 0 solid transparent;
+            --scene-hairline: inset 0 0 0 0.5px #F6A3CC;
+        }
 
+        .tab-select,
+        .tab-select:hover,
+        .tab-select:focus {
+            border: 0 solid transparent !important;
+            box-shadow: inset 0 0 0 0.5px #F6A3CC !important;
+            color: #E668A7 !important;
+        }
 
+        .scene-notebook .sequence-focus-bar {
+            border-bottom: 0 !important;
+            box-shadow: inset 0 -0.5px 0 #F6A3CC !important;
+        }
 
+        .scene-notebook .sequence-kicker,
+        .scene-notebook .scene-label {
+            background: #FDE0F0 !important;
+            border: 0 solid transparent !important;
+            border-radius: 8px !important;
+            box-shadow: var(--scene-hairline) !important;
+            box-sizing: border-box !important;
+            color: #E668A7 !important;
+        }
 
+        .scene-notebook .sequence-select,
+        .scene-notebook .sequence-select:hover,
+        .scene-notebook .sequence-select:focus,
+        .scene-notebook .sequence-focus-actions button.btn.soft-pink-btn:not(.scene-archive-text-btn):not(.archive-icon-btn),
+        .scene-notebook .sequence-focus-actions button.btn.soft-pink-btn:not(.scene-archive-text-btn):not(.archive-icon-btn):hover,
+        .scene-notebook .sequence-focus-actions button.btn.soft-pink-btn:not(.scene-archive-text-btn):not(.archive-icon-btn):focus {
+            background-color: #FDE0F0 !important;
+            border: 0 solid transparent !important;
+            border-radius: 16px !important;
+            box-shadow: var(--scene-hairline) !important;
+            box-sizing: border-box !important;
+            color: #E668A7 !important;
+        }
 
+        .scene-notebook .scene-list-panel,
+        .scene-notebook .scene-editor-panel,
+        .scene-notebook .scene-row,
+        .scene-notebook .scene-row.is-active,
+        .scene-notebook .scene-title-input,
+        .scene-notebook .scene-change-input,
+        .scene-notebook .scene-empty-note,
+        .scene-notebook select:not(.sequence-select),
+        .scene-notebook textarea,
+        .scene-notebook input:not([type="checkbox"]),
+        .scene-notebook .scene-title-row .soft-pink-btn,
+        .scene-notebook .scene-title-row .soft-pink-btn:hover,
+        .scene-notebook .scene-title-row .soft-pink-btn:focus,
+        .scene-notebook .scene-title-row .soft-pink-btn:disabled,
+        .scene-notebook .scene-change-row .soft-pink-btn,
+        .scene-notebook .scene-change-row .soft-pink-btn:hover,
+        .scene-notebook .scene-change-row .soft-pink-btn:focus,
+        .scene-notebook .scene-change-row .soft-pink-btn:disabled,
+        .scene-notebook .icon-soft-btn:not(.archive-icon-btn) {
+            border: 0 solid transparent !important;
+            border-radius: 0 !important;
+            box-shadow: var(--scene-hairline) !important;
+        }
 
+        .scene-notebook .scene-list-title,
+        .scene-notebook .scene-count,
+        .scene-notebook .scene-row-title,
+        .scene-notebook .scene-row-meta,
+        .scene-notebook .scene-task-count,
+        .scene-notebook .scene-task-textarea,
+        .scene-notebook .scene-change-input,
+        .scene-notebook .scene-change-input::placeholder,
+        .scene-notebook .scene-empty-note,
+        .scene-notebook .scene-title-input,
+        .scene-notebook .scene-archive-text-btn,
+        .scene-notebook select:not(.sequence-select),
+        .scene-notebook .scene-title-row .soft-pink-btn,
+        .scene-notebook .scene-change-row .soft-pink-btn,
+        .scene-notebook .icon-soft-btn:not(.archive-icon-btn) {
+            color: #E668A7 !important;
+            opacity: 1 !important;
+        }
 
-
-
+        .scene-notebook .scene-task-textarea {
+            border: 0 solid transparent !important;
+            border-radius: 0 !important;
+            box-shadow: var(--scene-hairline) !important;
+            color: #E668A7 !important;
+        }
 
         .claude-notes-pre {
             background: #FFFDFC;
@@ -2316,7 +2408,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260718o";
+const APP_VERSION = "20260718p";
 const APP_BUILD = "DESKTOP";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -9738,7 +9830,7 @@ function App() {
         )}
       </div>
 
-      <div className={`toast${toastVisible ? " show" : ""}`}>{toastMsg}</div>
+      {toastMsg ? <div className={`toast${toastVisible ? " show" : ""}`}>{toastMsg}</div> : null}
     </div>
   );
 }
@@ -9747,7 +9839,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260718o').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260718p').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
