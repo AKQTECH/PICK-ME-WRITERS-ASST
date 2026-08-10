@@ -2812,6 +2812,136 @@
             padding: 12px;
         }
 
+        .archive-tab {
+            display: grid;
+            gap: 14px;
+        }
+
+        .archive-summary-grid {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-bottom: 8px;
+        }
+
+        .archive-summary-box {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line, #fec3e4);
+            border-radius: 6px;
+            min-width: 0;
+            padding: 12px 14px;
+        }
+
+        .archive-summary-box div {
+            color: #666666;
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        .archive-summary-box strong {
+            color: #000000;
+            display: block;
+            font-size: 1.55rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-top: 5px;
+            overflow-wrap: anywhere;
+        }
+
+        .progress-archive-summary {
+            margin-top: 16px;
+        }
+
+        .archive-group {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line, #fec3e4);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .archive-group summary {
+            align-items: center;
+            color: #000000;
+            cursor: pointer;
+            display: flex;
+            font-size: 0.82rem;
+            font-weight: 900;
+            justify-content: space-between;
+            letter-spacing: 0.06em;
+            list-style: none;
+            min-height: 42px;
+            padding: 10px 13px;
+            text-transform: uppercase;
+        }
+
+        .archive-group summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .archive-group summary span {
+            color: var(--companion-hot, #EA258D);
+            font-size: 0.92rem;
+        }
+
+        .archive-group-body {
+            border-top: 1px solid #EEEEEE;
+            display: grid;
+            gap: 8px;
+            padding: 10px;
+        }
+
+        .archive-row {
+            align-items: start;
+            background: #FFFFFF;
+            border: 1px solid #EEEEEE;
+            border-radius: 4px;
+            display: grid;
+            gap: 10px;
+            grid-template-columns: minmax(0, 1fr) auto;
+            padding: 11px 12px;
+        }
+
+        .archive-kicker,
+        .archive-meta {
+            color: #666666;
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            line-height: 1.35;
+            text-transform: uppercase;
+        }
+
+        .archive-title {
+            color: #000000;
+            font-size: 0.95rem;
+            font-weight: 900;
+            line-height: 1.25;
+            margin: 4px 0;
+            overflow-wrap: anywhere;
+        }
+
+        .archive-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            justify-content: flex-end;
+        }
+
+        .archive-actions .btn {
+            min-height: 36px;
+            padding: 8px 11px;
+        }
+
+        .archive-empty {
+            border: 1px dashed var(--companion-line, #fec3e4);
+            color: #666666;
+            font-size: 0.9rem;
+            padding: 12px;
+        }
+
         @media (max-width: 900px) {
             .companion-focus-bar,
             .companion-workbench,
@@ -2827,6 +2957,19 @@
             .companion-add-button,
             .companion-focus-button {
                 width: 100%;
+            }
+
+            .archive-summary-grid,
+            .archive-row {
+                grid-template-columns: 1fr;
+            }
+
+            .archive-actions {
+                justify-content: stretch;
+            }
+
+            .archive-actions .btn {
+                flex: 1 1 120px;
             }
         }
 
@@ -3288,7 +3431,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260810b";
+const APP_VERSION = "20260810c";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -6168,6 +6311,23 @@ function touchRecord(record, extra) {
   const ts = nowStamp();
   return { ...(record || {}), ...(extra || {}), updatedAt: ts, updatedBy: getDeviceId(), lastTouchedAt: ts };
 }
+function archiveFields(extra) {
+  const ts = nowStamp();
+  return { archived:true, archivedAt:ts, ...(extra || {}), updatedAt:ts, updatedBy:getDeviceId(), lastTouchedAt:ts };
+}
+function restoreFields(extra) {
+  const ts = nowStamp();
+  return { archived:false, archivedAt:null, ...(extra || {}), updatedAt:ts, updatedBy:getDeviceId(), lastTouchedAt:ts };
+}
+function applyChangeDone(card, changeId, done) {
+  const changes = safeArray(card && card.changes).map(change =>
+    asId(change.id) === asId(changeId) ? touchRecord(change, { done:!!done }) : change
+  );
+  const activeChanges = changes.filter(change => !change.archived && !change.maybe);
+  const allDone = activeChanges.length > 0 && activeChanges.every(change => !!change.done);
+  const status = allDone ? "done" : (card && card.status === "done" ? "todo" : card && card.status);
+  return { changes, status };
+}
 function createDefaultState(overrides) {
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -6596,8 +6756,7 @@ function exportFilename() {
   return "pick-me-data_" + date + "_" + time + ".json";
 }
 function archiveCardList(list, id) {
-  const ts = nowStamp();
-  return safeArray(list).map(card => asId(card.id) === asId(id) ? { ...card, archived:true, archivedAt:ts, updatedAt:ts, updatedBy:getDeviceId() } : card);
+  return safeArray(list).map(card => asId(card.id) === asId(id) ? { ...card, ...archiveFields() } : card);
 }
 function markDeletedInList(list, id) {
   const ts = nowStamp();
@@ -6959,6 +7118,22 @@ function isRewriteTaskRecord(record) {
     record.kind === "REWRITE_TASK"
   ));
 }
+function isCompanionActionCard(card) {
+  return !!(card && !card.archived && !card.maybe && (card.kind === "SCENE" || card.kind === "TWEAK"));
+}
+function isCompanionAction(change) {
+  return !!(change && !change.archived && !change.maybe);
+}
+function getCompanionActionRows(scenesInput) {
+  const rows = [];
+  safeArray(scenesInput).forEach(card => {
+    if (!isCompanionActionCard(card)) return;
+    safeArray(card.changes).forEach(change => {
+      if (isCompanionAction(change)) rows.push({ card, change });
+    });
+  });
+  return rows;
+}
 function computeProgressStats(stateInput) {
   const state = normalizeState(stateInput);
   const decisions = getDecisionMap(state.scenes);
@@ -6975,19 +7150,8 @@ function computeProgressStats(stateInput) {
       if (isWaiting) bySequence[seq].waiting += 1;
     }
   };
-  state.scenes.forEach(card => {
-    if (card.archived || card.maybe) return;
-    if (isRewriteTaskRecord(card)) {
-      addRewriteTask(card.sequence, card.status === "done", isWaitingOnDecision(card, decisions));
-    }
-    safeArray(card.changes).forEach(change => {
-      if (change.archived || change.maybe || !isRewriteTaskRecord(change)) return;
-      addRewriteTask(card.sequence, !!change.done, isWaitingOnDecision(change, decisions));
-    });
-    safeArray(card.moments).forEach(moment => {
-      if (moment.archived || moment.maybe || !isRewriteTaskRecord(moment)) return;
-      addRewriteTask(moment.sequence || card.sequence, !!moment.done, isWaitingOnDecision(moment, decisions));
-    });
+  getCompanionActionRows(state.scenes).forEach(({ card, change }) => {
+    addRewriteTask(card.sequence, !!change.done, isWaitingOnDecision(change, decisions));
   });
   return {
     totalRewriteTasks,
@@ -6996,6 +7160,45 @@ function computeProgressStats(stateInput) {
     waiting,
     bySequence
   };
+}
+function collectArchiveBuckets(scenesInput) {
+  const state = normalizeState({ scenes:scenesInput });
+  const buckets = {
+    archivedCards: [],
+    archivedTaskRows: [],
+    archivedMomentRows: [],
+    completedSceneCards: [],
+    completedTaskRows: [],
+    completedMomentRows: []
+  };
+  state.scenes.forEach(card => {
+    if (!card || card.maybe) return;
+    const isSceneLike = card.kind === "SCENE" || card.kind === "TWEAK";
+    const activeChanges = safeArray(card.changes).filter(change => !change.archived && !change.maybe);
+    if (card.archived) {
+      buckets.archivedCards.push(card);
+    } else if (isSceneLike && (card.status === "done" || (activeChanges.length > 0 && activeChanges.every(change => !!change.done)))) {
+      buckets.completedSceneCards.push(card);
+    }
+    safeArray(card.changes).forEach(change => {
+      if (!change || change.maybe) return;
+      if (change.archived) buckets.archivedTaskRows.push({ card, change });
+      else if (change.done) buckets.completedTaskRows.push({ card, change });
+    });
+    safeArray(card.moments).forEach(moment => {
+      if (!moment || moment.maybe) return;
+      if (moment.archived) buckets.archivedMomentRows.push({ card, moment });
+      else if (moment.done) buckets.completedMomentRows.push({ card, moment });
+    });
+  });
+  const byUpdated = (a, b) => Number((b.change || b.moment || b).updatedAt || (b.change || b.moment || b).archivedAt || 0) - Number((a.change || a.moment || a).updatedAt || (a.change || a.moment || a).archivedAt || 0);
+  buckets.archivedCards.sort((a, b) => Number(b.archivedAt || b.updatedAt || 0) - Number(a.archivedAt || a.updatedAt || 0));
+  buckets.completedSceneCards.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+  buckets.archivedTaskRows.sort(byUpdated);
+  buckets.completedTaskRows.sort(byUpdated);
+  buckets.archivedMomentRows.sort(byUpdated);
+  buckets.completedMomentRows.sort(byUpdated);
+  return buckets;
 }
 function formatDateShort(ts) {
   if (!ts) return "Not yet";
@@ -8872,17 +9075,18 @@ function SettingsTab({
   const [dbxAccount, setDbxAccount] = useState(() => DBX.account()?.name || null);
   const [dbxSyncing, setDbxSyncing] = useState(false);
   const [dbxMsg, setDbxMsg] = useState("");
-  const archivedSceneCards = safeArray(scenes).filter(card => card && card.archived && !card.maybe && (card.kind === "SCENE" || card.kind === "TWEAK"));
-  const archivedTaskRows = safeArray(scenes).flatMap(card => safeArray(card && card.changes).filter(change => change && change.archived && !change.maybe).map(change => ({ card, change })));
+  const archiveBuckets = collectArchiveBuckets(scenes);
+  const archivedSceneCards = archiveBuckets.archivedCards.filter(card => card.kind === "SCENE" || card.kind === "TWEAK");
+  const archivedTaskRows = archiveBuckets.archivedTaskRows;
   const restoreArchivedScene = (id) => {
-    setScenes(prev => safeArray(prev).map(card => asId(card.id) === asId(id) ? touchRecord(normalizeCard(card, 0), { archived:false, archivedAt:null }) : card));
+    setScenes(prev => safeArray(prev).map(card => asId(card.id) === asId(id) ? touchRecord(normalizeCard(card, 0), restoreFields()) : card));
     if (showToast) showToast("Scene restored");
   };
   const restoreArchivedTask = (cardId, changeId) => {
     setScenes(prev => safeArray(prev).map(card => {
       if (asId(card.id) !== asId(cardId)) return card;
       return touchRecord(normalizeCard(card, 0), {
-        changes:safeArray(card.changes).map(change => asId(change.id) === asId(changeId) ? touchRecord(change, { archived:false, archivedAt:null }) : change)
+        changes:safeArray(card.changes).map(change => asId(change.id) === asId(changeId) ? touchRecord(change, restoreFields()) : change)
       });
     }));
     if (showToast) showToast("Task restored");
@@ -9752,6 +9956,14 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
       changes:safeArray(card.changes).map(change => asId(change.id) === asId(changeId) ? touchRecord(change, typeof patch === "function" ? patch(change) : patch) : change)
     }));
   };
+  const toggleChangeDone = (changeId, done) => {
+    if (!selected) return;
+    patchCard(selected.id, card => applyChangeDone(card, changeId, done));
+  };
+  const archiveChange = (changeId) => {
+    patchChange(changeId, archiveFields());
+    if (showToast) showToast("Action archived");
+  };
 
   const addAction = () => {
     if (!selected) return;
@@ -9888,7 +10100,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                 {visibleChanges.length === 0 && <div className="companion-empty-note">No actions yet.</div>}
                 {visibleChanges.map(change => (
                   <div key={change.id} className="companion-task-row">
-                    <input type="checkbox" checked={!!change.done} onChange={e => patchChange(change.id, { done:e.target.checked })} />
+                    <input type="checkbox" checked={!!change.done} onChange={e => toggleChangeDone(change.id, e.target.checked)} />
                     <select className="companion-verb-select" value={change.verb || "ADJUST"} onChange={e => patchChange(change.id, { verb:e.target.value })}>
                       {CHANGE_VERBS.map(verb => <option key={verb} value={verb}>{verb}</option>)}
                     </select>
@@ -9898,7 +10110,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                       onChange={e => patchChange(change.id, { text:e.target.value })}
                       rows={2}
                     />
-                    <button type="button" className="companion-add-button" onClick={() => patchChange(change.id, { archived:true })} title="Archive action" aria-label="Archive action"><ArchiveTrayIcon /></button>
+                    <button type="button" className="companion-add-button" onClick={() => archiveChange(change.id)} title="Archive action" aria-label="Archive action"><ArchiveTrayIcon /></button>
                   </div>
                 ))}
                 <div className="companion-add-row">
@@ -10097,10 +10309,18 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
       changes:safeArray(card.changes).map(change => asId(change.id) === asId(changeId) ? touchRecord(change, typeof patch === "function" ? patch(change) : patch) : change)
     }));
   };
+  const toggleChangeDone = (changeId, done) => {
+    if (!selected) return;
+    patchCard(selected.id, card => applyChangeDone(card, changeId, done));
+  };
+  const archiveChange = (changeId) => {
+    patchChange(changeId, archiveFields());
+    if (showToast) showToast("Task archived");
+  };
 
   const archiveSelected = () => {
     if (!selected || focusSceneOnly) return;
-    if (!confirm("Archive this scene? It will move out of the main scene list. You can restore it later in Settings.")) return;
+    if (!confirm("Archive this scene? It will move out of the main scene list. You can restore it later from Archive.")) return;
     setScenes(prev => archiveCardList(prev, selected.id));
     setActiveId(null);
     if (showToast) showToast("Scene archived");
@@ -10194,9 +10414,9 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
               {visibleChanges.length === 0 && <div className="scene-empty-note" style={{marginBottom:"10px"}}>No tasks yet. Use + to add one.</div>}
               {visibleChanges.map(change => (
                 <div key={change.id} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:"8px",alignItems:"start",marginBottom:"8px"}}>
-                  <input type="checkbox" checked={!!change.done} onChange={e => patchChange(change.id, { done:e.target.checked })} style={{marginTop:"8px"}} />
+                  <input type="checkbox" checked={!!change.done} onChange={e => toggleChangeDone(change.id, e.target.checked)} style={{marginTop:"8px"}} />
                   <textarea className="scene-task-textarea" value={change.text} onChange={e => patchChange(change.id, { text:e.target.value })} rows={2} style={{border:"0.5px solid #F6A3CC",resize:"vertical",boxSizing:"border-box",width:"100%"}} />
-                  <button className="btn soft-pink-btn icon-soft-btn archive-icon-btn" onClick={() => patchChange(change.id, { archived:true })} title="Archive task" aria-label="Archive task"><ArchiveTrayIcon /></button>
+                  <button className="btn soft-pink-btn icon-soft-btn archive-icon-btn" onClick={() => archiveChange(change.id)} title="Archive task" aria-label="Archive task"><ArchiveTrayIcon /></button>
                 </div>
               ))}
               <div className="scene-change-row" style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:"8px",marginBottom:"12px"}}>
@@ -10289,7 +10509,7 @@ function ScriptRailTab({ scenes, setScenes, nowState, setNowState }) {
                 {safeArray(card.changes).length > 0 && <div style={{fontWeight:800,color:"var(--neon-pink)",margin:"12px 0 6px"}}>Changes</div>}
                 {activeChanges.map(change => (
                   <div key={change.id} style={{display:"grid",gridTemplateColumns:"auto auto 1fr auto",gap:"8px",alignItems:"center",marginBottom:"7px"}}>
-                    <input type="checkbox" checked={!!change.done} onChange={e => patchCard(card.id, c => ({ changes:safeArray(c.changes).map(ch => ch.id === change.id ? touchRecord(ch, { done:e.target.checked }) : ch), status:e.target.checked && safeArray(c.changes).filter(ch => !ch.archived && !ch.maybe && ch.id !== change.id).every(ch => ch.done) ? "done" : c.status }))} />
+                    <input type="checkbox" checked={!!change.done} onChange={e => patchCard(card.id, c => applyChangeDone(c, change.id, e.target.checked))} />
                     <select value={change.verb} onChange={e => patchCard(card.id, c => ({ changes:safeArray(c.changes).map(ch => ch.id === change.id ? touchRecord(ch, { verb:e.target.value }) : ch) }))}>{CHANGE_VERBS.map(v => <option key={v}>{v}</option>)}</select>
                     <input value={change.text} onChange={e => patchCard(card.id, c => ({ changes:safeArray(c.changes).map(ch => ch.id === change.id ? touchRecord(ch, { text:e.target.value }) : ch) }))} />
                     {change.verb === "MOVE" && <select value={change.targetCardId || ""} onChange={e => patchCard(card.id, c => ({ changes:safeArray(c.changes).map(ch => ch.id === change.id ? touchRecord(ch, { targetCardId:e.target.value || null }) : ch) }))}><option value="">Move to...</option>{cardOptions.map(opt => <option key={opt.id} value={opt.id}>{opt.title}</option>)}</select>}
@@ -10437,10 +10657,168 @@ function DecisionsTab({ scenes, setScenes }) {
   );
 }
 
+function ArchiveTab({ scenes, setScenes, showToast }) {
+  const buckets = collectArchiveBuckets(scenes);
+  const totalArchived = buckets.archivedCards.length + buckets.archivedTaskRows.length + buckets.archivedMomentRows.length;
+  const totalCompleted = buckets.completedSceneCards.length + buckets.completedTaskRows.length + buckets.completedMomentRows.length;
+  const patchCard = (id, patch) => setScenes(prev => safeArray(prev).map(card => {
+    if (asId(card.id) !== asId(id)) return card;
+    const normalized = normalizeCard(card, 0);
+    const nextPatch = typeof patch === "function" ? patch(normalized) : patch;
+    return touchRecord(normalized, nextPatch);
+  }));
+  const patchChange = (cardId, changeId, patch) => patchCard(cardId, card => ({
+    changes:safeArray(card.changes).map(change => asId(change.id) === asId(changeId) ? touchRecord(change, typeof patch === "function" ? patch(change) : patch) : change)
+  }));
+  const patchMoment = (cardId, momentId, patch) => patchCard(cardId, card => ({
+    moments:safeArray(card.moments).map(moment => asId(moment.id) === asId(momentId) ? touchRecord(moment, typeof patch === "function" ? patch(moment) : patch) : moment)
+  }));
+  const archiveCard = (id) => {
+    patchCard(id, archiveFields());
+    if (showToast) showToast("Archived");
+  };
+  const restoreCard = (id) => {
+    patchCard(id, restoreFields());
+    if (showToast) showToast("Restored");
+  };
+  const reopenCard = (id) => {
+    patchCard(id, restoreFields({ status:"todo", resolvedAt:null }));
+    if (showToast) showToast("Reopened");
+  };
+  const archiveTask = (cardId, changeId) => {
+    patchChange(cardId, changeId, archiveFields());
+    if (showToast) showToast("Task archived");
+  };
+  const restoreTask = (cardId, changeId) => {
+    patchChange(cardId, changeId, restoreFields());
+    if (showToast) showToast("Task restored");
+  };
+  const reopenTask = (cardId, changeId) => {
+    patchChange(cardId, changeId, restoreFields({ done:false }));
+    patchCard(cardId, card => card.status === "done" ? { status:"todo" } : {});
+    if (showToast) showToast("Task reopened");
+  };
+  const archiveMoment = (cardId, momentId) => {
+    patchMoment(cardId, momentId, archiveFields());
+    if (showToast) showToast("Moment archived");
+  };
+  const restoreMoment = (cardId, momentId) => {
+    patchMoment(cardId, momentId, restoreFields());
+    if (showToast) showToast("Moment restored");
+  };
+  const reopenMoment = (cardId, momentId) => {
+    patchMoment(cardId, momentId, restoreFields({ done:false }));
+    if (showToast) showToast("Moment reopened");
+  };
+  const ArchiveGroup = ({ title, count, open = false, children }) => (
+    <details className="archive-group" open={open}>
+      <summary>{title} <span>{count}</span></summary>
+      <div className="archive-group-body">
+        {count ? children : <div className="archive-empty">Nothing here.</div>}
+      </div>
+    </details>
+  );
+  const TaskRow = ({ card, change, archived }) => (
+    <div className="archive-row">
+      <div>
+        <div className="archive-kicker">{card.title || "Untitled"}{card.sequence ? " - " + SEQUENCE_TITLES[card.sequence] : ""}</div>
+        <div className="archive-title">{change.text || "Untitled task"}</div>
+        <div className="archive-meta">{change.verb || "TASK"}{change.archivedAt ? " - archived " + formatDateShort(change.archivedAt) : ""}</div>
+      </div>
+      <div className="archive-actions">
+        {archived ? (
+          <>
+            <button className="btn btn-secondary" onClick={() => restoreTask(card.id, change.id)}>Restore</button>
+            <button className="btn btn-secondary" onClick={() => reopenTask(card.id, change.id)}>Reopen</button>
+          </>
+        ) : (
+          <>
+            <button className="btn btn-secondary" onClick={() => archiveTask(card.id, change.id)}>Archive</button>
+            <button className="btn btn-secondary" onClick={() => reopenTask(card.id, change.id)}>Reopen</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+  const CardRow = ({ card, archived }) => (
+    <div className="archive-row">
+      <div>
+        <div className="archive-kicker">{card.kind || "CARD"}{card.sequence ? " - " + SEQUENCE_TITLES[card.sequence] : ""}</div>
+        <div className="archive-title">{card.title || "Untitled"}</div>
+        <div className="archive-meta">{displayStatusLabel(card.status)}{card.archivedAt ? " - archived " + formatDateShort(card.archivedAt) : ""}</div>
+      </div>
+      <div className="archive-actions">
+        {archived ? (
+          <>
+            <button className="btn btn-secondary" onClick={() => restoreCard(card.id)}>Restore</button>
+            <button className="btn btn-secondary" onClick={() => reopenCard(card.id)}>Reopen</button>
+          </>
+        ) : (
+          <>
+            <button className="btn btn-secondary" onClick={() => archiveCard(card.id)}>Archive</button>
+            <button className="btn btn-secondary" onClick={() => reopenCard(card.id)}>Reopen</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+  const MomentRow = ({ card, moment, archived }) => (
+    <div className="archive-row">
+      <div>
+        <div className="archive-kicker">{card.title || "Thread"}{moment.sequence ? " - " + SEQUENCE_TITLES[moment.sequence] : ""}</div>
+        <div className="archive-title">{moment.label || "Untitled moment"}</div>
+        <div className="archive-meta">THREAD MOMENT{moment.archivedAt ? " - archived " + formatDateShort(moment.archivedAt) : ""}</div>
+      </div>
+      <div className="archive-actions">
+        {archived ? (
+          <>
+            <button className="btn btn-secondary" onClick={() => restoreMoment(card.id, moment.id)}>Restore</button>
+            <button className="btn btn-secondary" onClick={() => reopenMoment(card.id, moment.id)}>Reopen</button>
+          </>
+        ) : (
+          <>
+            <button className="btn btn-secondary" onClick={() => archiveMoment(card.id, moment.id)}>Archive</button>
+            <button className="btn btn-secondary" onClick={() => reopenMoment(card.id, moment.id)}>Reopen</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+  return (
+    <div className="archive-tab">
+      <div className="archive-summary-grid">
+        <div className="archive-summary-box"><div>Archived</div><strong>{totalArchived}</strong></div>
+        <div className="archive-summary-box"><div>Completed</div><strong>{totalCompleted}</strong></div>
+        <div className="archive-summary-box"><div>Dropbox</div><strong>{DBX.isConnected() ? "On" : "Local"}</strong></div>
+      </div>
+      <ArchiveGroup title="Completed tasks" count={buckets.completedTaskRows.length} open={true}>
+        {buckets.completedTaskRows.map(({ card, change }) => <TaskRow key={card.id + "-" + change.id} card={card} change={change} />)}
+      </ArchiveGroup>
+      <ArchiveGroup title="Completed scenes" count={buckets.completedSceneCards.length}>
+        {buckets.completedSceneCards.map(card => <CardRow key={card.id} card={card} />)}
+      </ArchiveGroup>
+      <ArchiveGroup title="Completed thread moments" count={buckets.completedMomentRows.length}>
+        {buckets.completedMomentRows.map(({ card, moment }) => <MomentRow key={card.id + "-" + moment.id} card={card} moment={moment} />)}
+      </ArchiveGroup>
+      <ArchiveGroup title="Archived tasks" count={buckets.archivedTaskRows.length} open={true}>
+        {buckets.archivedTaskRows.map(({ card, change }) => <TaskRow key={card.id + "-" + change.id} card={card} change={change} archived />)}
+      </ArchiveGroup>
+      <ArchiveGroup title="Archived scenes and cards" count={buckets.archivedCards.length}>
+        {buckets.archivedCards.map(card => <CardRow key={card.id} card={card} archived />)}
+      </ArchiveGroup>
+      <ArchiveGroup title="Archived thread moments" count={buckets.archivedMomentRows.length}>
+        {buckets.archivedMomentRows.map(({ card, moment }) => <MomentRow key={card.id + "-" + moment.id} card={card} moment={moment} archived />)}
+      </ArchiveGroup>
+    </div>
+  );
+}
+
 
 function ProgressV2Tab({ scenes, sequences, setSequences }) {
   const state = normalizeState({ scenes, sequences });
   const stats = computeProgressStats(state);
+  const archiveBuckets = collectArchiveBuckets(state.scenes);
+  const archivedTotal = archiveBuckets.archivedCards.length + archiveBuckets.archivedTaskRows.length + archiveBuckets.archivedMomentRows.length;
   const pagesDone = getTotalPagesDone(sequences);
   const pageGoal = getTotalPageGoal(sequences);
   const pctPages = pageGoal > 0 ? Math.min(100, Math.round((pagesDone / pageGoal) * 100)) : 0;
@@ -10463,9 +10841,14 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
       </div>
       <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",marginBottom:"10px"}}>{pagesDone} / {pageGoal} pages</div>
       {bar(pctPages, "#DA005F")}
-      <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} rewrite tasks left</div>
+      <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} companion tasks left</div>
       {bar(pctRewriteTasks, "#63B6A4")}
-      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>{stats.waiting} rewrite task{stats.waiting === 1 ? "" : "s"} waiting on a decision</div>
+      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>{stats.waiting} companion task{stats.waiting === 1 ? "" : "s"} waiting on a decision</div>
+      <div className="archive-summary-grid progress-archive-summary">
+        <div className="archive-summary-box"><div>Done companion tasks</div><strong>{stats.completedRewriteTasks}</strong></div>
+        <div className="archive-summary-box"><div>Ready to archive</div><strong>{archiveBuckets.completedTaskRows.length}</strong></div>
+        <div className="archive-summary-box"><div>Archived</div><strong>{archivedTotal}</strong></div>
+      </div>
       {SEQUENCE_ORDER.map(seq => {
         const targetKey = '_target_' + seq;
         const currentPages = sequences && sequences[seq] !== undefined ? sequences[seq] : "";
@@ -10484,7 +10867,7 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
               </div>
             </div>
             <div style={{fontSize:"0.88em",marginTop:"8px"}}>{getStoredNumber(sequences, seq, 0)} / {getSequencePageTarget(sequences, seq)} pages</div>
-            <div style={{fontSize:"0.88em"}}>{(stats.bySequence[seq]?.totalRewriteTasks || 0) - (stats.bySequence[seq]?.completedRewriteTasks || 0)} / {stats.bySequence[seq]?.totalRewriteTasks || 0} rewrite tasks left</div>
+            <div style={{fontSize:"0.88em"}}>{(stats.bySequence[seq]?.totalRewriteTasks || 0) - (stats.bySequence[seq]?.completedRewriteTasks || 0)} / {stats.bySequence[seq]?.totalRewriteTasks || 0} companion tasks left</div>
             <div style={{fontSize:"0.78em",color:"var(--text-light)"}}>Last touched {formatDateShort(state.sequenceMeta && state.sequenceMeta[seq] && state.sequenceMeta[seq].lastTouchedAt)}</div>
           </div>
         );
@@ -10512,7 +10895,7 @@ function App() {
 
   React.useEffect(() => { localStorage.setItem("pickme_show_advanced_tabs", showAdvancedTabs ? "1" : "0"); }, [showAdvancedTabs]);
   React.useEffect(() => {
-    const simpleTabs = new Set(["scene-list","companion","progress","notes","playlist","settings"]);
+    const simpleTabs = new Set(["scene-list","companion","progress","archive","notes","playlist","settings"]);
     const advancedTabs = new Set(["script","scenes","threads","decisions","question","eval","ritual"]);
     if (!simpleTabs.has(activeTab) && (!showAdvancedTabs || !advancedTabs.has(activeTab))) setActiveTab("scene-list");
   }, [activeTab, showAdvancedTabs]);
@@ -10726,6 +11109,7 @@ function App() {
     { id: "scene-list", label: "Scene List" },
     { id: "companion",  label: "Companion" },
     { id: "progress",   label: "Progress" },
+    { id: "archive",    label: "Archive" },
     { id: "notes",      label: "Scene Notes" },
     { id: "playlist",   label: "The Playlist" },
     { id: "settings",   label: "Settings" },
@@ -10825,6 +11209,9 @@ function App() {
         {activeTab === "progress" && (
           <ProgressV2Tab scenes={scenes} sequences={sequences} setSequences={setSequences} />
         )}
+        {activeTab === "archive" && (
+          <ArchiveTab scenes={scenes} setScenes={setScenes} showToast={showToast} />
+        )}
         {activeTab === "playlist" && (
           <PlaylistTab songs={songs} setSongs={setSongs} notionUrl={notionUrl} showToast={showToast} />
         )}
@@ -10863,7 +11250,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260810b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260810c').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
