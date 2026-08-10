@@ -2500,12 +2500,612 @@
             width: 100%;
         }
 
+        /* COMPANION FOCUS MODE 20260810A */
+        .companion-notebook {
+            --companion-hot: #EA258D;
+            --companion-soft: #FEC3E4;
+            --companion-muted: #999999;
+            --companion-text: #1C1410;
+            --companion-line: #DDDDDD;
+            --companion-active: #FFF5F8;
+            --companion-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            --companion-soft-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: grid;
+            gap: 18px;
+        }
+
+        .companion-focus-bar {
+            align-items: end;
+            border-bottom: 1px solid #EEEEEE;
+            display: grid;
+            gap: 20px;
+            grid-template-columns: minmax(0, 1fr) minmax(160px, 220px);
+            padding: 0 0 20px;
+        }
+
+        .companion-kicker,
+        .companion-label {
+            color: #000000;
+            display: block;
+            font-size: 0.74rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            line-height: 1.1;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .companion-select,
+        .companion-search,
+        .companion-textarea,
+        .companion-task-input,
+        .companion-verb-select {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 4px;
+            box-shadow: var(--companion-soft-shadow);
+            box-sizing: border-box;
+            color: #000000;
+            font-family: inherit;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .companion-select,
+        .companion-verb-select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23EA258D' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-position: right 16px center;
+            background-repeat: no-repeat;
+            background-size: 18px 18px;
+            min-height: 52px;
+            padding: 12px 48px 12px 16px;
+        }
+
+        .companion-search,
+        .companion-task-input {
+            min-height: 48px;
+            padding: 12px 14px;
+        }
+
+        .companion-textarea {
+            line-height: 1.45;
+            min-height: 96px;
+            padding: 12px 14px;
+            resize: vertical;
+        }
+
+        .companion-focus-button,
+        .companion-add-button,
+        .companion-status-button,
+        .companion-inline-button {
+            background: var(--companion-soft);
+            border: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(254,195,228,0.3);
+            color: var(--companion-hot);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.86rem;
+            font-weight: 800;
+            min-height: 44px;
+            padding: 10px 14px;
+            text-transform: uppercase;
+        }
+
+        .companion-focus-button {
+            min-height: 52px;
+            width: 100%;
+        }
+
+        .companion-add-button {
+            align-items: center;
+            display: inline-flex;
+            font-size: 1.2rem;
+            justify-content: center;
+            line-height: 1;
+            padding: 0;
+            width: 48px;
+        }
+
+        .companion-focus-button:disabled,
+        .companion-add-button:disabled,
+        .companion-status-button:disabled,
+        .companion-inline-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .companion-status-group {
+            display: grid;
+            gap: 8px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-bottom: 14px;
+        }
+
+        .companion-status-button {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            box-shadow: var(--companion-soft-shadow);
+            color: #666666;
+            min-height: 42px;
+        }
+
+        .companion-status-button.is-active {
+            background: var(--companion-soft);
+            border-color: var(--companion-soft);
+            color: var(--companion-hot);
+        }
+
+        .companion-workbench {
+            display: grid;
+            gap: 22px;
+            grid-template-columns: 340px minmax(0, 1fr);
+            align-items: start;
+        }
+
+        .companion-workbench.is-focused {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .companion-panel {
+            background: #FFFFFF;
+            border: 0;
+            border-radius: 8px;
+            box-shadow: var(--companion-shadow);
+            min-width: 0;
+            padding: 20px;
+        }
+
+        .companion-list-heading {
+            align-items: flex-start;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .companion-list-title {
+            color: #000000;
+            font-size: 1.24rem;
+            font-weight: 900;
+            line-height: 1.05;
+            text-transform: uppercase;
+        }
+
+        .companion-meta {
+            color: var(--companion-muted);
+            font-size: 0.78rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin-top: 6px;
+            text-transform: uppercase;
+        }
+
+        .companion-results {
+            max-height: 64vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 4px;
+        }
+
+        .companion-row {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 4px;
+            box-shadow: var(--companion-soft-shadow);
+            color: #000000;
+            cursor: pointer;
+            display: block;
+            margin-bottom: 10px;
+            padding: 14px 16px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .companion-row.is-active {
+            background: var(--companion-active);
+            border-color: var(--companion-soft);
+            box-shadow: 0 4px 12px rgba(254,195,228,0.25);
+        }
+
+        .companion-row-title {
+            color: #000000;
+            font-size: 0.92rem;
+            font-weight: 900;
+            line-height: 1.18;
+            text-transform: uppercase;
+        }
+
+        .companion-detail-head {
+            border-bottom: 1px solid #EEEEEE;
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+        }
+
+        .companion-detail-title {
+            color: #000000;
+            font-size: 1.35rem;
+            font-weight: 900;
+            line-height: 1.12;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .companion-quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .companion-section {
+            border-top: 1px solid #EEEEEE;
+            padding: 12px 0 0;
+        }
+
+        .companion-section + .companion-section {
+            margin-top: 12px;
+        }
+
+        .companion-section-toggle {
+            align-items: center;
+            background: transparent;
+            border: 0;
+            color: #000000;
+            cursor: pointer;
+            display: flex;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 900;
+            justify-content: space-between;
+            letter-spacing: 0.06em;
+            min-height: 36px;
+            padding: 0;
+            text-align: left;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .companion-section-toggle span:last-child {
+            color: var(--companion-hot);
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+
+        .companion-section-body {
+            padding-top: 10px;
+        }
+
+        .companion-task-row {
+            align-items: start;
+            display: grid;
+            gap: 9px;
+            grid-template-columns: auto 132px minmax(0, 1fr) auto;
+            margin-bottom: 9px;
+        }
+
+        .companion-task-row input[type="checkbox"] {
+            accent-color: var(--companion-hot);
+            height: 16px;
+            margin-top: 17px;
+            width: 16px;
+        }
+
+        .companion-task-text {
+            min-height: 52px;
+        }
+
+        .companion-add-row {
+            display: grid;
+            gap: 9px;
+            grid-template-columns: 132px minmax(0, 1fr) 48px;
+            margin-top: 10px;
+        }
+
+        .companion-empty-note {
+            border: 1px dashed var(--companion-line);
+            color: #666666;
+            font-size: 0.92rem;
+            line-height: 1.45;
+            padding: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .companion-focus-bar,
+            .companion-workbench,
+            .companion-add-row,
+            .companion-task-row {
+                grid-template-columns: 1fr;
+            }
+
+            .companion-status-group {
+                grid-template-columns: 1fr;
+            }
+
+            .companion-add-button,
+            .companion-focus-button {
+                width: 100%;
+            }
+        }
+
+        /* PWA MOBILE BUILD OVERRIDES 20260810A */
+        body.pwa-build {
+            -webkit-text-size-adjust: 100% !important;
+            min-height: 100vh !important;
+            padding: max(10px, env(safe-area-inset-top)) 8px max(18px, env(safe-area-inset-bottom)) !important;
+        }
+
+        body.pwa-build input,
+        body.pwa-build textarea,
+        body.pwa-build select,
+        body.pwa-build div[contenteditable] {
+            font-size: 16px !important;
+        }
+
+        body.pwa-build .container {
+            margin: 0 auto !important;
+            max-width: 640px !important;
+            width: 100% !important;
+        }
+
+        body.pwa-build .header {
+            border-radius: 0 !important;
+            margin-bottom: 14px !important;
+            padding: 14px 12px 10px !important;
+        }
+
+        body.pwa-build .header-lip {
+            display: none !important;
+        }
+
+        body.pwa-build .header h1 {
+            font-size: 1.4rem !important;
+            letter-spacing: -0.02em !important;
+            line-height: 1.12 !important;
+            margin: 0 0 8px !important;
+        }
+
+        body.pwa-build .header-sub {
+            display: block !important;
+            font-size: 0.78rem !important;
+        }
+
+        body.pwa-build .tabs {
+            margin-bottom: 14px !important;
+            position: static !important;
+        }
+
+        body.pwa-build .tab-select,
+        body.pwa-build .tab-select:hover,
+        body.pwa-build .tab-select:focus {
+            background-position: right 14px center !important;
+            border-radius: 4px !important;
+            font-size: 16px !important;
+            min-height: 46px !important;
+            padding: 12px 48px 12px 14px !important;
+        }
+
+        body.pwa-build .progress-bar-container {
+            align-items: stretch !important;
+            gap: 8px !important;
+            margin-bottom: 10px !important;
+            padding: 8px 10px !important;
+        }
+
+        body.pwa-build .progress-feature-name {
+            flex: 1 1 100% !important;
+            font-size: 0.72rem !important;
+            min-width: 0 !important;
+        }
+
+        body.pwa-build .progress-bar-wrapper {
+            min-width: 0 !important;
+        }
+
+        body.pwa-build .progress-stats {
+            min-width: 46px !important;
+        }
+
+        body.pwa-build .card {
+            border-radius: 6px !important;
+            margin-bottom: 10px !important;
+            padding: 14px 10px !important;
+        }
+
+        body.pwa-build .section-title {
+            font-size: 1.14rem !important;
+            margin-bottom: 14px !important;
+        }
+
+        body.pwa-build .companion-notebook {
+            gap: 12px !important;
+        }
+
+        body.pwa-build .companion-focus-bar {
+            gap: 10px !important;
+            grid-template-columns: 1fr !important;
+            padding-bottom: 12px !important;
+        }
+
+        body.pwa-build .companion-kicker,
+        body.pwa-build .companion-label {
+            font-size: 0.68rem !important;
+            margin-bottom: 6px !important;
+        }
+
+        body.pwa-build .companion-select,
+        body.pwa-build .companion-focus-button {
+            min-height: 46px !important;
+        }
+
+        body.pwa-build .companion-select,
+        body.pwa-build .companion-verb-select {
+            background-position: right 12px center !important;
+            padding: 10px 40px 10px 12px !important;
+        }
+
+        body.pwa-build .companion-search,
+        body.pwa-build .companion-task-input {
+            min-height: 44px !important;
+            padding: 10px 12px !important;
+        }
+
+        body.pwa-build .companion-workbench,
+        body.pwa-build .companion-workbench.is-focused {
+            gap: 12px !important;
+            grid-template-columns: 1fr !important;
+        }
+
+        body.pwa-build .companion-panel {
+            border-radius: 6px !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.10) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 14px !important;
+        }
+
+        body.pwa-build .companion-results {
+            max-height: 42dvh !important;
+            min-height: 0 !important;
+        }
+
+        body.pwa-build .companion-list-title,
+        body.pwa-build .companion-detail-title {
+            font-size: 1.08rem !important;
+            line-height: 1.14 !important;
+        }
+
+        body.pwa-build .companion-meta {
+            font-size: 0.7rem !important;
+        }
+
+        body.pwa-build .companion-detail-head {
+            margin-bottom: 10px !important;
+            order: 0 !important;
+            padding-bottom: 10px !important;
+        }
+
+        body.pwa-build .companion-status-group {
+            gap: 6px !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            margin-bottom: 10px !important;
+        }
+
+        body.pwa-build .companion-status-button {
+            font-size: 0.7rem !important;
+            letter-spacing: 0 !important;
+            min-height: 44px !important;
+            padding: 8px 4px !important;
+        }
+
+        body.pwa-build .companion-quick-actions {
+            display: grid !important;
+            gap: 6px !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            overflow: visible !important;
+            padding-bottom: 0 !important;
+        }
+
+        body.pwa-build .companion-inline-button {
+            font-size: 0.68rem !important;
+            min-height: 38px !important;
+            padding: 7px 6px !important;
+            width: 100% !important;
+        }
+
+        body.pwa-build .companion-section {
+            order: 20 !important;
+            padding-top: 10px !important;
+        }
+
+        body.pwa-build .companion-section:nth-of-type(1) {
+            order: 12 !important;
+        }
+
+        body.pwa-build .companion-section:nth-of-type(2) {
+            order: 10 !important;
+        }
+
+        body.pwa-build .companion-section:nth-of-type(3) {
+            order: 11 !important;
+        }
+
+        body.pwa-build .companion-section + .companion-section {
+            margin-top: 8px !important;
+        }
+
+        body.pwa-build .companion-section-toggle {
+            min-height: 42px !important;
+        }
+
+        body.pwa-build .companion-textarea {
+            line-height: 1.4 !important;
+            min-height: 86px !important;
+            padding: 10px 12px !important;
+        }
+
+        body.pwa-build .companion-task-row {
+            align-items: start !important;
+            gap: 7px !important;
+            grid-template-columns: 28px minmax(92px, 116px) 44px minmax(0, 1fr) !important;
+            margin-bottom: 8px !important;
+        }
+
+        body.pwa-build .companion-task-row input[type="checkbox"] {
+            grid-column: 1 !important;
+            grid-row: 1 / span 2 !important;
+            height: 18px !important;
+            margin-top: 14px !important;
+            width: 18px !important;
+        }
+
+        body.pwa-build .companion-task-row .companion-verb-select {
+            grid-column: 2 !important;
+            grid-row: 1 !important;
+            min-height: 44px !important;
+        }
+
+        body.pwa-build .companion-task-row .companion-task-text {
+            grid-column: 2 / 5 !important;
+            grid-row: 2 !important;
+            min-height: 70px !important;
+        }
+
+        body.pwa-build .companion-task-row .companion-add-button {
+            grid-column: 3 !important;
+            grid-row: 1 !important;
+            min-height: 44px !important;
+            width: 44px !important;
+        }
+
+        body.pwa-build .companion-add-row {
+            gap: 7px !important;
+            grid-template-columns: minmax(92px, 116px) minmax(0, 1fr) 44px !important;
+        }
+
+        body.pwa-build .companion-add-button {
+            min-height: 44px !important;
+            width: 44px !important;
+        }
+
+        @media (max-width: 380px) {
+            body.pwa-build .companion-add-row {
+                grid-template-columns: minmax(0, 1fr) 44px !important;
+            }
+
+            body.pwa-build .companion-add-row .companion-verb-select {
+                grid-column: 1 / -1 !important;
+            }
+        }
+
     </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ea258d">
     <meta name="mobile-web-app-capable" content="yes">
 </head>
-<body>
+<body class="pwa-build">
 <div id="root"></div>
 
 <script type="text/babel">
@@ -2688,8 +3288,8 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260718r";
-const APP_BUILD = "DESKTOP";
+const APP_VERSION = "20260810b";
+const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
 const PREUPDATE_BACKUP_KEY = "pickme_backup_before_script_rail_v2";
@@ -9050,16 +9650,41 @@ function sortSceneCards(list) {
 }
 
 
-function ScriptCompanionTab({ scenes }) {
+function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   const [query, setQuery] = React.useState("");
-  const [sequenceFilter, setSequenceFilter] = React.useState("ALL");
+  const [sequenceFilter, setSequenceFilter] = React.useState(() => localStorage.getItem("pickme_companion_sequence_focus") || "AUTO");
   const [activeId, setActiveId] = React.useState(null);
+  const [focusSceneOnly, setFocusSceneOnly] = React.useState(() => {
+    const saved = localStorage.getItem("pickme_companion_focus_only");
+    if (saved !== null) return saved === "1";
+    return APP_BUILD === "PWA";
+  });
+  const [collapsed, setCollapsed] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem("pickme_companion_collapsed_sections");
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    if (APP_BUILD === "PWA") return { overview:true, actions:false, questions:false, ripple:true, threads:true };
+    return {};
+  });
+  const [newActionVerb, setNewActionVerb] = React.useState("ADJUST");
+  const [newActionText, setNewActionText] = React.useState("");
 
   const state = normalizeState({ scenes });
   const companionCards = sortSceneCards(state.scenes.filter(card => !card.archived && !card.maybe && (card.kind === "SCENE" || card.kind === "TWEAK")));
+  const counts = { UNPLACED:0, ALL:companionCards.length };
+  SEQUENCE_ORDER.forEach(seq => counts[seq] = 0);
+  companionCards.forEach(card => {
+    if (card.sequence && counts[card.sequence] !== undefined) counts[card.sequence] += 1;
+    else counts.UNPLACED += 1;
+  });
+  const firstFocusedSequence = (counts.UNPLACED > 0 && "UNPLACED") || SEQUENCE_ORDER.find(seq => counts[seq] > 0) || "ALL";
+  const effectiveSequenceFilter = sequenceFilter === "AUTO" || sequenceFilter === "ALL" ? firstFocusedSequence : sequenceFilter;
+  const sequenceLabel = effectiveSequenceFilter === "ALL" ? "All scenes" : effectiveSequenceFilter === "UNPLACED" ? "Unplaced" : SEQUENCE_TITLES[effectiveSequenceFilter];
   const q = query.trim().toLowerCase();
   const filtered = companionCards.filter(card => {
-    if (sequenceFilter !== "ALL" && (card.sequence || "") !== sequenceFilter) return false;
+    if (effectiveSequenceFilter === "UNPLACED" && card.sequence) return false;
+    if (effectiveSequenceFilter !== "ALL" && effectiveSequenceFilter !== "UNPLACED" && (card.sequence || "") !== effectiveSequenceFilter) return false;
     if (!q) return true;
     const haystack = [
       card.title,
@@ -9072,133 +9697,251 @@ function ScriptCompanionTab({ scenes }) {
     ].join(" ").toLowerCase();
     return haystack.includes(q);
   });
-  const selected = filtered.find(card => card.id === activeId) || filtered[0] || companionCards[0] || null;
+  const selected = filtered.find(card => card.id === activeId) || filtered[0] || null;
   const unplacedCard = companionCards.find(card => String(card.title || "").toUpperCase() === "UNPLACED / NOT SURE YET");
-  const totalActions = companionCards.reduce((sum, card) => sum + safeArray(card.changes).filter(change => !change.archived && !change.maybe).length, 0);
-  const openActions = companionCards.reduce((sum, card) => sum + safeArray(card.changes).filter(change => !change.archived && !change.maybe && !change.done).length, 0);
-  const doneCount = companionCards.filter(card => card.status === "done").length;
-  const draftedCount = companionCards.filter(card => card.status === "drafted").length;
+  const visibleChanges = selected ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
+  const lineCount = value => String(value || "").split(/\n+/).map(line => line.trim()).filter(Boolean).length;
+  const taskStats = card => {
+    const tasks = safeArray(card && card.changes).filter(change => !change.archived && !change.maybe);
+    return { total:tasks.length, complete:tasks.filter(change => !!change.done).length, open:tasks.filter(change => !change.done).length };
+  };
+  const sequenceStats = filtered.reduce((acc, card) => {
+    const stats = taskStats(card);
+    acc.total += stats.total;
+    acc.open += stats.open;
+    acc.questions += lineCount(card.openQuestions);
+    return acc;
+  }, { total:0, open:0, questions:0 });
+  const selectedStats = selected ? taskStats(selected) : { total:0, complete:0, open:0 };
+
+  React.useEffect(() => {
+    localStorage.setItem("pickme_companion_sequence_focus", effectiveSequenceFilter);
+  }, [effectiveSequenceFilter]);
+
+  React.useEffect(() => {
+    localStorage.setItem("pickme_companion_focus_only", focusSceneOnly ? "1" : "0");
+  }, [focusSceneOnly]);
+
+  React.useEffect(() => {
+    localStorage.setItem("pickme_companion_collapsed_sections", JSON.stringify(collapsed));
+  }, [collapsed]);
 
   React.useEffect(() => {
     if (selected && activeId !== selected.id) setActiveId(selected.id);
     if (!selected && activeId) setActiveId(null);
   }, [selected && selected.id]); // eslint-disable-line
 
-  const renderTextBlock = (label, value) => {
-    const text = String(value || "").trim();
-    if (!text) return null;
+  const patchCard = (id, patch) => {
+    if (!setScenes) return;
+    setScenes(prev => safeArray(prev).map(card => {
+      if (asId(card.id) !== asId(id)) return card;
+      const normalized = normalizeCard(card, 0);
+      const nextPatch = typeof patch === "function" ? patch(normalized) : patch;
+      return touchRecord(normalized, nextPatch);
+    }));
+  };
+
+  const patchSelected = patch => {
+    if (!selected) return;
+    patchCard(selected.id, patch);
+  };
+
+  const patchChange = (changeId, patch) => {
+    if (!selected) return;
+    patchCard(selected.id, card => ({
+      changes:safeArray(card.changes).map(change => asId(change.id) === asId(changeId) ? touchRecord(change, typeof patch === "function" ? patch(change) : patch) : change)
+    }));
+  };
+
+  const addAction = () => {
+    if (!selected) return;
+    const text = newActionText.trim();
+    if (!text) return;
+    patchCard(selected.id, card => {
+      const next = normalizeCard(card, 0);
+      ensureChange(next, newActionVerb, text, { id:"change-" + slugify(next.id) + "-" + Date.now().toString(36), isRewriteTask:true });
+      return { changes:next.changes };
+    });
+    setNewActionText("");
+    if (showToast) showToast("Action added");
+  };
+
+  const setStatus = status => {
+    if (!selected) return;
+    patchSelected({ status });
+    if (showToast) showToast("Companion status updated");
+  };
+
+  const toggleSection = id => setCollapsed(prev => ({ ...prev, [id]:!prev[id] }));
+  const sectionIsOpen = (id, defaultOpen) => collapsed[id] === undefined ? defaultOpen : !collapsed[id];
+
+  const CollapsibleSection = ({ id, title, meta, defaultOpen = false, children }) => {
+    const open = sectionIsOpen(id, defaultOpen);
     return (
-      <div style={{marginTop:"16px"}}>
-        <div style={{fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"6px"}}>{label}</div>
-        <div style={{whiteSpace:"pre-wrap",fontSize:"0.93em",lineHeight:1.6,color:"var(--text-dark)",background:"#fff7fb",border:"1px solid var(--border-pink)",padding:"12px"}}>{text}</div>
-      </div>
+      <section className="companion-section">
+        <button type="button" className="companion-section-toggle" onClick={() => toggleSection(id)} aria-expanded={open}>
+          <span>{title}{meta ? " - " + meta : ""}</span>
+          <span>{open ? "-" : "+"}</span>
+        </button>
+        {open && <div className="companion-section-body">{children}</div>}
+      </section>
     );
   };
 
   return (
-    <div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:"10px",marginBottom:"14px"}}>
-        <div style={{border:"1px solid var(--border-pink)",background:"#fff7fb",padding:"10px"}}>
-          <div style={{fontSize:"0.72em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)"}}>Cards</div>
-          <div style={{fontSize:"1.55em",fontWeight:800,color:"#1C1410"}}>{companionCards.length}</div>
-        </div>
-        <div style={{border:"1px solid var(--border-pink)",background:"#fff7fb",padding:"10px"}}>
-          <div style={{fontSize:"0.72em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)"}}>Open Actions</div>
-          <div style={{fontSize:"1.55em",fontWeight:800,color:"#1C1410"}}>{openActions}/{totalActions}</div>
-        </div>
-        <div style={{border:"1px solid var(--border-pink)",background:"#fff7fb",padding:"10px"}}>
-          <div style={{fontSize:"0.72em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)"}}>Drafted</div>
-          <div style={{fontSize:"1.55em",fontWeight:800,color:"#1C1410"}}>{draftedCount}</div>
-        </div>
-        <div style={{border:"1px solid var(--border-pink)",background:"#fff7fb",padding:"10px"}}>
-          <div style={{fontSize:"0.72em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)"}}>Done</div>
-          <div style={{fontSize:"1.55em",fontWeight:800,color:"#1C1410"}}>{doneCount}</div>
-        </div>
-      </div>
-
-      <div className="companion-workbench">
-        <div style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"12px"}}>
-          <div style={{fontWeight:800,color:"var(--neon-pink)",marginBottom:"8px"}}>Script Companion</div>
-          <div style={{fontSize:"0.86em",color:"var(--text-light)",marginBottom:"12px"}}>{filtered.length} of {companionCards.length} cards shown</div>
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Search companion"
-            style={{width:"100%",fontSize:"16px",padding:"10px",border:"1px solid var(--border-pink)",boxSizing:"border-box",marginBottom:"8px"}}
-          />
-          <select
-            value={sequenceFilter}
-            onChange={e => setSequenceFilter(e.target.value)}
-            style={{width:"100%",fontSize:"16px",padding:"10px",border:"1px solid var(--border-pink)",boxSizing:"border-box",marginBottom:"10px"}}
-          >
-            <option value="ALL">All sequences</option>
+    <div className="companion-notebook">
+      <div className="companion-focus-bar">
+        <div>
+          <label className="companion-kicker" htmlFor="companion-sequence-select">Sequence</label>
+          <select id="companion-sequence-select" className="companion-select" value={effectiveSequenceFilter} onChange={e => setSequenceFilter(e.target.value)}>
+            <option value="UNPLACED">Unplaced</option>
             {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
           </select>
-          <div className="companion-results" style={{maxHeight:"64vh",overflowY:"auto",WebkitOverflowScrolling:"touch",paddingRight:"4px"}}>
-            {filtered.length === 0 && <div style={{fontSize:"0.9em",color:"var(--text-light)",padding:"14px",border:"1px dashed var(--border-pink)"}}>No companion cards match.</div>}
-            {filtered.map(card => {
-              const active = selected && selected.id === card.id;
-              const open = safeArray(card.changes).filter(change => !change.archived && !change.maybe && !change.done).length;
-              return (
-                <button
-                  key={card.id}
-                  
-                  onClick={() => setActiveId(card.id)}
-                  style={{width:"100%",textAlign:"left",display:"block",border:active ? "2px solid var(--neon-pink)" : "1px solid var(--border-pink)",background:active ? "#fff3f9" : "#fff",padding:"10px",marginBottom:"8px",cursor:"pointer"}}
-                >
-                  <div style={{display:"flex",gap:"8px",alignItems:"center",justifyContent:"space-between"}}>
-                    <span  style={{fontWeight:800,color:"#1C1410",fontSize:"0.92em"}}>{card.title || "Untitled"}</span>
-                    <TypePill>{card.kind}</TypePill>
-                  </div>
-                  <div  style={{fontSize:"0.78em",color:"var(--text-light)",marginTop:"5px"}}>
-                    {card.sequence ? SEQUENCE_TITLES[card.sequence] : "Unplaced"}{card.page ? " | p. " + card.page : (card.pageRange ? " | " + card.pageRange : "")} | {displayStatusLabel(card.status)}{open ? " | " + open + " open" : ""}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
         </div>
+        <button type="button" className="companion-focus-button" onClick={() => setFocusSceneOnly(prev => !prev)}>
+          {focusSceneOnly ? "Show Sequence" : "Focus"}
+        </button>
+      </div>
 
-        <div style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"14px",minHeight:"420px"}}>
+      <div className={focusSceneOnly ? "companion-workbench is-focused" : "companion-workbench"}>
+        {!focusSceneOnly && (
+          <div className="companion-panel">
+            <div className="companion-list-heading">
+              <div>
+                <div className="companion-list-title">{sequenceLabel}</div>
+                <div className="companion-meta">{filtered.length} scenes - {sequenceStats.open} open - {sequenceStats.questions} questions</div>
+              </div>
+            </div>
+            <label className="companion-label" htmlFor="companion-search">Find</label>
+            <input
+              id="companion-search"
+              className="companion-search"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search"
+            />
+            <div className="companion-results" style={{marginTop:"12px"}}>
+              {filtered.length === 0 && <div className="companion-empty-note">No companion cards match.</div>}
+              {filtered.map(card => {
+                const stats = taskStats(card);
+                const active = selected && selected.id === card.id;
+                return (
+                  <button
+                    key={card.id}
+                    className={active ? "companion-row is-active" : "companion-row"}
+                    onClick={() => setActiveId(card.id)}
+                  >
+                    <div className="companion-row-title">{card.title || "Untitled"}</div>
+                    <div className="companion-meta">
+                      {displayStatusLabel(card.status)} - {stats.open ? stats.open + " open" : stats.total ? "all checked" : "no actions"}{card.page ? " - p. " + card.page : (card.pageRange ? " - " + card.pageRange : "")}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="companion-panel">
           {!selected ? (
-            <div style={{fontSize:"0.95em",color:"var(--text-light)"}}>No companion card selected.</div>
+            <div className="companion-empty-note">Pick a scene in this sequence.</div>
           ) : (
             <>
-              <div style={{display:"flex",gap:"8px",alignItems:"center",justifyContent:"space-between",marginBottom:"10px"}}>
-                <TypePill>{selected.kind}</TypePill>
-                <div style={{fontSize:"0.82em",fontWeight:800,color:selected.status === "done" ? "#63B6A4" : "var(--neon-pink)"}}>{displayStatusLabel(selected.status)}</div>
+              <div className="companion-detail-head">
+                <div style={{display:"flex",gap:"8px",alignItems:"center",justifyContent:"space-between",marginBottom:"10px"}}>
+                  <TypePill>{selected.kind}</TypePill>
+                  <div className="companion-meta" style={{marginTop:0}}>{selected.sequence ? SEQUENCE_TITLES[selected.sequence] : "Unplaced"}{selected.page ? " - p. " + selected.page : (selected.pageRange ? " - " + selected.pageRange : "")}</div>
+                </div>
+                <div className="companion-detail-title">{selected.title || "Untitled"}</div>
+                <div className="companion-status-group">
+                  {STATUS_VALUES.map(status => (
+                    <button
+                      key={status}
+                      type="button"
+                      className={normalizeStatus(selected.status) === status ? "companion-status-button is-active" : "companion-status-button"}
+                      onClick={() => setStatus(status)}
+                    >
+                      {displayStatusLabel(status)}
+                    </button>
+                  ))}
+                </div>
+                <div className="companion-quick-actions">
+                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:false, actions:false, questions:false, ripple:true, threads:true })}>Working View</button>
+                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:false, actions:false, questions:false, ripple:false, threads:false })}>Open All</button>
+                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:true, actions:true, questions:true, ripple:true, threads:true })}>Close All</button>
+                  {unplacedCard && selected.id !== unplacedCard.id && (
+                    <button type="button" className="companion-inline-button" onClick={() => { setSequenceFilter("UNPLACED"); setActiveId(unplacedCard.id); setFocusSceneOnly(true); }}>Open Decisions</button>
+                  )}
+                </div>
               </div>
-              <div style={{fontSize:"1.35em",fontWeight:800,lineHeight:1.15,color:"#1C1410",marginBottom:"8px"}}>{selected.title}</div>
 
-              <div style={{fontSize:"0.84em",color:"var(--text-light)",lineHeight:1.5,marginBottom:"10px"}}>
-                {selected.sequence ? SEQUENCE_TITLES[selected.sequence] : "Unplaced"}{selected.page ? " | p. " + selected.page : (selected.pageRange ? " | " + selected.pageRange : "")}
-              </div>
+              <CollapsibleSection id="overview" title="What It Contains" defaultOpen={APP_BUILD !== "PWA"}>
+                <textarea
+                  className="companion-textarea"
+                  value={selected.description || ""}
+                  onChange={e => patchSelected({ description:e.target.value })}
+                  rows={6}
+                />
+              </CollapsibleSection>
 
-              {renderTextBlock("What It Contains", selected.description)}
-
-              {safeArray(selected.changes).filter(change => !change.archived && !change.maybe).length > 0 && (
-                <div style={{marginTop:"16px"}}>
-                  <div style={{fontSize:"0.74em",fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--neon-pink)",marginBottom:"6px"}}>Script Actions</div>
-                  <div style={{display:"grid",gap:"7px"}}>
-                    {safeArray(selected.changes).filter(change => !change.archived && !change.maybe).map(change => (
-                      <div key={change.id} style={{display:"grid",gridTemplateColumns:"64px 1fr",gap:"8px",alignItems:"start",border:"1px solid var(--border-pink)",background:change.done ? "#f2fff7" : "#fff7fb",padding:"9px"}}>
-                        <div style={{fontSize:"0.72em",fontWeight:800,color:"var(--neon-pink)"}}>{change.verb || "ADJUST"}</div>
-                        <div style={{fontSize:"0.9em",lineHeight:1.45,color:"#1C1410"}}>{change.text}</div>
-                      </div>
-                    ))}
+              <CollapsibleSection id="actions" title="Script Actions" meta={selectedStats.complete + " / " + selectedStats.total} defaultOpen={true}>
+                {visibleChanges.length === 0 && <div className="companion-empty-note">No actions yet.</div>}
+                {visibleChanges.map(change => (
+                  <div key={change.id} className="companion-task-row">
+                    <input type="checkbox" checked={!!change.done} onChange={e => patchChange(change.id, { done:e.target.checked })} />
+                    <select className="companion-verb-select" value={change.verb || "ADJUST"} onChange={e => patchChange(change.id, { verb:e.target.value })}>
+                      {CHANGE_VERBS.map(verb => <option key={verb} value={verb}>{verb}</option>)}
+                    </select>
+                    <textarea
+                      className="companion-textarea companion-task-text"
+                      value={change.text || ""}
+                      onChange={e => patchChange(change.id, { text:e.target.value })}
+                      rows={2}
+                    />
+                    <button type="button" className="companion-add-button" onClick={() => patchChange(change.id, { archived:true })} title="Archive action" aria-label="Archive action"><ArchiveTrayIcon /></button>
                   </div>
+                ))}
+                <div className="companion-add-row">
+                  <select className="companion-verb-select" value={newActionVerb} onChange={e => setNewActionVerb(e.target.value)}>
+                    {CHANGE_VERBS.map(verb => <option key={verb} value={verb}>{verb}</option>)}
+                  </select>
+                  <input
+                    className="companion-task-input"
+                    value={newActionText}
+                    onChange={e => setNewActionText(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") addAction(); }}
+                    placeholder="Add action"
+                  />
+                  <button type="button" className="companion-add-button" disabled={!newActionText.trim()} onClick={addAction} title="Add action" aria-label="Add action">+</button>
                 </div>
-              )}
+              </CollapsibleSection>
 
-              {renderTextBlock("Questions", selected.openQuestions)}
-              {renderTextBlock("Ripple Effects", selected.rippleEffects)}
-              {renderTextBlock("Threads", selected.storyThreads)}
+              <CollapsibleSection id="questions" title="Questions" meta={lineCount(selected.openQuestions)} defaultOpen={true}>
+                <textarea
+                  className="companion-textarea"
+                  value={selected.openQuestions || ""}
+                  onChange={e => patchSelected({ openQuestions:e.target.value })}
+                  rows={5}
+                />
+              </CollapsibleSection>
 
-              {unplacedCard && selected.id !== unplacedCard.id && (
-                <div style={{marginTop:"18px",borderTop:"1px solid var(--border-pink)",paddingTop:"12px"}}>
-                  <button className="btn btn-secondary" onClick={() => setActiveId(unplacedCard.id)}>Open decisions / rename map</button>
-                </div>
-              )}
+              <CollapsibleSection id="ripple" title="Ripple Effects" meta={lineCount(selected.rippleEffects)} defaultOpen={false}>
+                <textarea
+                  className="companion-textarea"
+                  value={selected.rippleEffects || ""}
+                  onChange={e => patchSelected({ rippleEffects:e.target.value })}
+                  rows={5}
+                />
+              </CollapsibleSection>
+
+              <CollapsibleSection id="threads" title="Threads" meta={lineCount(selected.storyThreads)} defaultOpen={false}>
+                <textarea
+                  className="companion-textarea"
+                  value={selected.storyThreads || ""}
+                  onChange={e => patchSelected({ storyThreads:e.target.value })}
+                  rows={4}
+                />
+              </CollapsibleSection>
             </>
           )}
         </div>
@@ -9999,6 +10742,7 @@ function App() {
   const TABS = showAdvancedTabs
     ? [SIMPLE_TABS[0], ...ADVANCED_TABS, ...SIMPLE_TABS.slice(1)]
     : SIMPLE_TABS;
+  const showGlobalSequenceProgress = activeTab !== "scene-list" && activeTab !== "companion";
 
   return (
     <div className="container">
@@ -10022,7 +10766,7 @@ function App() {
         </select>
       </div>
 
-      {activeTab !== "scene-list" && showSequenceBar && (
+      {showGlobalSequenceProgress && showSequenceBar && (
         <div className="progress-bar-container">
           {Object.keys(sequences).length > 0 ? (
             <>
@@ -10060,7 +10804,7 @@ function App() {
         </div>
       )}
 
-      {activeTab !== "scene-list" && !showSequenceBar && (
+      {showGlobalSequenceProgress && !showSequenceBar && (
         <div style={{display: "flex", justifyContent: "flex-end", marginBottom: "20px"}}>
           <button className="progress-toggle-btn" onClick={() => setShowSequenceBar(true)} title="Show progress">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 7 L5 3 L9 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -10073,7 +10817,7 @@ function App() {
           <SceneListTab scenes={scenes} setScenes={setScenes} nowState={nowState} setNowState={setNowState} showToast={showToast} />
         )}
         {activeTab === "companion" && (
-          <ScriptCompanionTab scenes={scenes} />
+          <ScriptCompanionTab scenes={scenes} setScenes={setScenes} showToast={showToast} />
         )}
         {activeTab === "script" && (
           <ScriptRailTab scenes={scenes} setScenes={setScenes} nowState={nowState} setNowState={setNowState} />
@@ -10118,8 +10862,8 @@ function App() {
 ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260718r').then(registration => registration.update()).catch(() => {});
+  if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js?v=20260810b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
