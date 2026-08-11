@@ -2855,6 +2855,71 @@
             margin-top: 16px;
         }
 
+        .companion-task-audit {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line, #fec3e4);
+            border-radius: 6px;
+            margin: 14px 0 16px;
+            overflow: hidden;
+        }
+
+        .companion-task-audit summary {
+            align-items: center;
+            color: #000000;
+            cursor: pointer;
+            display: flex;
+            font-size: 0.82rem;
+            font-weight: 900;
+            justify-content: space-between;
+            letter-spacing: 0.06em;
+            list-style: none;
+            min-height: 42px;
+            padding: 10px 13px;
+            text-transform: uppercase;
+        }
+
+        .companion-task-audit summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .companion-task-audit summary span {
+            color: var(--companion-hot, #EA258D);
+            font-size: 0.9rem;
+        }
+
+        .companion-task-audit-body {
+            border-top: 1px solid #EEEEEE;
+            display: grid;
+            gap: 8px;
+            padding: 10px;
+        }
+
+        .companion-task-audit-row {
+            align-items: center;
+            border: 1px solid #EEEEEE;
+            border-radius: 4px;
+            display: grid;
+            gap: 8px;
+            grid-template-columns: minmax(150px, 1fr) repeat(4, minmax(72px, auto));
+            padding: 9px 10px;
+        }
+
+        .companion-task-audit-row strong {
+            color: #000000;
+            font-size: 0.86rem;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+
+        .companion-task-audit-row span {
+            color: #666666;
+            font-size: 0.78rem;
+            font-weight: 800;
+            line-height: 1.2;
+            text-align: right;
+            text-transform: uppercase;
+        }
+
         .archive-group {
             background: #FFFFFF;
             border: 1px solid var(--companion-line, #fec3e4);
@@ -2950,6 +3015,18 @@
                 grid-template-columns: 1fr;
             }
 
+            .companion-task-audit-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .companion-task-audit-row strong {
+                grid-column: 1 / -1;
+            }
+
+            .companion-task-audit-row span {
+                text-align: left;
+            }
+
             .companion-status-group {
                 grid-template-columns: 1fr;
             }
@@ -2973,7 +3050,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260810A */
+        /* PWA MOBILE BUILD OVERRIDES 20260811A */
         body.pwa-build {
             -webkit-text-size-adjust: 100% !important;
             min-height: 100vh !important;
@@ -3431,7 +3508,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260810c";
+const APP_VERSION = "20260811a";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -6554,6 +6631,21 @@ function normalizeMoment(moment, index, parentId) {
     waitingOn: asId(moment && moment.waitingOn)
   };
 }
+function combineQuestionSections(record) {
+  const sections = [];
+  const pushSection = (label, value) => {
+    const text = String(value || "").trim();
+    if (!text) return;
+    const existing = normalizeComparableText(sections.join("\n\n"));
+    const comparable = normalizeComparableText(text);
+    if (comparable && existing.includes(comparable)) return;
+    sections.push(label ? label + ":\n" + text : text);
+  };
+  pushSection("", record && record.openQuestions);
+  pushSection("Continuity", record && record.rippleEffects);
+  pushSection("Related", record && record.storyThreads);
+  return sections.join("\n\n");
+}
 function normalizeCard(record, index) {
   const originalId = record && record.id;
   const id = asId(originalId) || ("legacy-missing-" + index);
@@ -6604,7 +6696,10 @@ function normalizeCard(record, index) {
     thread: asId(record && record.thread),
     waitingOn: asId(record && record.waitingOn),
     changes: prepareSceneListChanges(record, id, record && record.changes),
-    moments: safeArray(record && record.moments).map((moment, momentIndex) => normalizeMoment(moment, momentIndex, id))
+    moments: safeArray(record && record.moments).map((moment, momentIndex) => normalizeMoment(moment, momentIndex, id)),
+    openQuestions: combineQuestionSections(record),
+    rippleEffects: "",
+    storyThreads: ""
   };
 }
 function normalizeSimpleRecord(record, index, prefix) {
@@ -7136,22 +7231,19 @@ function getCompanionActionRows(scenesInput) {
 }
 function computeProgressStats(stateInput) {
   const state = normalizeState(stateInput);
-  const decisions = getDecisionMap(state.scenes);
   const bySequence = {};
   SEQUENCE_ORDER.forEach(seq => { bySequence[seq] = { totalRewriteTasks:0, completedRewriteTasks:0, waiting:0 }; });
   let totalRewriteTasks = 0, completedRewriteTasks = 0, waiting = 0;
-  const addRewriteTask = (seq, isDone, isWaiting) => {
+  const addRewriteTask = (seq, isDone) => {
     totalRewriteTasks += 1;
     if (isDone) completedRewriteTasks += 1;
-    if (isWaiting) waiting += 1;
     if (seq && bySequence[seq]) {
       bySequence[seq].totalRewriteTasks += 1;
       if (isDone) bySequence[seq].completedRewriteTasks += 1;
-      if (isWaiting) bySequence[seq].waiting += 1;
     }
   };
   getCompanionActionRows(state.scenes).forEach(({ card, change }) => {
-    addRewriteTask(card.sequence, !!change.done, isWaitingOnDecision(change, decisions));
+    addRewriteTask(card.sequence, !!change.done);
   });
   return {
     totalRewriteTasks,
@@ -7159,6 +7251,32 @@ function computeProgressStats(stateInput) {
     rewriteTasksLeft: Math.max(0, totalRewriteTasks - completedRewriteTasks),
     waiting,
     bySequence
+  };
+}
+function getCompanionTaskAudit(stateInput) {
+  const state = normalizeState(stateInput);
+  const bySequence = { UNPLACED:{ cardCount:0, total:0, open:0, done:0, questions:0 } };
+  SEQUENCE_ORDER.forEach(seq => { bySequence[seq] = { cardCount:0, total:0, open:0, done:0, questions:0 }; });
+  const activeCards = state.scenes.filter(isCompanionActionCard);
+  activeCards.forEach(card => {
+    const seq = card.sequence && bySequence[card.sequence] ? card.sequence : "UNPLACED";
+    bySequence[seq].cardCount += 1;
+    bySequence[seq].questions += String(card.openQuestions || "").split(/\n+/).map(line => line.trim()).filter(Boolean).length;
+  });
+  const rows = getCompanionActionRows(state.scenes).map(({ card, change }) => {
+    const seq = card.sequence && bySequence[card.sequence] ? card.sequence : "UNPLACED";
+    bySequence[seq].total += 1;
+    if (change.done) bySequence[seq].done += 1;
+    else bySequence[seq].open += 1;
+    return { seq, cardTitle:card.title || "Untitled", verb:change.verb || "TASK", text:change.text || "", done:!!change.done, id:change.id || "" };
+  });
+  return {
+    cardCount:activeCards.length,
+    total:rows.length,
+    done:rows.filter(row => row.done).length,
+    open:rows.filter(row => !row.done).length,
+    bySequence,
+    rows
   };
 }
 function collectArchiveBuckets(scenesInput) {
@@ -9868,8 +9986,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
       const saved = localStorage.getItem("pickme_companion_collapsed_sections");
       if (saved) return JSON.parse(saved);
     } catch(e) {}
-    if (APP_BUILD === "PWA") return { overview:true, actions:false, questions:false, ripple:true, threads:true };
-    return {};
+    return { overview:true, actions:false, questions:false };
   });
   const [newActionVerb, setNewActionVerb] = React.useState("ADJUST");
   const [newActionText, setNewActionText] = React.useState("");
@@ -9895,14 +10012,11 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
       safeArray(card.formerTitles).join(" "),
       card.description,
       card.openQuestions,
-      card.rippleEffects,
-      card.storyThreads,
       safeArray(card.changes).map(change => change.text).join(" ")
     ].join(" ").toLowerCase();
     return haystack.includes(q);
   });
   const selected = filtered.find(card => card.id === activeId) || filtered[0] || null;
-  const unplacedCard = companionCards.find(card => String(card.title || "").toUpperCase() === "UNPLACED / NOT SURE YET");
   const visibleChanges = selected ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
   const lineCount = value => String(value || "").split(/\n+/).map(line => line.trim()).filter(Boolean).length;
   const taskStats = card => {
@@ -10078,16 +10192,13 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                   ))}
                 </div>
                 <div className="companion-quick-actions">
-                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:false, actions:false, questions:false, ripple:true, threads:true })}>Working View</button>
-                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:false, actions:false, questions:false, ripple:false, threads:false })}>Open All</button>
-                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:true, actions:true, questions:true, ripple:true, threads:true })}>Close All</button>
-                  {unplacedCard && selected.id !== unplacedCard.id && (
-                    <button type="button" className="companion-inline-button" onClick={() => { setSequenceFilter("UNPLACED"); setActiveId(unplacedCard.id); setFocusSceneOnly(true); }}>Open Decisions</button>
-                  )}
+                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:true, actions:false, questions:false })}>Working View</button>
+                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:false, actions:false, questions:false })}>Open All</button>
+                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:true, actions:true, questions:true })}>Close All</button>
                 </div>
               </div>
 
-              <CollapsibleSection id="overview" title="What It Contains" defaultOpen={APP_BUILD !== "PWA"}>
+              <CollapsibleSection id="overview" title="What It Contains" defaultOpen={false}>
                 <textarea
                   className="companion-textarea"
                   value={selected.description || ""}
@@ -10133,25 +10244,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                   className="companion-textarea"
                   value={selected.openQuestions || ""}
                   onChange={e => patchSelected({ openQuestions:e.target.value })}
-                  rows={5}
-                />
-              </CollapsibleSection>
-
-              <CollapsibleSection id="ripple" title="Ripple Effects" meta={lineCount(selected.rippleEffects)} defaultOpen={false}>
-                <textarea
-                  className="companion-textarea"
-                  value={selected.rippleEffects || ""}
-                  onChange={e => patchSelected({ rippleEffects:e.target.value })}
-                  rows={5}
-                />
-              </CollapsibleSection>
-
-              <CollapsibleSection id="threads" title="Threads" meta={lineCount(selected.storyThreads)} defaultOpen={false}>
-                <textarea
-                  className="companion-textarea"
-                  value={selected.storyThreads || ""}
-                  onChange={e => patchSelected({ storyThreads:e.target.value })}
-                  rows={4}
+                  rows={6}
                 />
               </CollapsibleSection>
             </>
@@ -10574,7 +10667,7 @@ function BoardV2Tab({ scenes, setScenes }) {
   return (
     <div>
       <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"14px"}}>
-        {["All","Scene","Thread","Tweak","Decision","Maybe","Archived"].map(f => <button key={f} className={filter===f ? "btn btn-primary" : "btn btn-secondary"} onClick={() => setFilter(f)}>{f}</button>)}
+        {["All","Scene","Tweak","Maybe","Archived"].map(f => <button key={f} className={filter===f ? "btn btn-primary" : "btn btn-secondary"} onClick={() => setFilter(f)}>{f}</button>)}
         <button className="btn btn-primary" onClick={quickAdd}>Quick add</button>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))",gap:"12px"}}>
@@ -10767,7 +10860,7 @@ function ArchiveTab({ scenes, setScenes, showToast }) {
       <div>
         <div className="archive-kicker">{card.title || "Thread"}{moment.sequence ? " - " + SEQUENCE_TITLES[moment.sequence] : ""}</div>
         <div className="archive-title">{moment.label || "Untitled moment"}</div>
-        <div className="archive-meta">THREAD MOMENT{moment.archivedAt ? " - archived " + formatDateShort(moment.archivedAt) : ""}</div>
+        <div className="archive-meta">RELATED MOMENT{moment.archivedAt ? " - archived " + formatDateShort(moment.archivedAt) : ""}</div>
       </div>
       <div className="archive-actions">
         {archived ? (
@@ -10797,7 +10890,7 @@ function ArchiveTab({ scenes, setScenes, showToast }) {
       <ArchiveGroup title="Completed scenes" count={buckets.completedSceneCards.length}>
         {buckets.completedSceneCards.map(card => <CardRow key={card.id} card={card} />)}
       </ArchiveGroup>
-      <ArchiveGroup title="Completed thread moments" count={buckets.completedMomentRows.length}>
+      <ArchiveGroup title="Completed related moments" count={buckets.completedMomentRows.length}>
         {buckets.completedMomentRows.map(({ card, moment }) => <MomentRow key={card.id + "-" + moment.id} card={card} moment={moment} />)}
       </ArchiveGroup>
       <ArchiveGroup title="Archived tasks" count={buckets.archivedTaskRows.length} open={true}>
@@ -10806,7 +10899,7 @@ function ArchiveTab({ scenes, setScenes, showToast }) {
       <ArchiveGroup title="Archived scenes and cards" count={buckets.archivedCards.length}>
         {buckets.archivedCards.map(card => <CardRow key={card.id} card={card} archived />)}
       </ArchiveGroup>
-      <ArchiveGroup title="Archived thread moments" count={buckets.archivedMomentRows.length}>
+      <ArchiveGroup title="Archived related moments" count={buckets.archivedMomentRows.length}>
         {buckets.archivedMomentRows.map(({ card, moment }) => <MomentRow key={card.id + "-" + moment.id} card={card} moment={moment} archived />)}
       </ArchiveGroup>
     </div>
@@ -10817,6 +10910,7 @@ function ArchiveTab({ scenes, setScenes, showToast }) {
 function ProgressV2Tab({ scenes, sequences, setSequences }) {
   const state = normalizeState({ scenes, sequences });
   const stats = computeProgressStats(state);
+  const taskAudit = getCompanionTaskAudit(state);
   const archiveBuckets = collectArchiveBuckets(state.scenes);
   const archivedTotal = archiveBuckets.archivedCards.length + archiveBuckets.archivedTaskRows.length + archiveBuckets.archivedMomentRows.length;
   const pagesDone = getTotalPagesDone(sequences);
@@ -10827,6 +10921,11 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
   const setSequenceValue = (key, value) => setSequences(prev => ({ ...(prev || {}), [key]: value === "" ? "" : Number(value) }));
   const currentInputValue = sequences && sequences._pageCurrent !== undefined ? sequences._pageCurrent : pagesDone;
   const goalInputValue = sequences && sequences._pageGoal !== undefined ? sequences._pageGoal : pageGoal;
+  const taskAuditRows = ["UNPLACED", ...SEQUENCE_ORDER].map(seq => ({
+    seq,
+    label: seq === "UNPLACED" ? "Unplaced" : SEQUENCE_TITLES[seq],
+    data: taskAudit.bySequence[seq] || { cardCount:0, total:0, open:0, done:0, questions:0 }
+  })).filter(row => row.data.cardCount || row.data.total || row.data.questions);
   return (
     <div>
       <div className="progress-edit-grid">
@@ -10843,12 +10942,26 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
       {bar(pctPages, "#DA005F")}
       <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} companion tasks left</div>
       {bar(pctRewriteTasks, "#63B6A4")}
-      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>{stats.waiting} companion task{stats.waiting === 1 ? "" : "s"} waiting on a decision</div>
+      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>Counted from active Script Actions in Companion. Archived and maybe items do not count.</div>
       <div className="archive-summary-grid progress-archive-summary">
         <div className="archive-summary-box"><div>Done companion tasks</div><strong>{stats.completedRewriteTasks}</strong></div>
         <div className="archive-summary-box"><div>Ready to archive</div><strong>{archiveBuckets.completedTaskRows.length}</strong></div>
         <div className="archive-summary-box"><div>Archived</div><strong>{archivedTotal}</strong></div>
       </div>
+      <details className="companion-task-audit" open>
+        <summary>Companion task audit <span>{taskAudit.open} open / {taskAudit.total} total</span></summary>
+        <div className="companion-task-audit-body">
+          {taskAuditRows.map(row => (
+            <div key={row.seq} className="companion-task-audit-row">
+              <strong>{row.label}</strong>
+              <span>{row.data.cardCount} scenes</span>
+              <span>{row.data.open} open</span>
+              <span>{row.data.done} done</span>
+              <span>{row.data.questions} questions</span>
+            </div>
+          ))}
+        </div>
+      </details>
       {SEQUENCE_ORDER.map(seq => {
         const targetKey = '_target_' + seq;
         const currentPages = sequences && sequences[seq] !== undefined ? sequences[seq] : "";
@@ -10896,7 +11009,7 @@ function App() {
   React.useEffect(() => { localStorage.setItem("pickme_show_advanced_tabs", showAdvancedTabs ? "1" : "0"); }, [showAdvancedTabs]);
   React.useEffect(() => {
     const simpleTabs = new Set(["scene-list","companion","progress","archive","notes","playlist","settings"]);
-    const advancedTabs = new Set(["script","scenes","threads","decisions","question","eval","ritual"]);
+    const advancedTabs = new Set(["script","scenes","question","eval","ritual"]);
     if (!simpleTabs.has(activeTab) && (!showAdvancedTabs || !advancedTabs.has(activeTab))) setActiveTab("scene-list");
   }, [activeTab, showAdvancedTabs]);
 
@@ -11117,8 +11230,6 @@ function App() {
   const ADVANCED_TABS = [
     { id: "script",    label: "Script Rail" },
     { id: "scenes",    label: "Board" },
-    { id: "threads",   label: "Threads" },
-    { id: "decisions", label: "Decisions" },
     { id: "question",  label: "Scene Question" },
     { id: "eval",      label: "Scene Evaluation" },
     { id: "ritual",    label: "Pre-Writing Ritual" },
@@ -11221,12 +11332,6 @@ function App() {
         {activeTab === "scenes" && (
           <BoardV2Tab scenes={scenes} setScenes={setScenes} />
         )}
-        {activeTab === "threads" && (
-          <ThreadsTab scenes={scenes} setScenes={setScenes} />
-        )}
-        {activeTab === "decisions" && (
-          <DecisionsTab scenes={scenes} setScenes={setScenes} />
-        )}
         {activeTab === "ritual" && (
           <PreWritingRitualTab />
         )}
@@ -11250,7 +11355,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260810c').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260811a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
