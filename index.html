@@ -3082,7 +3082,7 @@
 
         body.pwa-build .header h1 {
             font-size: 1.4rem !important;
-            letter-spacing: -0.02em !important;
+            letter-spacing: 0 !important;
             line-height: 1.12 !important;
             margin: 0 0 8px !important;
         }
@@ -6597,7 +6597,7 @@ function normalizeChange(change, index, parentId) {
     done: !!(change && change.done),
     targetCardId: asId(change && change.targetCardId),
     pairedChangeId: asId(change && change.pairedChangeId),
-    waitingOn: asId(change && change.waitingOn),
+    waitingOn: null,
     maybe: !!(change && change.maybe),
     archived: !!(change && change.archived),
     createdAt: Number(change && change.createdAt || change && change.updatedAt || 0),
@@ -6607,7 +6607,7 @@ function normalizeChange(change, index, parentId) {
     id,
     targetCardId: asId(change && change.targetCardId),
     pairedChangeId: asId(change && change.pairedChangeId),
-    waitingOn: asId(change && change.waitingOn)
+    waitingOn: null
   };
 }
 function normalizeMoment(moment, index, parentId) {
@@ -6619,7 +6619,7 @@ function normalizeMoment(moment, index, parentId) {
     page: moment && moment.page !== undefined && moment.page !== "" ? Number(moment.page) : null,
     order: Number(moment && moment.order || index),
     done: !!(moment && moment.done),
-    waitingOn: asId(moment && moment.waitingOn),
+    waitingOn: null,
     maybe: !!(moment && moment.maybe),
     archived: !!(moment && moment.archived),
     createdAt: Number(moment && moment.createdAt || moment && moment.updatedAt || 0),
@@ -6628,7 +6628,7 @@ function normalizeMoment(moment, index, parentId) {
     ...(moment || {}),
     id,
     sequence: asId(moment && moment.sequence),
-    waitingOn: asId(moment && moment.waitingOn)
+    waitingOn: null
   };
 }
 function combineQuestionSections(record) {
@@ -6671,8 +6671,8 @@ function normalizeCard(record, index) {
     sequence: asId(record && record.sequence),
     page: record && record.page !== undefined && record.page !== "" ? Number(record.page) : null,
     order: Number(record && record.order || index),
-    thread: asId(record && record.thread),
-    waitingOn: asId(record && record.waitingOn),
+    thread: null,
+    waitingOn: null,
     maybe: !!(record && record.maybe),
     archived: !!(record && record.archived),
     archivedAt: record && record.archivedAt !== undefined ? record.archivedAt : null,
@@ -6693,8 +6693,8 @@ function normalizeCard(record, index) {
     kind,
     status,
     sequence: asId(record && record.sequence),
-    thread: asId(record && record.thread),
-    waitingOn: asId(record && record.waitingOn),
+    thread: null,
+    waitingOn: null,
     changes: prepareSceneListChanges(record, id, record && record.changes),
     moments: safeArray(record && record.moments).map((moment, momentIndex) => normalizeMoment(moment, momentIndex, id)),
     openQuestions: combineQuestionSections(record),
@@ -6891,20 +6891,6 @@ function ensureChange(card, verb, text, extra) {
   }
   return change;
 }
-function createDecision(id, title, description) {
-  return normalizeCard({ id, title, description, kind:"DECISION", status:"todo", changes:[], moments:[], createdAt:0, updatedAt:0 }, 0);
-}
-function getDecisionMap(cards) {
-  const map = new Map();
-  safeArray(cards).forEach(card => { if (card.kind === "DECISION" && !card.archived) map.set(card.id, card); });
-  return map;
-}
-function isWaitingOnDecision(record, decisionMap) {
-  const id = asId(record && record.waitingOn);
-  if (!id) return false;
-  const decision = decisionMap.get(id);
-  return !!decision && decision.status !== "done" && !decision.archived;
-}
 function findDuplicateCardGroups(state) {
   const cards = safeArray(state.scenes).filter(card => !card.archived && card.kind !== "THREAD" && card.kind !== "DECISION");
   const byExact = {};
@@ -6978,45 +6964,36 @@ const ACTIVE_CARD_MAPPING = {
   "DEBATE":{sequence:"s1",kind:"TWEAK",status:"drafted"},
   "POSTMATES FATE":{sequence:"s4",kind:"TWEAK",status:"drafted"},
   "MODEL FIGHT":{sequence:"s2",kind:"SCENE"},
-  "TRAILER":{sequence:"s4",kind:"SCENE",waitingOn:"decision-game-designer-scope"},
+  "TRAILER":{sequence:"s4",kind:"SCENE"},
   "NIGHT ONE":{sequence:"s5",kind:"TWEAK",status:"drafted"},
   "GOOD MORNING MUHAMMED":{sequence:"s5",kind:"SCENE"},
-  "FIRST CONFESSIONAL":{sequence:"s5",kind:"SCENE",waitingOn:"decision-game-designer-scope"},
+  "FIRST CONFESSIONAL":{sequence:"s5",kind:"SCENE"},
   "MIC PACK MOMENT":{sequence:"s5",kind:"SCENE"},
-  "WARBLAH WATCH PARTY":{sequence:"s5",kind:"SCENE",thread:"thread-musu"},
+  "WARBLAH WATCH PARTY":{sequence:"s5",kind:"SCENE"},
   "ROLL BOUNCE":{sequence:"s5",kind:"SCENE"},
   "WE UP":{sequence:"s6",kind:"SCENE"},
   "FAN FAIR":{sequence:"s6",kind:"SCENE"},
   "THE WEDDING":{sequence:"s6",kind:"TWEAK",status:"drafted"},
-  "SHE LIED Y'ALL":{sequence:"s7",kind:"SCENE",waitingOn:"decision-leak-mechanics"},
+  "SHE LIED Y'ALL":{sequence:"s7",kind:"SCENE"},
   "THE BETRAYAL":{sequence:"s7",kind:"SCENE"},
   "AUTUMN'S SPIRAL":{sequence:"s7",kind:"SCENE"},
   "ETHAN'S SPIRAL":{sequence:"s8",kind:"SCENE"},
   "ME + HER":{sequence:"s9",kind:"SCENE"},
   "THE NEWS HITS":{sequence:"s8",kind:"SCENE"},
   "THE FUNERAL":{sequence:"s10",kind:"SCENE"},
-  "THE EULOGY":{sequence:"s10",kind:"SCENE",waitingOn:"decision-game-designer-scope"},
-  "A GOOD MAN SAVANNAH":{sequence:"s10",kind:"SCENE",thread:"thread-musu"},
+  "THE EULOGY":{sequence:"s10",kind:"SCENE"},
+  "A GOOD MAN SAVANNAH":{sequence:"s10",kind:"SCENE"},
   "EPILOGUE":{sequence:"s10",kind:"SCENE"},
   "FIRST MEETING":{sequence:"s4",kind:"TWEAK",status:"drafted"},
   "THE SPA":{sequence:"s6",kind:"TWEAK",status:"drafted"},
   "CHATEAU MARMONT":{sequence:"s6",kind:"TWEAK",status:"drafted"},
   "FANTASY SUITES":{sequence:"s6",kind:"TWEAK",status:"drafted"},
   "THE ULTIMATUM":{sequence:"s2",kind:"TWEAK",status:"drafted"},
-  "NOWAI MATERNITY":{sequence:null,kind:"TWEAK",status:"drafted",thread:"thread-nowai"},
-  "ETHAN BONDS W/PA WHO HELPS AIR VIDEO":{sequence:"s6",kind:"SCENE",waitingOn:"decision-leak-mechanics"}
+  "NOWAI MATERNITY":{sequence:null,kind:"TWEAK",status:"drafted"},
+  "ETHAN BONDS W/PA WHO HELPS AIR VIDEO":{sequence:"s6",kind:"SCENE"}
 };
 const MAYBE_CARDS = ["COURTROOM DAYDREAM","COURTOOM DAYDREAM","STUCK (TIGHT DRESS)","DOCTOR'S OFFICE","ETHAN GETS RECOGNIZED","NEVER BEEN PICKED SUPERCUT","RUPERT'S FALSE VICTORY","TWO ON ONE ROCK CLIMBING DATE","THE MOVIE 300","WEDDING SPEECHES","SAY CHEESE","LATE NIGHT","BUTLER NAME REVEAL","THE INCIDENT (TOILET)"];
 const ARCHIVE_TITLES = ["TEST 6.2","XXXX","THIS IS A TEST"];
-const THREAD_MAP = [
-  { id:"thread-ethan-ladder", title:"ETHAN-LADDER", description:"Ethan's rising line from complicity to choice.", titles:["ETHAN TRIES TO GIVE CONTESTANTS LINES","ETHAN TRIES TO GIVE CONTESTANTS LINES TO SAY","ETHAN GIVES JN THE VILLAIN EDIT","ETHAN GIVES JN THE VILLIAIN EDIT","ETHAN UNDERMINES SUITOR OUT OF JEALOUSY","ETHAN BEING SNEAKY TO GET TAPE AIRED","FIRST TIME ETHAN QUESTIONS COMPLICITY","ETHAN WATCHES FOOTAGE OF AUTUMN","ETHAN SCENE WITHOUT AUTUMN","ETHAN APPLIES HIS MODEL BACKGROUND","ETHAN APPLIES HIS MODEL BACKGROUND TO THE SHOW","MOMENT OF JN CHOOSING TO SET FOR ETHAN","MOMENT OF JN CHOSING TO SET FOR ETHAN","ETHAN CRACKS HIS VENEER","BODYGUARD / ETHAN OVERREACTS"], sequenceHints:["s5","s5","s6","s6","s6","s7","s7","s6","s6","s5","s5"] },
-  { id:"thread-autumn-power", title:"AUTUMN-POWER", description:"Autumn's relationship to visibility, attention, and agency.", titles:["AUTUMN STARTS FEELING HERSELF","POWER TEST","POWER TEST REFRAIN","ANSWER FOR YOUR CRIMES","ANSWER FOR HIM","AUTUMN STEPS INTO HER POWER"], sequenceHints:["s5","s1","s6","s7","s7","s9"] },
-  { id:"thread-nowai", title:"NOWAI", description:"Nowai, Samuel, Kiya, and the family pressure around the show.", titles:["AUTUMN NOT THERE FOR NOWAI RE: SHOW","NOWAI CONFRONTATION","KIYA'S CHARACTER MOMENT"], sequenceHints:["s4","s8","s4"] },
-  { id:"thread-musu", title:"MUSU", description:"Musu's advice, regret, and reckoning.", titles:["MOMENT WHERE MUSU REGRETS THE ADVICE","VOICE OF GOD MOMENT(S?)","VOICE OF GOD MOMENT(s?)"], sequenceHints:["s10","s5"] },
-  { id:"thread-texture", title:"TEXTURE", description:"A focused texture pass for show language and recurring format.", titles:["CONTESTANT CONFESSIONALS","GUYS CONFESSION HOUR","SURVEILLANCE RUNNER","THREE SPONSORED SEGMENTS"], sequenceHints:["s5","s5","s6","s6"] },
-  { id:"thread-suitors", title:"SUITORS", description:"Suitor ensemble behavior and surprises.", titles:["SUITORS CLOCK ETHAN","A SUITOR SURPRISES HER (EARLY ON)","SUITORS GET FED UP","SUITORS DO SOMETHING TO HELP LET HER GUARD DOWN","XAVIER ONE-ON-ONE","ELIMINATION BEFORE HOMETOWNS","TWO SUITORS FORM AN ALLIANCE"], sequenceHints:["s5","s5","s6","s6","s5","s6","s6"], maybeTitles:["TWO SUITORS FORM AN ALLIANCE"] },
-  { id:"thread-fake-dating", title:"FAKE-DATING", description:"Coaching, performance, and the fake-dating question.", titles:["AUTUMN CODE SWITCHES/FAKES IT","A + E ACT LIKE A COUPLE","AUTUMN ALMOST GIVES IN","AUTUMN DOES SOMETHING THAT MAKES ETHAN FEEL LIKE SHE WOULD NEVER CHOOSE HIM"], sequenceHints:["s5","s6","s6","s6"], waitingOn:"decision-fake-dating" }
-];
 function migrateStateToV2(input) {
   let state = normalizeState(input);
   if (state.schemaVersion === SCHEMA_VERSION && state.migrationVersion >= MIGRATION_VERSION) return state;
@@ -7027,25 +7004,13 @@ function migrateStateToV2(input) {
     retainedAsCards: 0,
     convertedToChanges: 0,
     convertedToMoments: 0,
-    convertedToDecisions: 0,
     archivedAsSource: 0,
-    newThreadCards: 0,
-    newDecisionCards: 0,
     newPairedCards: 0,
     unmatchedTitles: [],
     multiplyMatchedTitles: [],
     completedAt: nowStamp()
   };
   const cards = state.scenes.slice();
-  const ensureDecision = (id, title, description) => {
-    const existed = cards.some(card => card.id === id);
-    const card = upsertCard(cards, createDecision(id, title, description));
-    if (!existed) report.newDecisionCards += 1;
-    return card;
-  };
-  ensureDecision("decision-game-designer-scope", "GAME-DESIGNER SCOPE", "Decide how far Autumn's background-actor to game-designer conversion reaches into sequences 1 and 2.");
-  ensureDecision("decision-fake-dating", "FAKE DATING", "Decide whether coaching beats exist and whether they concern feelings, camera composure, Ethan, or the suitors.");
-  ensureDecision("decision-leak-mechanics", "LEAK MECHANICS", "Reconcile the cousin filming the wedding kiss with the conversation that leaks.");
   Object.keys(ACTIVE_CARD_MAPPING).forEach(title => {
     const card = findCardByAnyTitle(cards, aliasesFor(title));
     if (!card) return;
@@ -7061,12 +7026,10 @@ function migrateStateToV2(input) {
     const card = findCardByAnyTitle(cards, [title]);
     if (card) { card.archived = true; card.archivedAt = card.archivedAt || nowStamp(); card.migratedTo = card.migratedTo || "archived-source"; report.archivedAsSource += 1; }
   });
-  const fakeDatingSource = findCardByAnyTitle(cards, aliasesFor("FAKE DATING"));
-  if (fakeDatingSource) { fakeDatingSource.archived = true; fakeDatingSource.archivedAt = fakeDatingSource.archivedAt || nowStamp(); fakeDatingSource.migratedTo = "decision-fake-dating"; report.convertedToDecisions += 1; }
   const meetAutumn = findCardByAnyTitle(cards, ["MEET AUTUMN"]);
   if (meetAutumn) {
     ensureChange(meetAutumn, "ADJUST", "opening VO - whose attention matters most", { id:"change-meet-autumn-adjust-opening-vo" });
-    ensureChange(meetAutumn, "ADJUST", "present-day identity -> game designer", { id:"change-meet-autumn-adjust-game-designer", waitingOn:"decision-game-designer-scope" });
+    ensureChange(meetAutumn, "ADJUST", "present-day identity -> game designer", { id:"change-meet-autumn-adjust-game-designer" });
   }
   const meetEthan = findCardByAnyTitle(cards, ["MEET ETHAN"]);
   if (meetEthan) {
@@ -7094,7 +7057,6 @@ function migrateStateToV2(input) {
     const card = findCardByAnyTitle(cards, aliasesFor(title));
     if (!card) return;
     const extra = { id };
-    if (id.includes("wedding-add") || id.includes("wedding-verify-leak") || id.includes("nowai")) extra.waitingOn = id.includes("nowai") ? null : "decision-leak-mechanics";
     if (verb === "MOVE") {
       const target = findCardByAnyTitle(cards, aliasesFor("STATE FAIR"));
       if (target) extra.targetCardId = target.id;
@@ -7108,34 +7070,6 @@ function migrateStateToV2(input) {
     spiral.description = spiral.description || "First drunk show-up.";
     report.newPairedCards += 1;
   }
-  THREAD_MAP.forEach(thread => {
-    const existed = cards.some(card => card.id === thread.id);
-    const parent = upsertCard(cards, normalizeCard({ id:thread.id, title:thread.title, description:thread.description, kind:"THREAD", status:"todo", changes:[], moments:[] }, cards.length));
-    if (!existed) report.newThreadCards += 1;
-    thread.titles.forEach((title, index) => {
-      const source = findCardByAnyTitle(cards, [title]);
-      if (!source) return;
-      const momentId = "moment-" + slugify(thread.id) + "-" + slugify(source.title);
-      if (!parent.moments.some(moment => moment.id === momentId)) {
-        parent.moments.push(normalizeMoment({
-          id: momentId,
-          label: source ? source.title : title,
-          sequence: thread.sequenceHints[index] || null,
-          order: index,
-          maybe: safeArray(thread.maybeTitles).some(t => normalizeTitle(t) === normalizeTitle(title)),
-          waitingOn: thread.waitingOn || (normalizeTitle(title).includes("SNEAKY") ? "decision-leak-mechanics" : null),
-          sourceDescription: source ? source.description : ""
-        }, parent.moments.length, parent.id));
-        report.convertedToMoments += 1;
-      }
-      if (source && source.id !== parent.id) {
-        source.archived = true;
-        source.archivedAt = source.archivedAt || nowStamp();
-        source.migratedTo = momentId;
-        report.archivedAsSource += 1;
-      }
-    });
-  });
   const spaSource = findCardByAnyTitle(cards, ["NEW JUSTIFICATION FOR THE SPA SCENE"]);
   const spa = findCardByAnyTitle(cards, aliasesFor("THE SPA"));
   if (spaSource && spa) {
@@ -7168,23 +7102,16 @@ function runDataChecks(stateInput) {
     safeArray(list).forEach(record => { const id = asId(record.id); if (seen.has(id)) dup.add(id); seen.add(id); });
     return Array.from(dup);
   };
-  const decisions = getDecisionMap(state.scenes);
   const cardIds = new Set(state.scenes.map(card => card.id));
-  const brokenDecisionReferences = [];
   const brokenMoveReferences = [];
   const brokenNowReferences = [];
   const duplicateChangeIds = [];
   const duplicateMomentIds = [];
   state.scenes.forEach(card => {
-    if (card.waitingOn && !decisions.has(card.waitingOn)) brokenDecisionReferences.push({ title:card.title, waitingOn:card.waitingOn });
     duplicateChangeIds.push(...duplicateIds(card.changes));
     duplicateMomentIds.push(...duplicateIds(card.moments));
     safeArray(card.changes).forEach(change => {
-      if (change.waitingOn && !decisions.has(change.waitingOn)) brokenDecisionReferences.push({ title:card.title, waitingOn:change.waitingOn });
       if (change.targetCardId && !cardIds.has(change.targetCardId)) brokenMoveReferences.push({ title:card.title, targetCardId:change.targetCardId });
-    });
-    safeArray(card.moments).forEach(moment => {
-      if (moment.waitingOn && !decisions.has(moment.waitingOn)) brokenDecisionReferences.push({ title:card.title, waitingOn:moment.waitingOn });
     });
   });
   if (state.now.cardId && !cardIds.has(state.now.cardId)) brokenNowReferences.push(state.now.cardId);
@@ -7195,7 +7122,6 @@ function runDataChecks(stateInput) {
     duplicateCardIds: duplicateIds(state.scenes),
     duplicateChangeIds: Array.from(new Set(duplicateChangeIds)),
     duplicateMomentIds: Array.from(new Set(duplicateMomentIds)),
-    brokenDecisionReferences,
     brokenMoveReferences,
     brokenNowReferences,
     invalidKinds,
@@ -9423,9 +9349,7 @@ function SettingsTab({
             Source cards: {conversionReport.sourceCardCount}<br />
             Retained as cards: {conversionReport.retainedAsCards}<br />
             Converted to changes: {conversionReport.convertedToChanges}<br />
-            Converted to moments: {conversionReport.convertedToMoments}<br />
-            New threads: {conversionReport.newThreadCards}<br />
-            New decisions: {conversionReport.newDecisionCards}<br />
+            Converted to related moments: {conversionReport.convertedToMoments}<br />
             Unmatched titles: {safeArray(conversionReport.unmatchedTitles).length}
           </div>
         </div>
@@ -10541,17 +10465,11 @@ function ScriptRailTab({ scenes, setScenes, nowState, setNowState }) {
   const [filter, setFilter] = React.useState("ALL");
   React.useEffect(() => { localStorage.setItem("pickme_collapsed_sequences", JSON.stringify(collapsed)); }, [collapsed]);
   const state = normalizeState({ scenes });
-  const decisions = getDecisionMap(state.scenes);
   const cardOptions = state.scenes.filter(c => !c.archived && c.kind !== "DECISION" && c.kind !== "THREAD");
   const entries = [];
   state.scenes.forEach(card => {
     if (card.archived || card.maybe) return;
     if ((card.kind === "SCENE" || card.kind === "TWEAK") && (filter === "ALL" || safeArray(card.changes).some(ch => ch.verb === filter))) entries.push({ type:"card", id:card.id, card, sequence:card.sequence, page:card.page, order:card.order, title:card.title });
-    if (card.kind === "THREAD") {
-      safeArray(card.moments).forEach(moment => {
-        if (!moment.archived && !moment.maybe) entries.push({ type:"moment", id:moment.id, card, moment, sequence:moment.sequence, page:moment.page, order:moment.order, title:moment.label });
-      });
-    }
   });
   const sortEntries = list => [...list].sort((a, b) => (SEQUENCE_ORDER.indexOf(a.sequence) - SEQUENCE_ORDER.indexOf(b.sequence)) || ((a.page || 9999) - (b.page || 9999)) || ((a.order || 0) - (b.order || 0)) || String(a.title).localeCompare(String(b.title)));
   const bySeq = {};
@@ -10573,18 +10491,16 @@ function ScriptRailTab({ scenes, setScenes, nowState, setNowState }) {
     const isCard = entry.type === "card";
     const card = entry.card;
     const moment = entry.moment;
-    const lock = isCard ? isWaitingOnDecision(card, decisions) : isWaitingOnDecision(moment, decisions);
     const rowId = isCard ? card.id : card.id + "::" + moment.id;
     const isOpen = !!expanded[rowId];
     const activeChanges = safeArray(card.changes).filter(ch => !ch.archived && !ch.maybe && (filter === "ALL" || ch.verb === filter));
     return (
       <div key={rowId} id={"rail-" + (isCard ? card.id : moment.id)} style={{border:"1px solid var(--border-pink)",background:"#fff",margin:"8px 0",padding:"10px"}}>
         <div style={{display:"grid",gridTemplateColumns:"14px auto 1fr auto",gap:"8px",alignItems:"center"}}>
-          <span style={{width:"10px",height:"10px",borderRadius:"50%",background:lock ? "#AFA000" : (isCard && card.status === "done") || (!isCard && moment.done) ? "#63B6A4" : "#DA005F"}} />
-          <TypePill>{isCard ? card.kind : "THREAD"}</TypePill>
+          <span style={{width:"10px",height:"10px",borderRadius:"50%",background:card.status === "done" ? "#63B6A4" : "#DA005F"}} />
+          <TypePill>{card.kind}</TypePill>
           <button onClick={() => setExpanded(prev => ({ ...prev, [rowId]:!isOpen }))} style={{background:"none",border:"none",textAlign:"left",fontWeight:800,color:"#1C1410",cursor:"pointer"}}>
             {isCard ? card.title : card.title + " / " + moment.label}
-            {lock && <div style={{fontSize:"0.78em",color:"#AFA000",fontWeight:700}}>Locked - decide {decisions.get((isCard ? card : moment).waitingOn)?.title || "decision"} first</div>}
           </button>
           <button className="btn btn-secondary" onClick={() => setNowState({ cardId:card.id, subId:isCard && activeChanges[0] ? activeChanges[0].id : moment && moment.id, updatedAt:nowStamp(), updatedBy:getDeviceId() })}>Work this</button>
         </div>
@@ -10680,72 +10596,6 @@ function BoardV2Tab({ scenes, setScenes }) {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function ThreadsTab({ scenes, setScenes }) {
-  const threads = normalizeState({ scenes }).scenes.filter(card => card.kind === "THREAD" && !card.archived);
-  const patchMoment = (cardId, momentId, patch) => setScenes(prev => safeArray(prev).map(card => card.id === cardId ? touchRecord(card, { moments:safeArray(card.moments).map(moment => moment.id === momentId ? touchRecord(moment, patch) : moment) }) : card));
-  const addMoment = (thread) => {
-    const label = prompt("Moment");
-    if (!label || !label.trim()) return;
-    setScenes(prev => safeArray(prev).map(card => card.id === thread.id ? touchRecord(card, { moments:[...safeArray(card.moments), normalizeMoment({ id:"moment-" + slugify(thread.id) + "-" + Date.now(), label:label.trim() }, safeArray(card.moments).length, thread.id)] }) : card));
-  };
-  return (
-    <div>
-      {threads.map(thread => {
-        const active = safeArray(thread.moments).filter(moment => !moment.archived && !moment.maybe);
-        const placed = active.filter(moment => moment.sequence).length;
-        const complete = active.filter(moment => moment.done).length;
-        return (
-          <div key={thread.id} style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"14px",marginBottom:"14px"}}>
-            <div style={{fontWeight:800,color:"var(--neon-pink)"}}>{thread.title}</div>
-            <div style={{fontSize:"0.88em",margin:"6px 0"}}>{placed} of {active.length} moments placed</div>
-            <div style={{fontSize:"0.88em",marginBottom:"10px"}}>{complete} of {active.length} moments done</div>
-            {safeArray(thread.moments).map(moment => (
-              <div key={moment.id} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:"8px",alignItems:"center",borderTop:"1px solid #f6d0f6",padding:"8px 0"}}>
-                <input type="checkbox" checked={!!moment.done} onChange={e => patchMoment(thread.id, moment.id, { done:e.target.checked })} />
-                <span>{moment.label}{moment.maybe ? " (Maybe)" : ""}</span>
-                <select value={moment.sequence || ""} onChange={e => patchMoment(thread.id, moment.id, { sequence:e.target.value || null })}>{["",...SEQUENCE_ORDER].map(seq => <option key={seq} value={seq}>{seq ? SEQUENCE_TITLES[seq] : "Unplaced"}</option>)}</select>
-              </div>
-            ))}
-            <button className="btn btn-secondary" onClick={() => addMoment(thread)}>Add moment</button>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function DecisionsTab({ scenes, setScenes }) {
-  const state = normalizeState({ scenes });
-  const decisions = state.scenes.filter(card => card.kind === "DECISION" && !card.archived);
-  const waitingFor = decisionId => {
-    const rows = [];
-    state.scenes.forEach(card => {
-      if (card.waitingOn === decisionId) rows.push(card.title);
-      safeArray(card.changes).forEach(change => { if (change.waitingOn === decisionId) rows.push(card.title + " - " + change.text); });
-      safeArray(card.moments).forEach(moment => { if (moment.waitingOn === decisionId) rows.push(card.title + " - " + moment.label); });
-    });
-    return rows;
-  };
-  const patch = (id, changes) => setScenes(prev => safeArray(prev).map(card => card.id === id ? touchRecord(card, changes) : card));
-  return (
-    <div>
-      <div style={{fontWeight:800,color:"var(--neon-pink)",marginBottom:"12px"}}>Decisions open: {decisions.filter(d => d.status !== "done").length}</div>
-      {decisions.map(decision => (
-        <div key={decision.id} style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"14px",marginBottom:"14px"}}>
-          <div style={{fontWeight:800,color:"#1C1410"}}>{decision.title}</div>
-          <p style={{lineHeight:1.5}}>{decision.description}</p>
-          <textarea value={decision.resolution || ""} onChange={e => patch(decision.id, { resolution:e.target.value })} placeholder="Resolution..." style={{width:"100%",minHeight:"80px",fontSize:"16px",boxSizing:"border-box",border:"1px solid var(--border-pink)",padding:"10px"}} />
-          <div style={{display:"flex",gap:"8px",marginTop:"8px"}}>
-            <button className="btn btn-primary" onClick={() => patch(decision.id, { status:"done", resolvedAt:nowStamp() })}>Resolve</button>
-            <button className="btn btn-secondary" onClick={() => patch(decision.id, { status:"todo", resolvedAt:null })}>Reopen</button>
-          </div>
-          <div style={{marginTop:"10px",fontSize:"0.86em",color:"var(--text-light)"}}>Waiting on this: {waitingFor(decision.id).length ? waitingFor(decision.id).join("; ") : "Nothing right now"}</div>
-        </div>
-      ))}
     </div>
   );
 }
