@@ -138,13 +138,13 @@
         }
         .tab-select:focus {
             outline: none;
-            border-color: var(--neon-pink);
+            border-color: #8B0040;
             box-shadow: none;
             background: var(--white);
         }
         .tab-select:hover {
-            background: #EA258D;
-            border-color: #EA258D;
+            background: #8B0040;
+            border-color: #8B0040;
             color: var(--white);
         }
 
@@ -237,7 +237,7 @@
         .btn-secondary {
             background: var(--white);
             color: var(--black);
-            border: 2px solid var(--neon-pink);
+            border: 2px solid #8B0040;
             box-shadow: none;
         }
         .btn-secondary:hover { background: var(--light-pink); color: var(--black); }
@@ -295,7 +295,7 @@
         }
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: var(--neon-pink);
+            border-color: #8B0040;
             box-shadow: none;
             background: white;
         }
@@ -897,7 +897,7 @@
 
         .tab-select:hover,
         .tab-select:focus {
-            border-color: var(--neon-pink) !important;
+            border-color: #8B0040 !important;
             background: var(--white) !important;
             color: var(--text-dark) !important;
             box-shadow: none !important;
@@ -931,7 +931,7 @@
         .btn-secondary {
             background: var(--white) !important;
             color: var(--black) !important;
-            border: 2px solid var(--neon-pink) !important;
+            border: 2px solid #8B0040 !important;
             box-shadow: none !important;
         }
 
@@ -954,7 +954,7 @@
         input:focus,
         textarea:focus,
         select:focus {
-            border-color: var(--neon-pink) !important;
+            border-color: #8B0040 !important;
             box-shadow: none !important;
             background: #FFFFFF !important;
         }
@@ -1027,7 +1027,7 @@
         }
 
         .scene-row.is-active {
-            border: 2px solid var(--neon-pink) !important;
+            border: 2px solid #8B0040 !important;
             background: #fff3f9 !important;
         }
 
@@ -1044,7 +1044,7 @@
         }
 
         .type-pill {
-            border-color: var(--neon-pink) !important;
+            border-color: #8B0040 !important;
             color: var(--neon-pink) !important;
             background: #FFFFFF !important;
         }
@@ -1235,7 +1235,7 @@
             appearance: none !important;
             padding: 18px 68px 18px 42px !important;
             background-color: var(--white) !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23EA258D' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%231C1410' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
             background-repeat: no-repeat !important;
             background-position: right 32px center !important;
             background-size: 18px 18px !important;
@@ -2157,7 +2157,7 @@
 
         .scene-notebook .sequence-select,
         .scene-notebook select:not(.sequence-select) {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23EA258D' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%231C1410' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
             background-position: right 18px center !important;
             background-repeat: no-repeat !important;
             background-size: 18px 18px !important;
@@ -2500,148 +2500,153 @@
             width: 100%;
         }
 
-        /* COMPANION FOCUS MODE 20260810A */
+        /* COMPANION LOG MODE 20260812A */
         .companion-notebook {
-            --companion-hot: #EA258D;
-            --companion-soft: #FEC3E4;
-            --companion-muted: #999999;
+            --companion-accent: #8B0040;
+            --companion-soft: #F7E3EE;
+            --companion-muted: #6F6864;
             --companion-text: #1C1410;
-            --companion-line: #DDDDDD;
-            --companion-active: #FFF5F8;
-            --companion-shadow: 0 4px 16px rgba(0,0,0,0.12);
-            --companion-soft-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            --companion-line: #D8D0D4;
+            --companion-active: #FFF7FA;
+            --companion-surface: #FFFFFF;
             display: grid;
-            gap: 18px;
+            gap: 14px;
         }
 
         .companion-focus-bar {
             align-items: end;
-            border-bottom: 1px solid #EEEEEE;
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 6px;
             display: grid;
-            gap: 20px;
-            grid-template-columns: minmax(0, 1fr) minmax(160px, 220px);
-            padding: 0 0 20px;
+            gap: 12px;
+            grid-template-columns: minmax(190px, 0.9fr) minmax(220px, 1fr) auto;
+            padding: 12px;
         }
 
         .companion-kicker,
         .companion-label {
-            color: #000000;
+            color: var(--companion-text);
             display: block;
-            font-size: 0.74rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
+            font-size: 0.68rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
             line-height: 1.1;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-transform: uppercase;
         }
 
         .companion-select,
+        .companion-status-select,
         .companion-search,
         .companion-textarea,
-        .companion-task-input,
-        .companion-verb-select {
-            background: #FFFFFF;
+        .companion-task-input {
+            background: var(--companion-surface);
             border: 1px solid var(--companion-line);
             border-radius: 4px;
-            box-shadow: var(--companion-soft-shadow);
-            box-sizing: border-box;
-            color: #000000;
+            color: var(--companion-text);
             font-family: inherit;
             font-size: 16px;
+            box-sizing: border-box;
             width: 100%;
         }
 
+        .companion-notebook .companion-select,
+        .companion-notebook .companion-status-select,
+        .companion-notebook .companion-search,
+        .companion-notebook .companion-textarea,
+        .companion-notebook .companion-task-input {
+            border: 1px solid var(--companion-line) !important;
+            box-shadow: none !important;
+        }
+
+        .companion-notebook .companion-select:focus,
+        .companion-notebook .companion-status-select:focus,
+        .companion-notebook .companion-search:focus,
+        .companion-notebook .companion-textarea:focus,
+        .companion-notebook .companion-task-input:focus {
+            border-color: #8B0040 !important;
+            outline: none !important;
+        }
+
         .companion-select,
-        .companion-verb-select {
+        .companion-status-select {
             -webkit-appearance: none;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23EA258D' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-            background-position: right 16px center;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%231C1410' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-position: right 12px center;
             background-repeat: no-repeat;
             background-size: 18px 18px;
-            min-height: 52px;
-            padding: 12px 48px 12px 16px;
+            min-height: 44px;
+            padding: 10px 40px 10px 12px;
         }
 
         .companion-search,
         .companion-task-input {
-            min-height: 48px;
-            padding: 12px 14px;
+            min-height: 44px;
+            padding: 10px 12px;
         }
 
         .companion-textarea {
             line-height: 1.45;
-            min-height: 96px;
-            padding: 12px 14px;
-            resize: vertical;
+            min-height: 84px;
+            padding: 10px 12px;
+            resize: none;
         }
 
         .companion-focus-button,
         .companion-add-button,
-        .companion-status-button,
         .companion-inline-button {
-            background: var(--companion-soft);
-            border: 0;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(254,195,228,0.3);
-            color: var(--companion-hot);
+            background: #F2C8DC;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: var(--companion-text);
             cursor: pointer;
             font-family: inherit;
-            font-size: 0.86rem;
-            font-weight: 800;
+            font-size: 0.78rem;
+            font-weight: 900;
             min-height: 44px;
-            padding: 10px 14px;
+            padding: 9px 12px;
             text-transform: uppercase;
         }
 
+        .companion-task-row .companion-add-button {
+            background: #FFFFFF;
+            border-color: var(--companion-line);
+            color: var(--companion-muted);
+            min-width: 74px;
+        }
+
+        .companion-task-row .companion-add-button:hover {
+            border-color: #8B0040;
+            color: var(--companion-text);
+        }
+
         .companion-focus-button {
-            min-height: 52px;
-            width: 100%;
+            min-width: 130px;
         }
 
         .companion-add-button {
             align-items: center;
             display: inline-flex;
-            font-size: 1.2rem;
+            font-size: 0.74rem;
             justify-content: center;
             line-height: 1;
-            padding: 0;
-            width: 48px;
+            padding: 0 10px;
+            width: auto;
         }
 
         .companion-focus-button:disabled,
         .companion-add-button:disabled,
-        .companion-status-button:disabled,
         .companion-inline-button:disabled {
             cursor: not-allowed;
             opacity: 0.55;
         }
 
-        .companion-status-group {
-            display: grid;
-            gap: 8px;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            margin-bottom: 14px;
-        }
-
-        .companion-status-button {
-            background: #FFFFFF;
-            border: 1px solid var(--companion-line);
-            box-shadow: var(--companion-soft-shadow);
-            color: #666666;
-            min-height: 42px;
-        }
-
-        .companion-status-button.is-active {
-            background: var(--companion-soft);
-            border-color: var(--companion-soft);
-            color: var(--companion-hot);
-        }
-
         .companion-workbench {
             display: grid;
-            gap: 22px;
-            grid-template-columns: 340px minmax(0, 1fr);
+            gap: 14px;
+            grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
             align-items: start;
         }
 
@@ -2650,12 +2655,11 @@
         }
 
         .companion-panel {
-            background: #FFFFFF;
-            border: 0;
-            border-radius: 8px;
-            box-shadow: var(--companion-shadow);
+            background: var(--companion-surface);
+            border: 1px solid var(--companion-line);
+            border-radius: 6px;
             min-width: 0;
-            padding: 20px;
+            padding: 14px;
         }
 
         .companion-list-heading {
@@ -2667,100 +2671,100 @@
         }
 
         .companion-list-title {
-            color: #000000;
-            font-size: 1.24rem;
+            color: var(--companion-text);
+            font-size: 1.05rem;
             font-weight: 900;
-            line-height: 1.05;
+            line-height: 1.12;
             text-transform: uppercase;
         }
 
         .companion-meta {
             color: var(--companion-muted);
-            font-size: 0.78rem;
+            font-size: 0.72rem;
             font-weight: 800;
             line-height: 1.35;
-            margin-top: 6px;
+            margin-top: 5px;
             text-transform: uppercase;
         }
 
         .companion-results {
-            max-height: 64vh;
+            max-height: min(64vh, 680px);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding-right: 4px;
         }
 
         .companion-row {
-            background: #FFFFFF;
+            background: var(--companion-surface);
             border: 1px solid var(--companion-line);
             border-radius: 4px;
-            box-shadow: var(--companion-soft-shadow);
-            color: #000000;
+            color: var(--companion-text);
             cursor: pointer;
             display: block;
-            margin-bottom: 10px;
-            padding: 14px 16px;
+            margin-bottom: 8px;
+            padding: 10px 12px;
             text-align: left;
             width: 100%;
         }
 
         .companion-row.is-active {
             background: var(--companion-active);
-            border-color: var(--companion-soft);
-            box-shadow: 0 4px 12px rgba(254,195,228,0.25);
+            border-color: #B47DA4;
         }
 
         .companion-row-title {
-            color: #000000;
-            font-size: 0.92rem;
+            color: var(--companion-text);
+            font-size: 0.86rem;
             font-weight: 900;
             line-height: 1.18;
             text-transform: uppercase;
         }
 
         .companion-detail-head {
-            border-bottom: 1px solid #EEEEEE;
-            margin-bottom: 14px;
-            padding-bottom: 14px;
+            border-bottom: 1px solid var(--companion-line);
+            display: grid;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
         }
 
         .companion-detail-title {
-            color: #000000;
-            font-size: 1.35rem;
+            color: var(--companion-text);
+            font-size: 1.22rem;
             font-weight: 900;
             line-height: 1.12;
-            margin-bottom: 8px;
             text-transform: uppercase;
         }
 
-        .companion-quick-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
+        .companion-detail-meta-row {
+            align-items: end;
+            display: grid;
+            gap: 10px;
+            grid-template-columns: minmax(0, 1fr) minmax(140px, 190px);
         }
 
         .companion-section {
-            border-top: 1px solid #EEEEEE;
-            padding: 12px 0 0;
+            border-top: 1px solid var(--companion-line);
+            padding: 10px 0 0;
         }
 
         .companion-section + .companion-section {
-            margin-top: 12px;
+            margin-top: 10px;
         }
 
         .companion-section-toggle {
             align-items: center;
             background: transparent;
             border: 0;
-            color: #000000;
+            color: var(--companion-text);
             cursor: pointer;
             display: flex;
             font-family: inherit;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 900;
             justify-content: space-between;
             letter-spacing: 0.06em;
+            list-style: none;
             min-height: 36px;
             padding: 0;
             text-align: left;
@@ -2768,10 +2772,19 @@
             width: 100%;
         }
 
+        .companion-section-toggle::-webkit-details-marker {
+            display: none;
+        }
+
         .companion-section-toggle span:last-child {
-            color: var(--companion-hot);
+            color: var(--companion-muted);
             font-size: 1.05rem;
             line-height: 1;
+            transition: transform 120ms ease;
+        }
+
+        .companion-section[open] > .companion-section-toggle span:last-child {
+            transform: rotate(45deg);
         }
 
         .companion-section-body {
@@ -2781,27 +2794,27 @@
         .companion-task-row {
             align-items: start;
             display: grid;
-            gap: 9px;
-            grid-template-columns: auto 132px minmax(0, 1fr) auto;
-            margin-bottom: 9px;
+            gap: 8px;
+            grid-template-columns: 24px minmax(0, 1fr) auto;
+            margin-bottom: 8px;
         }
 
         .companion-task-row input[type="checkbox"] {
-            accent-color: var(--companion-hot);
+            accent-color: #8B0040;
             height: 16px;
-            margin-top: 17px;
+            margin-top: 14px;
             width: 16px;
         }
 
         .companion-task-text {
-            min-height: 52px;
+            min-height: 48px;
         }
 
         .companion-add-row {
             display: grid;
-            gap: 9px;
-            grid-template-columns: 132px minmax(0, 1fr) 48px;
-            margin-top: 10px;
+            gap: 8px;
+            grid-template-columns: minmax(0, 1fr) auto;
+            margin-top: 12px;
         }
 
         .companion-empty-note {
@@ -2883,7 +2896,7 @@
         }
 
         .companion-task-audit summary span {
-            color: var(--companion-hot, #EA258D);
+            color: var(--companion-accent, #8B0040);
             font-size: 0.9rem;
         }
 
@@ -2947,7 +2960,7 @@
         }
 
         .archive-group summary span {
-            color: var(--companion-hot, #EA258D);
+            color: var(--companion-accent, #8B0040);
             font-size: 0.92rem;
         }
 
@@ -3050,7 +3063,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260811A */
+        /* PWA MOBILE BUILD OVERRIDES 20260812A */
         body.pwa-build {
             -webkit-text-size-adjust: 100% !important;
             min-height: 100vh !important;
@@ -3072,8 +3085,8 @@
 
         body.pwa-build .header {
             border-radius: 0 !important;
-            margin-bottom: 14px !important;
-            padding: 14px 12px 10px !important;
+            margin-bottom: 12px !important;
+            padding: 14px 10px 10px !important;
         }
 
         body.pwa-build .header-lip {
@@ -3081,19 +3094,19 @@
         }
 
         body.pwa-build .header h1 {
-            font-size: 1.4rem !important;
+            font-size: 1.35rem !important;
             letter-spacing: 0 !important;
-            line-height: 1.12 !important;
-            margin: 0 0 8px !important;
+            line-height: 1.1 !important;
+            margin: 0 0 7px !important;
         }
 
         body.pwa-build .header-sub {
             display: block !important;
-            font-size: 0.78rem !important;
+            font-size: 0.76rem !important;
         }
 
         body.pwa-build .tabs {
-            margin-bottom: 14px !important;
+            margin-bottom: 12px !important;
             position: static !important;
         }
 
@@ -3131,59 +3144,53 @@
         body.pwa-build .card {
             border-radius: 6px !important;
             margin-bottom: 10px !important;
-            padding: 14px 10px !important;
+            padding: 12px 10px !important;
         }
 
         body.pwa-build .section-title {
-            font-size: 1.14rem !important;
-            margin-bottom: 14px !important;
+            font-size: 1.08rem !important;
+            margin-bottom: 12px !important;
         }
 
         body.pwa-build .companion-notebook {
-            gap: 12px !important;
+            gap: 10px !important;
         }
 
         body.pwa-build .companion-focus-bar {
             gap: 10px !important;
             grid-template-columns: 1fr !important;
-            padding-bottom: 12px !important;
+            padding: 10px !important;
         }
 
         body.pwa-build .companion-kicker,
         body.pwa-build .companion-label {
-            font-size: 0.68rem !important;
-            margin-bottom: 6px !important;
+            font-size: 0.66rem !important;
+            margin-bottom: 5px !important;
         }
 
         body.pwa-build .companion-select,
+        body.pwa-build .companion-status-select,
+        body.pwa-build .companion-search,
+        body.pwa-build .companion-task-input,
         body.pwa-build .companion-focus-button {
-            min-height: 46px !important;
+            min-height: 44px !important;
         }
 
         body.pwa-build .companion-select,
-        body.pwa-build .companion-verb-select {
+        body.pwa-build .companion-status-select {
             background-position: right 12px center !important;
             padding: 10px 40px 10px 12px !important;
         }
 
-        body.pwa-build .companion-search,
-        body.pwa-build .companion-task-input {
-            min-height: 44px !important;
-            padding: 10px 12px !important;
-        }
-
         body.pwa-build .companion-workbench,
         body.pwa-build .companion-workbench.is-focused {
-            gap: 12px !important;
+            gap: 10px !important;
             grid-template-columns: 1fr !important;
         }
 
         body.pwa-build .companion-panel {
-            border-radius: 6px !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.10) !important;
-            display: flex !important;
-            flex-direction: column !important;
-            padding: 14px !important;
+            border-radius: 5px !important;
+            padding: 12px !important;
         }
 
         body.pwa-build .companion-results {
@@ -3191,138 +3198,58 @@
             min-height: 0 !important;
         }
 
+        body.pwa-build .companion-detail-meta-row {
+            grid-template-columns: 1fr !important;
+        }
+
         body.pwa-build .companion-list-title,
         body.pwa-build .companion-detail-title {
-            font-size: 1.08rem !important;
+            font-size: 1.04rem !important;
             line-height: 1.14 !important;
         }
 
         body.pwa-build .companion-meta {
-            font-size: 0.7rem !important;
-        }
-
-        body.pwa-build .companion-detail-head {
-            margin-bottom: 10px !important;
-            order: 0 !important;
-            padding-bottom: 10px !important;
-        }
-
-        body.pwa-build .companion-status-group {
-            gap: 6px !important;
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-            margin-bottom: 10px !important;
-        }
-
-        body.pwa-build .companion-status-button {
-            font-size: 0.7rem !important;
-            letter-spacing: 0 !important;
-            min-height: 44px !important;
-            padding: 8px 4px !important;
-        }
-
-        body.pwa-build .companion-quick-actions {
-            display: grid !important;
-            gap: 6px !important;
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            overflow: visible !important;
-            padding-bottom: 0 !important;
-        }
-
-        body.pwa-build .companion-inline-button {
             font-size: 0.68rem !important;
-            min-height: 38px !important;
-            padding: 7px 6px !important;
-            width: 100% !important;
-        }
-
-        body.pwa-build .companion-section {
-            order: 20 !important;
-            padding-top: 10px !important;
-        }
-
-        body.pwa-build .companion-section:nth-of-type(1) {
-            order: 12 !important;
-        }
-
-        body.pwa-build .companion-section:nth-of-type(2) {
-            order: 10 !important;
-        }
-
-        body.pwa-build .companion-section:nth-of-type(3) {
-            order: 11 !important;
-        }
-
-        body.pwa-build .companion-section + .companion-section {
-            margin-top: 8px !important;
-        }
-
-        body.pwa-build .companion-section-toggle {
-            min-height: 42px !important;
-        }
-
-        body.pwa-build .companion-textarea {
-            line-height: 1.4 !important;
-            min-height: 86px !important;
-            padding: 10px 12px !important;
         }
 
         body.pwa-build .companion-task-row {
-            align-items: start !important;
             gap: 7px !important;
-            grid-template-columns: 28px minmax(92px, 116px) 44px minmax(0, 1fr) !important;
-            margin-bottom: 8px !important;
-        }
-
-        body.pwa-build .companion-task-row input[type="checkbox"] {
-            grid-column: 1 !important;
-            grid-row: 1 / span 2 !important;
-            height: 18px !important;
-            margin-top: 14px !important;
-            width: 18px !important;
-        }
-
-        body.pwa-build .companion-task-row .companion-verb-select {
-            grid-column: 2 !important;
-            grid-row: 1 !important;
-            min-height: 44px !important;
-        }
-
-        body.pwa-build .companion-task-row .companion-task-text {
-            grid-column: 2 / 5 !important;
-            grid-row: 2 !important;
-            min-height: 70px !important;
+            grid-template-columns: 22px minmax(0, 1fr) !important;
         }
 
         body.pwa-build .companion-task-row .companion-add-button {
-            grid-column: 3 !important;
-            grid-row: 1 !important;
-            min-height: 44px !important;
-            width: 44px !important;
+            grid-column: 2 !important;
+            min-height: 34px !important;
+            width: 100% !important;
+        }
+
+        body.pwa-build .companion-textarea {
+            min-height: 76px !important;
+            padding: 9px 10px !important;
         }
 
         body.pwa-build .companion-add-row {
-            gap: 7px !important;
-            grid-template-columns: minmax(92px, 116px) minmax(0, 1fr) 44px !important;
+            grid-template-columns: minmax(0, 1fr) 64px !important;
         }
 
-        body.pwa-build .companion-add-button {
-            min-height: 44px !important;
-            width: 44px !important;
+        body.pwa-build .archive-summary-grid,
+        body.pwa-build .archive-row,
+        body.pwa-build .progress-edit-grid,
+        body.pwa-build .sequence-page-grid {
+            grid-template-columns: 1fr !important;
         }
 
-        @media (max-width: 380px) {
-            body.pwa-build .companion-add-row {
-                grid-template-columns: minmax(0, 1fr) 44px !important;
-            }
+        body.pwa-build .archive-actions {
+            justify-content: stretch !important;
+        }
 
-            body.pwa-build .companion-add-row .companion-verb-select {
-                grid-column: 1 / -1 !important;
-            }
+        body.pwa-build .archive-actions .btn {
+            flex: 1 1 120px !important;
         }
 
     </style>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ea258d">
+    <meta name="theme-color" content="#8B0040">
     <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body class="pwa-build">
@@ -3508,7 +3435,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260811a";
+const APP_VERSION = "20260812a";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -8375,7 +8302,7 @@ function RichTextEditor({ content, onChange }) {
 
   const toolbarBtn = (extra = {}) => ({
     backgroundColor: "#fec3e4",
-    border: "1px solid #ea258d",
+    border: "1px solid #8B0040",
     padding: "6px 12px",
     borderRadius: "4px",
     cursor: "pointer",
@@ -8715,7 +8642,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
                   padding: "8px 10px",
                   backgroundColor: selectedSceneId === scene.id ? "#ea258d" : "#fec3e4",
                   color: selectedSceneId === scene.id ? "white" : "#333",
-                  border: "1px solid " + (selectedSceneId === scene.id ? "#ea258d" : "#eb2e90"),
+                  border: "1px solid " + (selectedSceneId === scene.id ? "#8B0040" : "#D8D0D4"),
                   borderRadius: "6px",
                   cursor: "pointer",
                   fontSize: "0.88em"
@@ -8755,7 +8682,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
           </div>
           <button
             onClick={addScene}
-            style={{ width: "100%", backgroundColor: "#fec3e4", border: "1px solid #ea258d", padding: "8px", borderRadius: "6px", cursor: "pointer", fontSize: "0.88em", fontWeight: "600" }}
+            style={{ width: "100%", backgroundColor: "#fec3e4", border: "1px solid #8B0040", padding: "8px", borderRadius: "6px", cursor: "pointer", fontSize: "0.88em", fontWeight: "600" }}
           >
             + Add Scene
           </button>
@@ -9425,7 +9352,7 @@ function DraftNotesTab({ showToast, notes, setNotes }) {
             padding:"24px",
             fontSize:"0.95em",
             fontFamily:"inherit",
-            border:"2px solid var(--neon-pink)",
+            border:"2px solid #8B0040",
             borderRadius:"4px",
             backgroundColor:"var(--card-bg)",
             color:"var(--text-dark)",
@@ -9707,7 +9634,7 @@ function PreWritingRitualTab() {
       )}
 
       {ritualStep === "writing" && showDoorInput && (
-        <div style={{marginTop: "24px", padding: "16px", backgroundColor: "#fff5f8", borderRadius: "4px", border: "2px solid var(--neon-pink)"}}>
+        <div style={{marginTop: "24px", padding: "16px", backgroundColor: "#fff5f8", borderRadius: "4px", border: "2px solid #8B0040"}}>
           <div style={{fontSize: "0.9em", fontWeight: "600", marginBottom: "12px", textTransform: "uppercase"}}>
             What's the door line for next time?
           </div>
@@ -9905,14 +9832,8 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
     if (saved !== null) return saved === "1";
     return APP_BUILD === "PWA";
   });
-  const [collapsed, setCollapsed] = React.useState(() => {
-    try {
-      const saved = localStorage.getItem("pickme_companion_collapsed_sections");
-      if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return { overview:true, actions:false, questions:false };
-  });
-  const [newActionVerb, setNewActionVerb] = React.useState("ADJUST");
+  const [actionDrafts, setActionDrafts] = React.useState({});
+  const [questionDrafts, setQuestionDrafts] = React.useState({});
   const [newActionText, setNewActionText] = React.useState("");
 
   const state = normalizeState({ scenes });
@@ -9965,22 +9886,22 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   }, [focusSceneOnly]);
 
   React.useEffect(() => {
-    localStorage.setItem("pickme_companion_collapsed_sections", JSON.stringify(collapsed));
-  }, [collapsed]);
-
-  React.useEffect(() => {
     if (selected && activeId !== selected.id) setActiveId(selected.id);
     if (!selected && activeId) setActiveId(null);
   }, [selected && selected.id]); // eslint-disable-line
 
   const patchCard = (id, patch) => {
     if (!setScenes) return;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
     setScenes(prev => safeArray(prev).map(card => {
       if (asId(card.id) !== asId(id)) return card;
       const normalized = normalizeCard(card, 0);
       const nextPatch = typeof patch === "function" ? patch(normalized) : patch;
       return touchRecord(normalized, nextPatch);
     }));
+    requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+    requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
   };
 
   const patchSelected = patch => {
@@ -9994,11 +9915,27 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
       changes:safeArray(card.changes).map(change => asId(change.id) === asId(changeId) ? touchRecord(change, typeof patch === "function" ? patch(change) : patch) : change)
     }));
   };
+  const actionDraftValue = change => Object.prototype.hasOwnProperty.call(actionDrafts, change.id) ? actionDrafts[change.id] : (change.text || "");
+  const commitActionDraft = changeId => {
+    if (!selected || !Object.prototype.hasOwnProperty.call(actionDrafts, changeId)) return;
+    const text = String(actionDrafts[changeId] || "");
+    if (!text.trim()) {
+      if (showToast) showToast("Action cannot be blank");
+      return;
+    }
+    patchChange(changeId, { text });
+    setActionDrafts(prev => {
+      const copy = { ...prev };
+      delete copy[changeId];
+      return copy;
+    });
+  };
   const toggleChangeDone = (changeId, done) => {
     if (!selected) return;
     patchCard(selected.id, card => applyChangeDone(card, changeId, done));
   };
   const archiveChange = (changeId) => {
+    commitActionDraft(changeId);
     patchChange(changeId, archiveFields());
     if (showToast) showToast("Action archived");
   };
@@ -10009,7 +9946,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
     if (!text) return;
     patchCard(selected.id, card => {
       const next = normalizeCard(card, 0);
-      ensureChange(next, newActionVerb, text, { id:"change-" + slugify(next.id) + "-" + Date.now().toString(36), isRewriteTask:true });
+      ensureChange(next, "ADJUST", text, { id:"change-" + slugify(next.id) + "-" + Date.now().toString(36), isRewriteTask:true });
       return { changes:next.changes };
     });
     setNewActionText("");
@@ -10022,20 +9959,15 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
     if (showToast) showToast("Companion status updated");
   };
 
-  const toggleSection = id => setCollapsed(prev => ({ ...prev, [id]:!prev[id] }));
-  const sectionIsOpen = (id, defaultOpen) => collapsed[id] === undefined ? defaultOpen : !collapsed[id];
-
-  const CollapsibleSection = ({ id, title, meta, defaultOpen = false, children }) => {
-    const open = sectionIsOpen(id, defaultOpen);
-    return (
-      <section className="companion-section">
-        <button type="button" className="companion-section-toggle" onClick={() => toggleSection(id)} aria-expanded={open}>
-          <span>{title}{meta ? " - " + meta : ""}</span>
-          <span>{open ? "-" : "+"}</span>
-        </button>
-        {open && <div className="companion-section-body">{children}</div>}
-      </section>
-    );
+  const questionValue = selected ? (Object.prototype.hasOwnProperty.call(questionDrafts, selected.id) ? questionDrafts[selected.id] : (selected.openQuestions || "")) : "";
+  const commitQuestions = () => {
+    if (!selected || !Object.prototype.hasOwnProperty.call(questionDrafts, selected.id)) return;
+    patchSelected({ openQuestions:questionDrafts[selected.id] || "" });
+    setQuestionDrafts(prev => {
+      const copy = { ...prev };
+      delete copy[selected.id];
+      return copy;
+    });
   };
 
   return (
@@ -10048,8 +9980,18 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
             {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
           </select>
         </div>
+        <div>
+          <label className="companion-label" htmlFor="companion-search">Find Scene</label>
+          <input
+            id="companion-search"
+            className="companion-search"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search"
+          />
+        </div>
         <button type="button" className="companion-focus-button" onClick={() => setFocusSceneOnly(prev => !prev)}>
-          {focusSceneOnly ? "Show Sequence" : "Focus"}
+          {focusSceneOnly ? "Show List" : "One Scene"}
         </button>
       </div>
 
@@ -10062,15 +10004,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                 <div className="companion-meta">{filtered.length} scenes - {sequenceStats.open} open - {sequenceStats.questions} questions</div>
               </div>
             </div>
-            <label className="companion-label" htmlFor="companion-search">Find</label>
-            <input
-              id="companion-search"
-              className="companion-search"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Search"
-            />
-            <div className="companion-results" style={{marginTop:"12px"}}>
+            <div className="companion-results">
               {filtered.length === 0 && <div className="companion-empty-note">No companion cards match.</div>}
               {filtered.map(card => {
                 const stats = taskStats(card);
@@ -10083,7 +10017,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                   >
                     <div className="companion-row-title">{card.title || "Untitled"}</div>
                     <div className="companion-meta">
-                      {displayStatusLabel(card.status)} - {stats.open ? stats.open + " open" : stats.total ? "all checked" : "no actions"}{card.page ? " - p. " + card.page : (card.pageRange ? " - " + card.pageRange : "")}
+                      {stats.open ? stats.open + " open" : stats.total ? "all checked" : "no actions"}{card.page ? " - p. " + card.page : (card.pageRange ? " - " + card.pageRange : "")}
                     </div>
                   </button>
                 );
@@ -10098,60 +10032,41 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
           ) : (
             <>
               <div className="companion-detail-head">
-                <div style={{display:"flex",gap:"8px",alignItems:"center",justifyContent:"space-between",marginBottom:"10px"}}>
-                  <TypePill>{selected.kind}</TypePill>
-                  <div className="companion-meta" style={{marginTop:0}}>{selected.sequence ? SEQUENCE_TITLES[selected.sequence] : "Unplaced"}{selected.page ? " - p. " + selected.page : (selected.pageRange ? " - " + selected.pageRange : "")}</div>
-                </div>
-                <div className="companion-detail-title">{selected.title || "Untitled"}</div>
-                <div className="companion-status-group">
-                  {STATUS_VALUES.map(status => (
-                    <button
-                      key={status}
-                      type="button"
-                      className={normalizeStatus(selected.status) === status ? "companion-status-button is-active" : "companion-status-button"}
-                      onClick={() => setStatus(status)}
-                    >
-                      {displayStatusLabel(status)}
-                    </button>
-                  ))}
-                </div>
-                <div className="companion-quick-actions">
-                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:true, actions:false, questions:false })}>Working View</button>
-                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:false, actions:false, questions:false })}>Open All</button>
-                  <button type="button" className="companion-inline-button" onClick={() => setCollapsed({ overview:true, actions:true, questions:true })}>Close All</button>
+                <div className="companion-detail-meta-row">
+                  <div>
+                    <div className="companion-meta" style={{marginTop:0}}>{selected.sequence ? SEQUENCE_TITLES[selected.sequence] : "Unplaced"}{selected.page ? " - p. " + selected.page : (selected.pageRange ? " - " + selected.pageRange : "")}</div>
+                    <div className="companion-detail-title">{selected.title || "Untitled"}</div>
+                  </div>
+                  <div>
+                    <label className="companion-label" htmlFor="companion-status-select">Status</label>
+                    <select id="companion-status-select" className="companion-status-select" value={normalizeStatus(selected.status)} onChange={e => setStatus(e.target.value)}>
+                      {STATUS_VALUES.map(status => <option key={status} value={status}>{displayStatusLabel(status)}</option>)}
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <CollapsibleSection id="overview" title="What It Contains" defaultOpen={false}>
-                <textarea
-                  className="companion-textarea"
-                  value={selected.description || ""}
-                  onChange={e => patchSelected({ description:e.target.value })}
-                  rows={6}
-                />
-              </CollapsibleSection>
-
-              <CollapsibleSection id="actions" title="Script Actions" meta={selectedStats.complete + " / " + selectedStats.total} defaultOpen={true}>
+              <details className="companion-section" open>
+                <summary className="companion-section-toggle">
+                  <span>Action Log - {selectedStats.complete} / {selectedStats.total}</span>
+                  <span>+</span>
+                </summary>
+                <div className="companion-section-body">
                 {visibleChanges.length === 0 && <div className="companion-empty-note">No actions yet.</div>}
                 {visibleChanges.map(change => (
                   <div key={change.id} className="companion-task-row">
                     <input type="checkbox" checked={!!change.done} onChange={e => toggleChangeDone(change.id, e.target.checked)} />
-                    <select className="companion-verb-select" value={change.verb || "ADJUST"} onChange={e => patchChange(change.id, { verb:e.target.value })}>
-                      {CHANGE_VERBS.map(verb => <option key={verb} value={verb}>{verb}</option>)}
-                    </select>
                     <textarea
                       className="companion-textarea companion-task-text"
-                      value={change.text || ""}
-                      onChange={e => patchChange(change.id, { text:e.target.value })}
+                      value={actionDraftValue(change)}
+                      onChange={e => setActionDrafts(prev => ({ ...prev, [change.id]:e.target.value }))}
+                      onBlur={() => commitActionDraft(change.id)}
                       rows={2}
                     />
-                    <button type="button" className="companion-add-button" onClick={() => archiveChange(change.id)} title="Archive action" aria-label="Archive action"><ArchiveTrayIcon /></button>
+                    <button type="button" className="companion-add-button" onClick={() => archiveChange(change.id)}>Archive</button>
                   </div>
                 ))}
                 <div className="companion-add-row">
-                  <select className="companion-verb-select" value={newActionVerb} onChange={e => setNewActionVerb(e.target.value)}>
-                    {CHANGE_VERBS.map(verb => <option key={verb} value={verb}>{verb}</option>)}
-                  </select>
                   <input
                     className="companion-task-input"
                     value={newActionText}
@@ -10159,18 +10074,26 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                     onKeyDown={e => { if (e.key === "Enter") addAction(); }}
                     placeholder="Add action"
                   />
-                  <button type="button" className="companion-add-button" disabled={!newActionText.trim()} onClick={addAction} title="Add action" aria-label="Add action">+</button>
+                  <button type="button" className="companion-add-button" disabled={!newActionText.trim()} onClick={addAction}>Add</button>
                 </div>
-              </CollapsibleSection>
+                </div>
+              </details>
 
-              <CollapsibleSection id="questions" title="Questions" meta={lineCount(selected.openQuestions)} defaultOpen={true}>
+              <details className="companion-section" open>
+                <summary className="companion-section-toggle">
+                  <span>Questions - {lineCount(questionValue)}</span>
+                  <span>+</span>
+                </summary>
+                <div className="companion-section-body">
                 <textarea
                   className="companion-textarea"
-                  value={selected.openQuestions || ""}
-                  onChange={e => patchSelected({ openQuestions:e.target.value })}
+                  value={questionValue}
+                  onChange={e => setQuestionDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
+                  onBlur={commitQuestions}
                   rows={6}
                 />
-              </CollapsibleSection>
+                </div>
+              </details>
             </>
           )}
         </div>
@@ -10559,7 +10482,7 @@ function ScriptRailTab({ scenes, setScenes, nowState, setNowState }) {
         {["ALL",...CHANGE_VERBS].map(v => <button key={v} className={filter===v ? "btn btn-primary" : "btn btn-secondary"} onClick={() => setFilter(v)}>{v === "ALL" ? "All changes" : v}</button>)}
       </div>
       <div style={{border:"1px solid var(--border-pink)",background:"#fff",padding:"10px",marginBottom:"14px"}}>
-        <button onClick={() => setCollapsed(prev => ({ ...prev, unplaced:!prev.unplaced }))} style={{background:"none",border:"none",fontWeight:800,color:"var(--neon-pink)",cursor:"pointer"}}>UNPLACED - {unplaced.length}</button>
+        <button onClick={() => setCollapsed(prev => ({ ...prev, unplaced:!prev.unplaced }))} style={{background:"none",border:"none",fontWeight:800,color:"#8B0040",cursor:"pointer"}}>UNPLACED - {unplaced.length}</button>
         {!collapsed.unplaced && sortEntries(unplaced).map(renderEntry)}
       </div>
       {SEQUENCE_ORDER.map(seq => sequenceBlock(seq, bySeq[seq]))}
@@ -10792,7 +10715,7 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
       {bar(pctPages, "#DA005F")}
       <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} companion tasks left</div>
       {bar(pctRewriteTasks, "#63B6A4")}
-      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>Counted from active Script Actions in Companion. Archived and maybe items do not count.</div>
+      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>Counted from active Action Log entries in Companion. Archived and maybe items do not count.</div>
       <div className="archive-summary-grid progress-archive-summary">
         <div className="archive-summary-box"><div>Done companion tasks</div><strong>{stats.completedRewriteTasks}</strong></div>
         <div className="archive-summary-box"><div>Ready to archive</div><strong>{archiveBuckets.completedTaskRows.length}</strong></div>
@@ -11205,7 +11128,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260811a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260812a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
