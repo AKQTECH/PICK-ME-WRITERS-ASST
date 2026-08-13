@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260812H */
+        /* COMPANION LOG MODE 20260813A */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2900,10 +2900,15 @@
             width: 16px;
         }
 
-        .companion-task-text {
+        .companion-task-text,
+        .companion-note-text {
             min-height: 56px;
             overflow: auto;
             resize: vertical;
+        }
+
+        .companion-note-text {
+            min-height: 104px;
         }
 
         .companion-task-row .companion-archive-button {
@@ -3299,7 +3304,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260812H */
+        /* PWA MOBILE BUILD OVERRIDES 20260813A */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3637,7 +3642,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260812h";
+const APP_VERSION = "20260813a";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10282,7 +10287,13 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
     setActiveId(null);
     if (showToast) showToast("Idea archived");
   };
-  const changeRowCount = value => Math.min(12, Math.max(2, Math.ceil(String(value || "").length / 22)));
+  const textareaRowCount = (value, minRows, maxRows) => {
+    const text = String(value || "");
+    const rows = text.split("\n").reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / 22)), 0);
+    return Math.min(maxRows, Math.max(minRows, rows));
+  };
+  const changeRowCount = value => textareaRowCount(value, 2, 12);
+  const noteRowCount = value => textareaRowCount(value, 4, 18);
 
   const noteValue = selected ? (Object.prototype.hasOwnProperty.call(noteDrafts, selected.id) ? noteDrafts[selected.id] : (selected.openQuestions || "")) : "";
   const commitNotes = () => {
@@ -10465,11 +10476,11 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                 </summary>
                 <div className="companion-section-body">
                   <textarea
-                    className="companion-textarea"
+                    className="companion-textarea companion-note-text"
                     value={noteValue}
                     onChange={e => setNoteDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
                     onBlur={commitNotes}
-                    rows={6}
+                    rows={noteRowCount(noteValue)}
                   />
                 </div>
               </details>
@@ -11507,7 +11518,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260812h').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260813a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
