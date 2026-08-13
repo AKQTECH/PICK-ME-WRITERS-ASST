@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260812F */
+        /* COMPANION LOG MODE 20260812G */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2545,9 +2545,9 @@
         }
 
         .companion-picker-tab.is-active {
-            background: #FFF7FA;
-            border-color: #8B0040;
-            color: var(--companion-text);
+            background: #F7C7DE;
+            border-color: #F7C7DE;
+            color: #E668A7;
         }
 
         .companion-picker-tab:disabled {
@@ -2557,12 +2557,14 @@
 
         .companion-sequence-controls {
             display: grid;
-            gap: 8px;
+            gap: 16px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .companion-kicker,
         .companion-label {
-            color: var(--companion-text);
+            color: #E668A7;
             display: block;
             font-size: 0.68rem;
             font-weight: 900;
@@ -2723,7 +2725,7 @@
         }
 
         .companion-scene-meta {
-            color: var(--companion-muted);
+            color: #E668A7;
             font-size: 0.72rem;
             font-weight: 800;
             line-height: 1.35;
@@ -2743,7 +2745,7 @@
         }
 
         .companion-status-field span {
-            color: var(--companion-text);
+            color: #E668A7;
             font-size: 0.68rem;
             font-weight: 900;
             letter-spacing: 0.06em;
@@ -2859,6 +2861,10 @@
             text-align: left;
             text-transform: uppercase;
             width: 100%;
+        }
+
+        .companion-section-toggle span:first-child {
+            color: #E668A7;
         }
 
         .companion-section-toggle::-webkit-details-marker {
@@ -3294,7 +3300,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260812F */
+        /* PWA MOBILE BUILD OVERRIDES 20260812G */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3377,7 +3383,7 @@
         }
 
         body.pwa-build .companion-sequence-controls {
-            gap: 8px;
+            gap: 14px;
         }
 
         body.pwa-build .companion-select,
@@ -3632,7 +3638,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260812f";
+const APP_VERSION = "20260812g";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -11510,7 +11516,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260812f').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260812g').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
