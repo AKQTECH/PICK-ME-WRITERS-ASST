@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260812B */
+        /* COMPANION LOG MODE 20260812C */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2514,14 +2514,45 @@
         }
 
         .companion-focus-bar {
-            align-items: end;
             background: #FFFFFF;
             border: 1px solid var(--companion-line);
             border-radius: 6px;
             display: grid;
-            gap: 12px;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+            gap: 10px;
+            grid-template-columns: 1fr;
             padding: 12px;
+        }
+
+        .companion-picker-tabs {
+            display: grid;
+            gap: 6px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .companion-picker-tab {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 4px;
+            color: var(--companion-muted);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.68rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            min-height: 34px;
+            padding: 7px 8px;
+            text-transform: uppercase;
+        }
+
+        .companion-picker-tab.is-active {
+            background: #FFF7FA;
+            border-color: #8B0040;
+            color: var(--companion-text);
+        }
+
+        .companion-picker-tab:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
         }
 
         .companion-kicker,
@@ -2630,10 +2661,10 @@
             color: #F2C8DC;
             cursor: pointer;
             display: inline-flex;
-            height: 32px;
+            height: 34px;
             justify-content: center;
             padding: 0;
-            width: 32px;
+            width: 34px;
         }
 
         .companion-archive-button:hover {
@@ -2824,22 +2855,28 @@
         }
 
         .companion-task-row {
-            align-items: center;
+            align-items: start;
             display: grid;
             gap: 6px;
-            grid-template-columns: 20px minmax(0, 1fr) 32px;
+            grid-template-columns: 20px minmax(0, 1fr) 34px;
             margin-bottom: 8px;
         }
 
         .companion-task-row input[type="checkbox"] {
             accent-color: #8B0040;
             height: 16px;
-            margin: 0;
+            margin: 14px 0 0;
             width: 16px;
         }
 
         .companion-task-text {
-            min-height: 44px;
+            min-height: 56px;
+            overflow: auto;
+            resize: vertical;
+        }
+
+        .companion-task-row .companion-archive-button {
+            margin-top: 5px;
         }
 
         .companion-add-row {
@@ -3094,7 +3131,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260812B */
+        /* PWA MOBILE BUILD OVERRIDES 20260812C */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3164,6 +3201,15 @@
             padding: 10px;
         }
 
+        body.pwa-build .companion-picker-tabs {
+            gap: 5px;
+        }
+
+        body.pwa-build .companion-picker-tab {
+            min-height: 36px;
+            padding: 7px 5px;
+        }
+
         body.pwa-build .companion-select,
         body.pwa-build .companion-status-select {
             min-height: 44px;
@@ -3177,17 +3223,16 @@
 
         body.pwa-build .companion-task-row {
             gap: 6px;
-            grid-template-columns: 20px minmax(0, 1fr) 30px;
+            grid-template-columns: 20px minmax(0, 1fr) 34px;
         }
 
-        body.pwa-build .companion-task-input,
         body.pwa-build .companion-task-text {
-            min-height: 42px;
+            min-height: 56px;
         }
 
         body.pwa-build .companion-archive-button {
-            height: 30px;
-            width: 30px;
+            height: 34px;
+            width: 34px;
         }
 
         body.pwa-build .companion-add-row,
@@ -3389,7 +3434,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260812b";
+const APP_VERSION = "20260812c";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -9783,6 +9828,7 @@ function sortSceneCards(list) {
 function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   const [sequenceFilter, setSequenceFilter] = React.useState(() => localStorage.getItem("pickme_companion_sequence_focus") || "AUTO");
   const [activeId, setActiveId] = React.useState(null);
+  const [pickerStep, setPickerStep] = React.useState("sequence");
   const [changeDrafts, setChangeDrafts] = React.useState({});
   const [noteDrafts, setNoteDrafts] = React.useState({});
   const [newChangeText, setNewChangeText] = React.useState("");
@@ -9805,18 +9851,10 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   });
   const selected = filtered.find(card => card.id === activeId) || filtered[0] || null;
   const visibleChanges = selected ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
-  const lineCount = value => String(value || "").split(/\n+/).map(line => line.trim()).filter(Boolean).length;
   const taskStats = card => {
     const tasks = safeArray(card && card.changes).filter(change => !change.archived && !change.maybe);
     return { total:tasks.length, complete:tasks.filter(change => !!change.done).length, open:tasks.filter(change => !change.done).length };
   };
-  const sequenceStats = filtered.reduce((acc, card) => {
-    const stats = taskStats(card);
-    acc.total += stats.total;
-    acc.open += stats.open;
-    return acc;
-  }, { total:0, open:0 });
-  const selectedStats = selected ? taskStats(selected) : { total:0, complete:0, open:0 };
   const selectedStatus = selected ? normalizeStatus(selected.status) : "needs_edits";
   const companionStatusValue = COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "needs_edits";
 
@@ -9923,6 +9961,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
     patchSelected({ status });
     if (showToast) showToast("Status updated");
   };
+  const changeRowCount = value => Math.min(12, Math.max(2, Math.ceil(String(value || "").length / 22)));
 
   const noteValue = selected ? (Object.prototype.hasOwnProperty.call(noteDrafts, selected.id) ? noteDrafts[selected.id] : (selected.openQuestions || "")) : "";
   const commitNotes = () => {
@@ -9938,38 +9977,64 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   return (
     <div className="companion-notebook">
       <div className="companion-focus-bar">
-        <div>
-          <label className="companion-kicker" htmlFor="companion-sequence-select">Sequence</label>
-          <select id="companion-sequence-select" className="companion-select" value={effectiveSequenceFilter} onChange={e => setSequenceFilter(e.target.value)}>
-            <option value="UNPLACED">Unplaced</option>
-            {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
-          </select>
+        <div className="companion-picker-tabs" aria-label="Companion picker steps">
+          <button type="button" className={pickerStep === "sequence" ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => setPickerStep("sequence")}>Sequence</button>
+          <button type="button" className={pickerStep === "scene" ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => setPickerStep("scene")} disabled={filtered.length === 0}>Scene</button>
+          <button type="button" className={pickerStep === "status" ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => setPickerStep("status")} disabled={!selected}>Status</button>
         </div>
-        <div>
-          <label className="companion-label" htmlFor="companion-scene-select">Scene</label>
-          <select
-            id="companion-scene-select"
-            className="companion-select"
-            value={selected ? selected.id : ""}
-            onChange={e => setActiveId(e.target.value)}
-            disabled={filtered.length === 0}
-          >
-            {filtered.length === 0 && <option value="">No scenes</option>}
-            {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="companion-label" htmlFor="companion-status-select">Status</label>
-          <select
-            id="companion-status-select"
-            className="companion-status-select"
-            value={companionStatusValue}
-            onChange={e => setStatus(e.target.value)}
-            disabled={!selected}
-          >
-            {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{displayStatusLabel(status)}</option>)}
-          </select>
-        </div>
+
+        {pickerStep === "sequence" && (
+          <div>
+            <label className="companion-kicker" htmlFor="companion-sequence-select">Sequence</label>
+            <select
+              id="companion-sequence-select"
+              className="companion-select"
+              value={effectiveSequenceFilter}
+              onChange={e => {
+                setSequenceFilter(e.target.value);
+                setActiveId(null);
+                setPickerStep("scene");
+              }}
+            >
+              <option value="UNPLACED">Unplaced</option>
+              {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
+            </select>
+          </div>
+        )}
+
+        {pickerStep === "scene" && (
+          <div>
+            <label className="companion-label" htmlFor="companion-scene-select">Scene</label>
+            <select
+              id="companion-scene-select"
+              className="companion-select"
+              value={selected ? selected.id : ""}
+              onChange={e => {
+                setActiveId(e.target.value);
+                setPickerStep("status");
+              }}
+              disabled={filtered.length === 0}
+            >
+              {filtered.length === 0 && <option value="">No scenes</option>}
+              {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
+            </select>
+          </div>
+        )}
+
+        {pickerStep === "status" && (
+          <div>
+            <label className="companion-label" htmlFor="companion-status-select">Status</label>
+            <select
+              id="companion-status-select"
+              className="companion-status-select"
+              value={companionStatusValue}
+              onChange={e => setStatus(e.target.value)}
+              disabled={!selected}
+            >
+              {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{displayStatusLabel(status)}</option>)}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="companion-workbench is-focused">
@@ -9980,12 +10045,11 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
             <>
               <div className="companion-scene-meta">
                 {selected.sequence ? SEQUENCE_TITLES[selected.sequence] : "Unplaced"}{selected.page ? " - p. " + selected.page : (selected.pageRange ? " - " + selected.pageRange : "")}
-                {" - "}{selectedStats.open} open scene changes / {selectedStats.total}
               </div>
 
               <details className="companion-section" open>
                 <summary className="companion-section-toggle">
-                  <span>Scene Changes - {selectedStats.open} open / {selectedStats.total}</span>
+                  <span>Scene Changes</span>
                   <span>+</span>
                 </summary>
                 <div className="companion-section-body">
@@ -9993,14 +10057,15 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                   {visibleChanges.map(change => (
                     <div key={change.id} className="companion-task-row">
                       <input type="checkbox" checked={!!change.done} onChange={e => toggleChangeDone(change.id, e.target.checked)} aria-label="Mark scene change done" />
-                      <input
-                        className="companion-task-input companion-task-text"
+                      <textarea
+                        className="companion-textarea companion-task-text"
                         value={changeDraftValue(change)}
                         onChange={e => queueChangeDraft(change.id, e.target.value)}
                         onBlur={() => commitChangeDraft(change.id)}
+                        rows={changeRowCount(changeDraftValue(change))}
                       />
                       <button type="button" className="companion-archive-button" onClick={() => archiveChange(change.id)} title="Archive scene change" aria-label="Archive scene change">
-                        <ArchiveTrayIcon size={15} />
+                        <ArchiveTrayIcon size={18} />
                       </button>
                     </div>
                   ))}
@@ -10019,7 +10084,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
 
               <details className="companion-section" open>
                 <summary className="companion-section-toggle">
-                  <span>Notes - {lineCount(noteValue)}</span>
+                  <span>Notes</span>
                   <span>+</span>
                 </summary>
                 <div className="companion-section-body">
@@ -10044,10 +10109,11 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
 function ArchiveTrayIcon({ size = 16 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true" focusable="false">
-      <path d="M9 17c0-5 4-9 9-9h28c5 0 9 4 9 9v10H9V17Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M14 27v21c0 5 4 9 9 9h18c5 0 9-4 9-9V27" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M32 20v24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M23 36l9 9 9-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M20 50V14c0-4 3-7 7-7h18l11 11v32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M45 7v13h11" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M29 25h15M29 33h18M29 41h13" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+      <path d="M7 52V25c0-4 3-7 7-7h9l6 7h19c5 0 8 4 7 9l-5 18c-1 4-4 6-8 6H13c-4 0-6-2-6-6Z" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13 58l8-25c1-4 4-6 8-6h26c4 0 7 4 5 8l-6 17c-1 4-4 6-8 6H13Z" fill="var(--companion-surface, #fff)" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -11065,7 +11131,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260812b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260812c').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
