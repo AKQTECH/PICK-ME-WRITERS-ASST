@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260812A */
+        /* COMPANION LOG MODE 20260812B */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2520,7 +2520,7 @@
             border-radius: 6px;
             display: grid;
             gap: 12px;
-            grid-template-columns: minmax(190px, 0.9fr) minmax(220px, 1fr) auto;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
             padding: 12px;
         }
 
@@ -2622,6 +2622,25 @@
             color: var(--companion-text);
         }
 
+        .companion-archive-button {
+            align-items: center;
+            background: transparent;
+            border: 0;
+            border-radius: 50%;
+            color: #F2C8DC;
+            cursor: pointer;
+            display: inline-flex;
+            height: 32px;
+            justify-content: center;
+            padding: 0;
+            width: 32px;
+        }
+
+        .companion-archive-button:hover {
+            background: #FFF7FA;
+            color: #8B0040;
+        }
+
         .companion-focus-button {
             min-width: 130px;
         }
@@ -2646,7 +2665,7 @@
         .companion-workbench {
             display: grid;
             gap: 14px;
-            grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr);
             align-items: start;
         }
 
@@ -2660,6 +2679,19 @@
             border-radius: 6px;
             min-width: 0;
             padding: 14px;
+        }
+
+        .companion-log-panel {
+            display: grid;
+            gap: 12px;
+        }
+
+        .companion-scene-meta {
+            color: var(--companion-muted);
+            font-size: 0.72rem;
+            font-weight: 800;
+            line-height: 1.35;
+            text-transform: uppercase;
         }
 
         .companion-list-heading {
@@ -2792,22 +2824,22 @@
         }
 
         .companion-task-row {
-            align-items: start;
+            align-items: center;
             display: grid;
-            gap: 8px;
-            grid-template-columns: 24px minmax(0, 1fr) auto;
+            gap: 6px;
+            grid-template-columns: 20px minmax(0, 1fr) 32px;
             margin-bottom: 8px;
         }
 
         .companion-task-row input[type="checkbox"] {
             accent-color: #8B0040;
             height: 16px;
-            margin-top: 14px;
+            margin: 0;
             width: 16px;
         }
 
         .companion-task-text {
-            min-height: 48px;
+            min-height: 44px;
         }
 
         .companion-add-row {
@@ -3023,8 +3055,7 @@
         @media (max-width: 900px) {
             .companion-focus-bar,
             .companion-workbench,
-            .companion-add-row,
-            .companion-task-row {
+            .companion-add-row {
                 grid-template-columns: 1fr;
             }
 
@@ -3063,188 +3094,111 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260812A */
+        /* PWA MOBILE BUILD OVERRIDES 20260812B */
         body.pwa-build {
-            -webkit-text-size-adjust: 100% !important;
-            min-height: 100vh !important;
-            padding: max(10px, env(safe-area-inset-top)) 8px max(18px, env(safe-area-inset-bottom)) !important;
+            background: #F7A8D0;
+            min-width: 0;
+            overflow-x: hidden;
         }
 
         body.pwa-build input,
         body.pwa-build textarea,
         body.pwa-build select,
-        body.pwa-build div[contenteditable] {
-            font-size: 16px !important;
+        body.pwa-build button {
+            font-size: 16px;
         }
 
         body.pwa-build .container {
-            margin: 0 auto !important;
-            max-width: 640px !important;
-            width: 100% !important;
+            box-sizing: border-box;
+            margin: 0 auto;
+            max-width: 640px;
+            padding: 8px;
+            width: 100%;
         }
 
         body.pwa-build .header {
-            border-radius: 0 !important;
-            margin-bottom: 12px !important;
-            padding: 14px 10px 10px !important;
+            border-width: 0;
+            margin-bottom: 10px;
+            padding: 16px 10px 14px;
         }
 
         body.pwa-build .header-lip {
-            display: none !important;
+            display: none;
         }
 
         body.pwa-build .header h1 {
-            font-size: 1.35rem !important;
-            letter-spacing: 0 !important;
-            line-height: 1.1 !important;
-            margin: 0 0 7px !important;
+            font-size: 1.35rem;
+            line-height: 1.1;
+            margin: 0 0 8px;
         }
 
         body.pwa-build .header-sub {
-            display: block !important;
-            font-size: 0.76rem !important;
+            font-size: 0.78rem;
         }
 
         body.pwa-build .tabs {
-            margin-bottom: 12px !important;
-            position: static !important;
+            margin: 0 0 10px;
         }
 
         body.pwa-build .tab-select,
         body.pwa-build .tab-select:hover,
         body.pwa-build .tab-select:focus {
-            background-position: right 14px center !important;
-            border-radius: 4px !important;
-            font-size: 16px !important;
-            min-height: 46px !important;
-            padding: 12px 48px 12px 14px !important;
-        }
-
-        body.pwa-build .progress-bar-container {
-            align-items: stretch !important;
-            gap: 8px !important;
-            margin-bottom: 10px !important;
-            padding: 8px 10px !important;
-        }
-
-        body.pwa-build .progress-feature-name {
-            flex: 1 1 100% !important;
-            font-size: 0.72rem !important;
-            min-width: 0 !important;
-        }
-
-        body.pwa-build .progress-bar-wrapper {
-            min-width: 0 !important;
-        }
-
-        body.pwa-build .progress-stats {
-            min-width: 46px !important;
+            min-height: 48px;
+            padding: 11px 46px 11px 14px;
         }
 
         body.pwa-build .card {
-            border-radius: 6px !important;
-            margin-bottom: 10px !important;
-            padding: 12px 10px !important;
-        }
-
-        body.pwa-build .section-title {
-            font-size: 1.08rem !important;
-            margin-bottom: 12px !important;
+            border: 0;
+            border-radius: 6px;
+            padding: 12px;
         }
 
         body.pwa-build .companion-notebook {
-            gap: 10px !important;
+            gap: 10px;
         }
 
         body.pwa-build .companion-focus-bar {
-            gap: 10px !important;
-            grid-template-columns: 1fr !important;
-            padding: 10px !important;
-        }
-
-        body.pwa-build .companion-kicker,
-        body.pwa-build .companion-label {
-            font-size: 0.66rem !important;
-            margin-bottom: 5px !important;
-        }
-
-        body.pwa-build .companion-select,
-        body.pwa-build .companion-status-select,
-        body.pwa-build .companion-search,
-        body.pwa-build .companion-task-input,
-        body.pwa-build .companion-focus-button {
-            min-height: 44px !important;
+            border-radius: 6px;
+            gap: 10px;
+            grid-template-columns: 1fr;
+            padding: 10px;
         }
 
         body.pwa-build .companion-select,
         body.pwa-build .companion-status-select {
-            background-position: right 12px center !important;
-            padding: 10px 40px 10px 12px !important;
-        }
-
-        body.pwa-build .companion-workbench,
-        body.pwa-build .companion-workbench.is-focused {
-            gap: 10px !important;
-            grid-template-columns: 1fr !important;
+            min-height: 44px;
+            padding-block: 9px;
         }
 
         body.pwa-build .companion-panel {
-            border-radius: 5px !important;
-            padding: 12px !important;
-        }
-
-        body.pwa-build .companion-results {
-            max-height: 42dvh !important;
-            min-height: 0 !important;
-        }
-
-        body.pwa-build .companion-detail-meta-row {
-            grid-template-columns: 1fr !important;
-        }
-
-        body.pwa-build .companion-list-title,
-        body.pwa-build .companion-detail-title {
-            font-size: 1.04rem !important;
-            line-height: 1.14 !important;
-        }
-
-        body.pwa-build .companion-meta {
-            font-size: 0.68rem !important;
+            border-radius: 6px;
+            padding: 12px;
         }
 
         body.pwa-build .companion-task-row {
-            gap: 7px !important;
-            grid-template-columns: 22px minmax(0, 1fr) !important;
+            gap: 6px;
+            grid-template-columns: 20px minmax(0, 1fr) 30px;
         }
 
-        body.pwa-build .companion-task-row .companion-add-button {
-            grid-column: 2 !important;
-            min-height: 34px !important;
-            width: 100% !important;
+        body.pwa-build .companion-task-input,
+        body.pwa-build .companion-task-text {
+            min-height: 42px;
         }
 
-        body.pwa-build .companion-textarea {
-            min-height: 76px !important;
-            padding: 9px 10px !important;
+        body.pwa-build .companion-archive-button {
+            height: 30px;
+            width: 30px;
         }
 
-        body.pwa-build .companion-add-row {
-            grid-template-columns: minmax(0, 1fr) 64px !important;
-        }
-
-        body.pwa-build .archive-summary-grid,
-        body.pwa-build .archive-row,
+        body.pwa-build .companion-add-row,
         body.pwa-build .progress-edit-grid,
-        body.pwa-build .sequence-page-grid {
-            grid-template-columns: 1fr !important;
+        body.pwa-build .archive-summary-grid,
+        body.pwa-build .progress-archive-summary {
+            grid-template-columns: 1fr;
         }
 
-        body.pwa-build .archive-actions {
-            justify-content: stretch !important;
-        }
-
-        body.pwa-build .archive-actions .btn {
-            flex: 1 1 120px !important;
+        body.pwa-build .companion-add-row .companion-add-button {
+            width: 100%;
         }
 
     </style>
@@ -3435,7 +3389,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260812a";
+const APP_VERSION = "20260812b";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -3459,7 +3413,8 @@ const SEQUENCE_TITLES = {
 };
 const SEQUENCE_TARGETS = { s1:7, s2:7, s3:4, s4:10, s5:28, s6:28, s7:7, s8:4, s9:10, s10:12 };
 const KIND_VALUES = ["SCENE","THREAD","TWEAK","DECISION"];
-const STATUS_VALUES = ["todo","drafted","done"];
+const STATUS_VALUES = ["todo","drafted","done","needs_edits","cut"];
+const COMPANION_STATUS_VALUES = ["drafted","needs_edits","cut"];
 const CHANGE_VERBS = ["CUT","ADD","ADJUST","MOVE","VERIFY"];
 
 const CLAUDE_COMPANION_NOTES_RAW = "# PICK ME — SCRIPT COMPANION (7/16/26)\n\nFollows the current draft (FULL_DRAFT_7_16_26) in order. Sources: the draft, the 7/16 app export, the 5/9 changes doc, and prior thread decisions (6/19, 7/4, 7/5, 7/14, 7/15). Every note lands in a scene or in UNPLACED at the end. Page counts are sequence budgets from the app, not verified page numbers.\n\nSequence budgets: AUTUMN'S WORLD 7 · THE DEAL 7 · THE INTERVENTION 4 · MEET CUTE → YES 10 · GAME TIME 28 · THE SQUEEZE 28 · THE UNRAVELING 7 · THE LOW POINT 4 · THE TURNING POINT 10 · THE BIG FINALE 12 = 117 (ceiling is 110).\n\n---\n\n## THE CHEETAH GIRLS (COLD OPEN)\nPages: opens the 7-page AUTUMN'S WORLD budget\nSequence: MEET AUTUMN / AUTUMN'S WORLD\nFormerly: MEET AUTUMN\n\nWhat happens now:\n- VO: \"all I ever really wanted was attention.\" Camcorder audition tape, age 9. Barbecue performance to \"Cinderella,\" Samuel's thumbs up, \"my daughter is gonna be a big Hollywood star.\" Prospective Husband List. The fight through the door (\"look how big she's getting\"), the mirror, the Dodge Neon leaving. Flavor of Love with Nowai; Musu's \"don't you ever let a man make you look stupid in these people country.\"\n\nWhat this scene is doing:\n- Installs the wound as a contract: perform and be loved. Samuel stays for the whole performance and gives her the full win — the equation forms when he leaves, and she blames her body for it.\n\nWhat April is considering:\n- Emphasis: she wanted HIS attention specifically — maybe show him talking to friends, then stopping to look at her.\n- Clarify the attention theme — maybe the *right* attention.\n- Connect performing for Samuel and the women performing for Flava Flav's attention.\n- Adjust the \"don't let a man make you look stupid\" line.\n- Add Samuel's prophetic \"everyone will know your name.\"\n- Make body-shame → abandonment explicit: she blames her body for Samuel leaving, and reads it as rejection of her core self (\"he left because of me\").\n\nQuestions to answer:\n- VO frame: who is Autumn addressing across the whole film — the funeral crowd, Samuel, us? If the VO is the eulogy in progress, thread it so the funeral reveal collapses the frame rather than explaining it.\n- Some VO trims possible — can the star-to-background transition go? (Depends on the job rebuild below.)\n\nRipple effects:\n- The prophecy line pays off verbatim in THE EULOGY (\"He told me I would be a star and I believed him\").\n- Epilogue self-tape should mirror this tape shot-for-shot.\n- Pink chair extends window → screen (same posture) once she's a designer.\n\nPossible script actions:\n- Adjust VO; add prophecy line; sharpen body/abandonment link.\n\nStatus:\n- rewrite (adjustments only — bones locked)\n\n---\n\n## THE HUSTLE → AUTUMN'S NEW JOB\nPages: within AUTUMN'S WORLD (7)\nSequence: MEET AUTUMN / AUTUMN'S WORLD\nFormerly: THE HUSTLE (scooch / fat corpse / commercials / Uber / Postmates)\n\nWhat happens now:\n- Draft still has the old version: extra on a set told to \"scooch\" out of frame, corpse on Bosch, jealous bridesmaid, weight-loss \"before,\" Uber singalong, Postmates trays. Marked \"WILL BE REPLACED WITH AUTUMN'S NEW JOB BEATS.\"\n\nWhat this scene is doing:\n- Introduces adult Autumn as someone who sidelined herself and built a life around near-invisibility — now via game design instead of background work.\n\nWhat April is considering:\n- SCOOCH → coworkers minimize her window of a mockup featuring a Black girl who looks like her (\"scooch\" digital). Alternate from 7/5: playtest behind two-way glass — creation visible, creator invisible (rhymes with the polygraph mirror).\n- She's pushing new body types into the game; white coworkers say the game should be \"aspirational.\"\n- FAT CORPSE SEQUENCE → saved for a nightmare sequence; Nowai asks what happened to her wanting to act.\n- SINGING IN THE CAR → caught singing in her office by a boss she also has a crush on.\n- New Create-a-Sim prototype demo: as she builds herself we learn how she sees herself — doubles as her adult introduction.\n- Showing Ma Kebbeh the game, super proud; Ma Kebbeh: \"okay fucking nerd.\"\n- X factor visible even here: the other coders are jealous; she barely notices — she doesn't let how white people feel about her into her consciousness.\n- Pink ergonomic everything at her desk.\n- She has troll experience (game commenters) — just never directed at her personally. Plants for SHE LIED Y'ALL.\n- Maybe keep the bad-commercial montage as how she paid for college; later a commenter: \"ain't that the bitch from the Mucinex commercial.\" Would need to convey she lied to herself about having fun in those roles.\n- Meta player/coworker questions (\"why doesn't she advocate for herself?\").\n- Early beat: she's inside playing the game while life happens (\"you can't always be using escapism\").\n- POWER TEST (early rung): she tries to get a free coffee off a barista who's into it, sees his boss, folds — and resorts to fatphobic self-talk to cope with not standing up for herself. Refrain lands late (see WE UP / ME + HER).\n\nQuestions to answer:\n- Which scooch version: minimized window or two-way-glass playtest?\n- Do the commercials survive as backstory (college money) or move fully to the nightmare?\n- Where exactly does the boss-crush thread go after she quits (see next entry)?\n\nRipple effects:\n- Billboard motif starts here: billboard #1 is a game she designed → #2 the show → #3 her replaced (AUTUMN'S SPIRAL).\n- The game-design skill is the competence rung in the secret proof chain (7/4 guardrail: at least two man-free rungs).\n- Avatar payoffs owed mid-film: she boots the old game during the spiral; one Samuel-and-the-game beat before his death; possible Sims element in Ethan's grand gesture (ETHAN'S TAPE).\n- The \"terms\" line at OBSERVATORY (\"you are a postmate with the x factor\") needs the designer update.\n\nPossible script actions:\n- Cut old hustle beats; add new job beats; keep POWER TEST as the first rung.\n\nStatus:\n- rewrite (the biggest front-half build)\n\n---\n\n## THE QUIT + THE NIGHT IN (NEW BRIDGE)\nPages: within AUTUMN'S WORLD / THE INTERVENTION\nSequence: MEET AUTUMN / AUTUMN'S WORLD\nFormerly: (new — replaces old hustle-to-intervention glue)\n\nWhat happens now:\n- Not in the draft. From the new notes: her coworkers set her up, AND/OR her boss asks her to hang back from the investor meeting; she's so offended she quits in a blind rage (\"if you quit in a blind rage do you still get severance?\" / \"girl, hell no\").\n- That night: in with Nowai, trying to figure out how to break the job news — right when Nowai and Kiya make their announcement.\n- Nowai asks if she ever thinks about her dream to act; Autumn: \"what would even be available to me\" → supercut of ads/background work.\n\nWhat this scene is doing:\n- Makes the money need concrete and self-inflicted (she torched the job herself), so the show's paycheck reads as necessity AND cover story.\n\nWhat April is considering:\n- Whether the setup (coworkers) and the investor-meeting snub are both needed or one is enough.\n\nQuestions to answer:\n- Does the acting-dream conversation live here or inside DEBATE? Don't double it.\n\nRipple effects:\n- Rewrites her \"why\" at DEBATE and OBSERVATORY (rent money now paired with no income).\n- The supercut here may absorb the commercial montage question from the job rebuild.\n\nPossible script actions:\n- Add. Decide overlap with DEBATE.\n\nStatus:\n- undecided (which trigger; placement of the dream beat)\n\n---\n\n## THE INCIDENT / MEET ETHAN\nPages: opens THE DEAL (7)\nSequence: MEET ETHAN / THE DEAL\nFormerly: MIRROURS / RED CARPET INCIDENT\n\nWhat happens now:\n- Draft still runs the old version: Spot of Tea recaps his breakdown, the full Victoria red-carpet sequence (\"you're gonna miss this cock\"), then Omar picks him up at MIRROURS rehab. Notes on the page already say: cut Mirrours, begin at Omar picking him up.\n\nWhat this scene is doing:\n- Introduces Ethan and his wound (\"just someone's son\") through a public spectacle, plus Omar as his one real person.\n\nWhat April is considering:\n- New Incident = the RUNWAY / MODEL FIGHT: relevance-coded — a hot new model is the new thing, Ethan is being aged out; the model drops \"at least I'm not just someone's son\"; Ethan throws weak punches; people lie to him about looking cool (\"why is your wrist so limp wtf\").\n- Cut Victoria entirely (locked). Cut rehab. Omar = friend AND publicist, Ethan his only client — Omar's career IS Ethan.\n- Media coverage mentions the new US season → Ethan: \"At the very least you know I know how to make headlines.\"\n- Floating alt from app: Victoria line \"sue me for not wanting to be with just some guy's son\" — dead if she's cut; the model carries the line now.\n\nQuestions to answer:\n- The NOTE at the top of this section (\"LATER WE'LL LEARN THIS WAS AN ACT OF SELF SABOTAGE... ETHAN KNEW AUTUMN WOULD BE UPSET\") describes the spa-footage decision, not the red carpet. Misplaced paste, or do you want The Incident itself to rhyme with the betrayal as pattern-proof? Decide and move the note.\n- With rehab cut, where does \"The bitch is back\" energy open — straight on the runway?\n\nRipple effects:\n- Every downstream Victoria reference dies with her: Omar's Night One question, the Instagram alert at the photoshoot, Rupert's \"Victoria figured that out\" at Chateau, Roll Bounce \"what was with the pants,\" the 4/5 note \"betrayal must read as callback to high school + Victoria.\"\n- Autumn later teases \"you barely got a lick in\" (she admits at OBSERVATORY she watched the fight video).\n- ETHAN'S TAPE includes unseen, more embarrassing runway-fight footage.\n\nPossible script actions:\n- Cut red carpet + rehab; add runway fight; rewrite Omar pickup with publicist stakes.\n\nStatus:\n- rewrite (decision made, page not yet changed)\n\n---\n\n## THE ULTIMATUM\nPages: within THE DEAL (7)\nSequence: MEET ETHAN / THE DEAL\n\nWhat happens now:\n- Cassidy Productions conference room. Rupert's press release, cutting Ethan off. Ethan's counter: find a star, guarantee a hit, keep the trust fund. Omar staked to the same outcome. \"Double last season's ratings.\"\n\nWhat this scene is doing:\n- Sets the wager and Rupert's currency: money as the only attachment he trusts.\n\nWhat April is considering:\n- Plant Rupert's working-class background here — one incongruous self-made detail in the shrine office; he thinks the ultimatum is a GIFT (he started with nothing, so should Ethan).\n- Rupert: Ethan hasn't shadowed him before but thinks \"how hard could it be\"; Rupert is pissed Ethan thinks his life's work is easy, says he won't survive a week of production.\n- \"Be like Simon Cowell, fuck your kids over, give the money to fucking birds.\"\n- Rupert assigns his personal assistant to Ethan: \"You're fired if you fuck up. I've been wanting to get rid of him anyway.\"\n- The No Fraternization Clause: producers forbidden from dating contestants (\"Do NOT fuck them, it's a lawsuit waiting to happen\").\n- Omar stakes update: he's no longer inside the company the same way if Omar = publicist, not Rupert's employee. Restate what Omar loses.\n\nQuestions to answer:\n- With Omar as outside publicist, what exactly is Rupert's leverage over him? (7/14 flagged this; the answer in canon: Ethan is his only client — the show failing ends Omar's business. Put that on the page here.)\n\nRipple effects:\n- No Fraternization Clause arms the leak and DAMAGE CONTROL with legal stakes.\n- The class scar plants Rupert's six-beat run (see CHATEAU and THE CHOICE).\n- \"Gift\" framing pays off in RUPERT v. ETHAN when he panics at losing the leash.\n\nPossible script actions:\n- Add class plant, clause, assistant beat; adjust Omar's stakes.\n\nStatus:\n- rewrite\n\n---\n\n## THE INTERVENTION\nPages: THE INTERVENTION (4)\nSequence: THE INTERVENTION\n\nWhat happens now:\n- Ma Kebbeh's celebration. Nowai and Autumn bits (Nick Cannon paper, keto jokes), Old Ma prayer circle laying hands, chemo mentioned, \"find a husband before she goes,\" Musu's over-translation, \"I am deadass\" eye pull. Musu: \"You want your sister to leave you behind?\"\n\nWhat this scene is doing:\n- Public, hilarious, mortifying inciting pressure. Sets the family stakes and the misdirection: Ma Kebbeh's health primes the audience to expect HER death so Samuel's lands harder — and her survival reads funny and devastating at once.\n\nWhat April is considering:\n- Make Musu a serial dater / constant proposals.\n- Musu: \"how will you afford that place on your own?\" (money pressure inside the intervention).\n- Lean into the subtext: find a man or get left behind.\n- Make Nowai's move-out date SPECIFIC (\"I'm out by the end of the month\").\n\nQuestions to answer:\n- Calibrate the chemo line against the misdirection: sick enough to prime, alive enough that \"the old ma will live forever\" runs as a joke. Where does that complaint line go (someone must say it)?\n\nRipple effects:\n- Feeds DEBATE (\"her why\" stack). Feeds FAN FAIR / WEDDING invite question (does a pass-out come back?). Feeds funeral misdirection.\n\nPossible script actions:\n- Adjust; add the specific move-out date and money line.\n\nStatus:\n- keep (tighten)\n\n---\n\n## MY SPOT (MEET CUTE)\nPages: opens MEET CUTE → YES (10)\nSequence: THE MEET CUTE → YES\nFormerly: FIRST MEETING / ON THE LOT\n\nWhat happens now:\n- Draft: picnic table on the lot, the Pick Me book, \"you're in my spot,\" the pitch, \"I see you,\" business card. Still located on the lot (background-actor world).\n\nWhat this scene is doing:\n- The deflation meet-cute: he expects recognition, she gives him none. His \"I see you\" against her invisibility thesis.\n\nWhat April is considering:\n- Relocation now that she's not on a lot: her lunch break at Sweetgreen, shaking the shit out of a salad, annoyed — OR frantic at a bookstore, annoyed.\n- New dynamic beats: Ethan thinks she recognizes him (model/celebrity); \"Wait, you don't rate me, do you?\"; he mentions the show is HBO/high end; \"nepo baby is actually a slur.\"\n- She goes off about how white men always want everything their way, then: \"sorry, that is a sensitive subject right now\" (fresh off the boss/investor snub — ties her rage to the quit).\n- 7/5 candidate for the pitch logic: his \"complete disruption of reality TV\" runs on interactive mechanics (Razr texts, votes, King of Night One = game design) — he could need a systems designer and find his star, which keeps \"I see you\" as seeing the person behind the avatar.\n\nQuestions to answer:\n- Sweetgreen or bookstore?\n- Does he find her by accident or through the game (played it? saw the billboard for it?)?\n\nRipple effects:\n- \"I see you\" must survive the relocation intact — it's quoted by the whole back half.\n- The book gag (From Pick Me to I DO!) sets the title thesis; keep or adapt.\n\nPossible script actions:\n- Move; rewrite around the new job; keep the spine of the exchange.\n\nStatus:\n- rewrite\n\n---\n\n## DEBATE\nPages: within MEET CUTE → YES (10)\nSequence: THE MEET CUTE → YES\n\nWhat happens now:\n- Apartment. True Love's Kiss UK viewing, lipstick ceremony, Kiya's dream (\"a stage, a spotlight, beautiful but terrified\"), Nowai's move-in announcement, \"what do you have to lose,\" the near-mention of Dad, VO: \"I kept it to myself.\" Note on page: add a disrespectful dating-app text — is that her alternative?\n\nWhat this scene is doing:\n- Her private deliberation plus the secret: she can't even tell her sister, because being seen wanting it is the exposure she can't survive.\n\nWhat April is considering:\n- Adjust her reasoning stack (HER WHY): Ma Kebbeh (emotional) + Nowai moving out (abandonment) + the show pays (concrete rent need) + money as her out from admitting she wants it.\n- Make the upfront payment explicit — she gets paid just for participating — but maybe she repays it if she quits before the season ends (a trap she signs).\n- Maybe she does tell them, and we don't hear the explanation — just their faces: \"what?? you absolutely have to.\"\n- Nowai post-watch beat: \"I just hope you're letting them in… they should get to know you so they can love you too.\"\n\nQuestions to answer:\n- Tell them or keep the secret? The 7/5 note treats the untold secret as a thread that later detonates and repairs (Nowai learning she was shut out). If she tells them here, that thread dies — pick one on purpose.\n- Repayment clause: keep as pressure or cut as clutter?\n\nRipple effects:\n- The secret (if kept) owes a detonation + repair scene later — candidate placements: WARBLAH WATCH PARTY, AUTUMN'S SPIRAL, or FUNERAL GREETING heart-to-heart.\n\nPossible script actions:\n- Adjust stakes; add app text; decide the secret.\n\nStatus:\n- rewrite\n\n---\n\n## OBSERVATORY\nPages: closes MEET CUTE → YES (10)\nSequence: THE MEET CUTE → YES\nFormerly: POSTMATES FATE / ETHAN'S RENTAL\n\nWhat happens now:\n- Draft: she delivers Postmates to his child-star sublet; joint; The Incident conversation; the casting questionnaire reveal (he was sneaky); the driving metaphor; her terms (live at home → hotel compromise, weekends, keeps her phone); \"He's a bit charming, he is.\"\n\nWhat this scene is doing:\n- The negotiation and the yes. Her terms = her need for control; his sneaky-casting reveal = he sees people.\n\nWhat April is considering:\n- Move it to Griffith Observatory; SHE seeks HIM out and arranges the meeting (she has the card). \"Make Ethan getting her to come over more intentional\" is superseded if she initiates — decide which direction the intention flows.\n- She asks him to CONFIRM this is not a sex thing and not Zeus Network.\n- Her casting criteria: must pass a social-media background check; no soft launches within the previous 18 months.\n- She admits she watched the fight video; asks about the weak punches.\n- ETHAN: \"Is there really no part of you that wants more?\"\n- \"I'm not asking you to dive off a cliff. I'm asking you to step into a puddle.\" / \"I don't want to do that, either.\"\n- \"Look, I don't need a star. I need you.\" / \"Oh my God.\"\n- Terms line \"you are a postmate with the x factor, this could change your whole life\" → rewrite for designer (\"you build the fantasy for other people…\").\n\nQuestions to answer:\n- Does the phone-terms beat survive? (It matters: her phone is how the spiral and the fan support reach her — and how she misses them.)\n- The camera-for-posterity bit (\"the camera never lies\") is a strong thesis plant — does it survive the relocation?\n\nRipple effects:\n- Weekend-home term explains apartment scenes mid-season; keep consistent.\n- \"The camera never lies\" is an ironic bookend for the frankenedit and the eulogy livestream.\n\nPossible script actions:\n- Move; rename; rewrite terms; keep the questionnaire reveal.\n\nStatus:\n- rewrite\n\n---\n\n## TRAILER + PHOTOSHOOT\nPages: opens GAME TIME (28)\nSequence: GAME TIME\nFormerly: THE SHOOT / PREP SEQUENCE\n\nWhat happens now:\n- Draft: prep cut already noted; title argument (\"we're calling it Pick Me… we already made merch,\" quarter zips); red ball gown shoot, rose petals in her mouth, family WhatsApp eruption, Victoria Instagram alert on Ethan's phone (cut with Victoria).\n\nWhat this scene is doing:\n- The high/low: polished trailer against the brutal reality of making it. Her first taste of being packaged.\n\nWhat April is considering:\n- Cut prep sequence fully; new structure = polished TRAILER intercut/against brutal photoshoot.\n- Hard cut joke: she says \"I just want the money\" → HARD CUT to her in the show trailer: \"I'm not doing this for the money.\"\n- Ethan directly posing her: \"Bite your lip, stick your arse out.\" He has a signal with a PA for when to throw roses.\n- \"Talking to you feels like I'm playing English Madlibs, literally what the fuck are you talking about.\"\n- Autumn watches past Bachelorette seasons with Nowai and Kiya, taking notes, mimicking mannerisms (produce-herself beat, sets performance vs. truth).\n- Song note: \"CANNIBALISM!\" (Slayyter) for the first photoshoot; \"WHERE IS MY HUSBAND!\" (RAYE) is the movie-trailer pick.\n\nQuestions to answer:\n- Where does the Bachelorette study session sit — before Night One here, or as its own small scene?\n\nRipple effects:\n- Cut the Victoria alert. The PA-with-roses signal can recur (Monica).\n\nPossible script actions:\n- Cut prep; add trailer/photoshoot high-low; add study session.\n\nStatus:\n- rewrite\n\n---\n\n## NIGHT ONE\nPages: the big unit inside GAME TIME (28) — card says CUT DOWN TO TEN PAGES MAX\nSequence: GAME TIME\n\nWhat happens now:\n- Draft (long): mic-up with Monica's roses + Musu's \"DON'T FORGET TO SUCK IT IN\" note; control room (Omar's boat speech; Omar's Victoria question — cut; The Suit arrives); Butler intro (off/on camera contrast, Razr phone); Joe Nathan meet + intro package; rooftop greeting; TITTY GATE (strap fails, full exposure, Bobby's joke bombs, retro-consent release forms); suite meltdown + Ethan's baby-giraffe pep talk; Nowai FaceTime (\"big booty puppet,\" \"remind him who the fuck is in charge\"); CROCS re-entry + earpiece handoff; Dylan package + earpiece rounds (Dylan, Bobby, Kostas, Everest); Ethan rips his headset off; Xavier reveal + coffee shop flashback; BOMB text.\n\nWhat this scene is doing:\n- Headline: Autumn attempts to play the Perfect Bachelorette and fails. Titty gate cracks her thesis for the first time — the punishment she predicted doesn't arrive.\n\nWhat April is considering (from cards/notes):\n- Huge cuts and streamline; ten pages max.\n- Cut the night-one compliment — he just looks thrown off.\n- Autumn watches crew setting up but sees no cameras / Omar: they're hidden.\n- First scary VOICE OF GOD during the JN talk — makes them both jump.\n- Flashbacks to some dudes' auditions as they come in.\n- \"He gives her bad advice because he assumes Autumn is ______\" (fill the blank — his old playbook, Phase 2 of the earpiece).\n- Crocs could happen during the boat date — could end Night One right at the re-entry.\n- MAYBE: Ethan's veneer literally cracks — he cracks a tooth (veneer glue sponsor tie-in).\n- Kostas crying to his mother on the phone; maybe Ethan comforts him.\n- Titty-gate calibration (7/4, decided): the men's response is mundane kindness, not delight — Bobby's joke bombing IS the tell; keep exactly. Make the guys' reaction a bigger deal the next morning; she's armed up.\n- Moment where Ethan is proud of her while she's on a date with someone else.\n\nQuestions to answer:\n- LIE DETECTOR: one note says cut it from Night One (\"he gets her to open up by force at the challenge the next day\"). The 7/4 read says the polygraph does real thesis work (her defenses literally fail a lie detector; single pink chair on the set). Cut, move to next day, or keep as the Night One capper?\n- Where exactly does Night One end if Crocs moves to the boat?\n\nRipple effects:\n- Earpiece Phase 1 (bickering — she hasn't consented to being produced). The pink chair in the interrogation set rhymes with the confession later.\n- \"They were right about you Bobby, you ARE unfuckable\" lives in the elimination texts.\n- The Post-it (told you so ×3) starts the Post-it runner → apology box → funeral.\n- Immediately after the Post-it: ignored call from DAD = Samuel-avoidance beat #1. Protect it through the cuts.\n\nPossible script actions:\n- Cut hard; move/keep polygraph; keep titty-gate calibration; keep Post-it + DAD voicemail.\n\nStatus:\n- rewrite (biggest compression job in the script)\n\n---\n\n## ROOFTOP WITCHING HOUR\nPages: within GAME TIME\nSequence: GAME TIME\n\nWhat happens now:\n- Firepit, doomscrolling comments, \"Why are you up?\" / \"Mental illness. You?\" / \"Same.\" Selling-arse joke. \"Because it's meant to.\" → \"You have no idea how to be looked at, do you?\" / \"People usually don't look.\"\n\nWhat this scene is doing:\n- First unproduced intimacy. Names her exact condition (unlooked-at) and his exact function (he looks).\n\nWhat April is considering:\n- Nothing filed against it. Ranked #6 strongest in the 7/5 read.\n\nQuestions to answer:\n- None.\n\nRipple effects:\n- \"How to be looked at\" is what his model background later teaches her (earpiece Phase 4).\n\nPossible script actions:\n- keep\n\nStatus:\n- keep\n\n---\n\n## GOOD MORNING MUHAMMED\nPages: within GAME TIME\nSequence: GAME TIME\n\nWhat happens now:\n- Beat-notes only: Dylan sneaks into her room; morning with the guys; JN already running mind games over breakfast.\n\nWhat this scene is doing:\n- First morning texture, show dynamics, the men as people.\n\nWhat April is considering:\n- Dylan wake-up commends her handling of titty gate; guys' reaction to the slip is a bigger deal, she's armed up today.\n- Ethan, Omar + story producers monitoring feeds; establish the god-mode control button that lets him talk to anyone anywhere in the hotel — OR she goes to tell Ethan about the Dylan intrusion and he says he already saw it, shows her the footage (surveillance runner).\n\nQuestions to answer:\n- God-mode button vs. footage reveal — which installs the surveillance runner?\n\nRipple effects:\n- Surveillance runner pays into the spa (how many cameras there really are) and the betrayal.\n\nPossible script actions:\n- Write new.\n\nStatus:\n- rewrite (unwritten)\n\n---\n\n## BOAT DATE\nPages: within GAME TIME\nSequence: GAME TIME\n\nWhat happens now:\n- Beat-notes in draft: Rupert's \"last night was a disaster\" text gets in Ethan's head; The Suit chaperones in a big sunhat; guys compete; Autumn demands Ethan lock in (\"don't miss it because you're being a bitch — I'm freaking out, so we can't both be freaking out\"); pimp/hoe exchange; hot tub fight to \"Sports Car,\" everyone in the ocean; Ethan punched breaking it up.\n\nWhat this scene is doing:\n- First group date; her steadying HIM for the first time (the dynamic is already mutual).\n\nWhat April is considering:\n- Crocs re-entry could land here instead of Night One.\n- The Suit as network note embodied.\n\nQuestions to answer:\n- Set-piece ceiling: this is one of the 7–8 against the 6 max. Does the boat survive the worksheet, merge with Night One, or shrink?\n\nRipple effects:\n- The punch = early proof he'll physically insert himself (BODYGUARD card rhymes with this — see UNPLACED).\n\nPossible script actions:\n- Write/compress; decide against ceiling.\n\nStatus:\n- undecided (ceiling call)\n\n---\n\n## FIRST ELIMINATION\nPages: within GAME TIME\nSequence: GAME TIME\n\nWhat happens now:\n- Beat-notes: hard cut after the fight, guys in big towels like scolded kids; she's holding back how pissed she is (still fake); Butler explains eliminations; texts go out (\"unfuckable\" Bobby, Kostas calls Yaya).\n\nWhat this scene is doing:\n- Installs the elimination mechanic and her suppressed anger (fuel for the confessional).\n\nWhat April is considering:\n- Kostas/Ethan comfort beat could live here.\n\nQuestions to answer:\n- None blocking.\n\nRipple effects:\n- Her suppressed anger detonates in FIRST CONFESSIONAL.\n\nPossible script actions:\n- Write.\n\nStatus:\n- rewrite (unwritten)\n\n---\n\n## FIRST CONFESSIONAL (THE ANGER CONFESSIONAL)\nPages: within GAME TIME\nSequence: GAME TIME\nFormerly: (Khalid vulnerability moment — Khalid cut)\n\nWhat happens now:\n- Partially drafted: she tries prepared talking points; Ethan pushes (\"best case scenario, you cry\"; threatens to order in curry and stay all night); then the drafted exchange — \"I didn't expect to feel this way.\" / \"Exposed?\" / \"No. Angry. I'm so fucking angry… If they really do want me then everything I thought I knew… it's all wrong… I'm actually, genuinely fucked.\" / \"Good.\"\n\nWhat this scene is doing:\n- The buzzy moment that makes the show a hit — and it works BECAUSE it's real. Earpiece/confessional Phase 3: accidentally genuine. Ethan learns authenticity is the product.\n\nWhat April is considering:\n- Her rant shape: years of conditioning prepared her not to be desired — so what does it mean about all the time she wasted believing it? That opening is what brings the audience in.\n- Her marriage aside: \"I don't even like the idea of getting married in front of my loved ones because then everyone will know who I like. I'm not crying in public.\"\n\nQuestions to answer:\n- None blocking — this is close.\n\nRipple effects:\n- WE UP fans quote/love this confessional. The \"conditioning\" language returns in the eulogy, reframed as claim instead of complaint.\n\nPossible script actions:\n- Finish; wire the Ethan push-in.\n\nStatus:\n- rewrite (close)\n\n---\n\n## AUDIENCE DOUBTS\nPages: within GAME TIME (montage-weight)\nSequence: GAME TIME\n\nWhat happens now:\n- Card only: Autumn's HS rival casts doubt, says she's a bitch; the usual fatphobia.\n\nWhat this scene is doing:\n- Establishes the audience as a character before it loves her — so the turn in WE UP and the turn in SHE LIED Y'ALL both read as the same fickle organism.\n\nWhat April is considering:\n- Rodell/Odell Drive guy's podcast starts here or at WE UP (pick one spelling — the notes have both).\n\nQuestions to answer:\n- One montage or beads scattered through GAME TIME?\n\nRipple effects:\n- HS rival flips in WE UP (\"knew she was a star\"), and again in SHE LIED Y'ALL. Three appearances, one arc.\n\nPossible script actions:\n- Add small.\n\nStatus:\n- rewrite (unwritten)\n\n---\n\n## WARBLAH WATCH PARTY / FAMILY CHECK-IN\nPages: within GAME TIME\nSequence: GAME TIME\n\nWhat happens now:\n- Beat-notes in draft: episode one airs, family watch party calls with opinions; Musu wonders if it's a good idea (makes her insecure); post-call Nowai asks what's really up with her and Ethan → \"obviously he's psychotically hot but that goes away… once you see just how black the bottom of his foot is\"; Kiya + Nowai exchange looks; she's home in bed, looks at the pink chair.\n\nWhat this scene is doing:\n- Family check-in + Musu present in the middle of the film + first outside eyes on A+E.\n\nWhat April is considering:\n- Musu comment on her appearance (\"Why would you wear that?\").\n- Make Musu feel ALIVE in the first half — burgeoning influencer / enjoying clout (family gets famous too, unexpectedly).\n- Kiya's character moment could nest here.\n\nQuestions to answer:\n- Is this where the Nowai secret thread pays a first installment (Nowai realizing how much she wasn't told)?\n\nRipple effects:\n- \"Psychotically hot\" returns verbatim in the parking lot (\"Why is that so psychotically hot?\"). Keep the echo deliberate.\n- Pink chair look = quiet rung of the Samuel thread between voicemails.\n\nPossible script actions:\n- Write; add Musu-alive beats.\n\nStatus:\n- rewrite (unwritten)\n\n---\n\n## THE FIRE PIT (REDO)\nPages: within GAME TIME\nSequence: GAME TIME\nFormerly: HIGH SCHOOL NEVER ENDS (4/7 cards — same \"redo after boat disaster\" slot)\n\nWhat happens now:\n- Card only: \"now a redo after boat disaster.\"\n\nWhat this scene is doing:\n- Recovery date beat after the boat mess.\n\nWhat April is considering:\n- The 4/7 version of this slot was the HIGH SCHOOL THROWBACK date (people from her high school grill the guys, Jeopardy-style quiz on embarrassing Autumn facts, HS friends as judges, top two advance to dinner; Ethan doesn't know their history; he helps her stay present when she's about to dissociate). That date still lives in POTENTIAL DATES — if the fire pit needs content, this is its ancestor.\n- Candidate home for a SUITOR SURPRISES HER beat (commends her for carrying the show / putting herself out there) and SUITORS DO SOMETHING TO HELP LET HER GUARD DOWN.\n\nQuestions to answer:\n- Does this survive the set-piece ceiling or fold into another date?\n\nRipple effects:\n- Earpiece Phase 2→3 hinge candidate.\n\nPossible script actions:\n- Decide, then write or cut.\n\nStatus:\n- undecided\n\n---\n\n## ROLL BOUNCE\nPages: within GAME TIME\nSequence: GAME TIME\nFormerly: ROLLERSKATING LESSONS\n\nWhat happens now:\n- Lobby setup drafted (she can't skate, panic, \"he assumed all Americans did\"); lessons in beat-notes: Deborah's pep talk (\"Skating is about TRUST\"; \"When girls like us dim our light, it does us all a disservice\"; no walker — \"You don't need it. You just think you do\"), practice, \"No one wants to see a chubby girl fall on her ass\" / \"I would argue that's sexually interesting to a number of people,\" Omar gets the clip and leaves, TELL ME SOMETHING TRUE, near-kiss, Debbie calls them back.\n\nWhat this scene is doing:\n- The trust date. His production choice reveals his feelings (he built her a safe room to be human in). First almost-kiss.\n\nWhat April is considering:\n- Ethan can't sleep (jealous after watching her with JN); neither can she — that's the doorway in.\n- He offers inedible British snacks as distraction.\n- \"Tell me something true\" beats: \"I just didn't think I'm someone people stay for\" / \"you didn't?\" / \"I don't.\" Her reply: \"I would rather not be on the menu than be an option and not be chosen.\"\n- Ethan asks why she doesn't act anymore — we see how she sidelines herself and then blames everyone else.\n- \"I like watching you when you forget there are cameras around. That's when you're most yourself.\"\n\nQuestions to answer:\n- CYRANO: the card strikes the HS Cyrano reveal as CUT, but beats that depend on it survive (\"wait, what if she liked you back?\" → \"that's the saddest thing I've ever heard\"). If Cyrano is gone, what vehicle carries \"I'm not someone people stay for\"? (Memory of the dev sessions has the Cyrano relocating to Ethan from Khalid — reconcile the card against that.)\n- The Victoria question in the card (\"What was with the pants?\") dies with Victoria — replace with a runway-fight question?\n\nRipple effects:\n- BTS clip going viral is the OLD path to \"fans demand Ethan joins\" — that runner is contestant-era and dies. What does the viral clip do now instead? Candidate: it's the first public A+E shipping (foreshadows the leak's reception).\n- Sets MIC PACK sexual tension (placed immediately after the pink-chair confession per 7/4 — see order note there).\n\nPossible script actions:\n- Finish lessons; solve Cyrano; delete the fans-demand runner.\n\nStatus:\n- rewrite\n\n---\n\n## DYLAN'S ONE-ON-ONE\nPages: within GAME TIME\nSequence: GAME TIME\n\nWhat happens now:\n- Card only, not in draft text: Dylan nervous, rehearsed, trying too hard. Ethan in her ear: \"He's scared of you. Just be softer for a second.\" She listens; Dylan melts, opens up (delivering a baby last week, the mom reminded him of her). Autumn realizes Ethan understands people.\n\nWhat this scene is doing:\n- The chain: she connects with Dylan BECAUSE Ethan coached her → she falls harder for Ethan → Ethan watches it happen → falls harder → Omar witnesses → stakes rise. Earpiece Phase 4 (she listens and he's right).\n\nWhat April is considering:\n- One of the moments where Autumn sees Ethan being good at his job in a way that is hot (new note — this is the flagship instance).\n- Also feeds: more moments showing Autumn can't tell the difference between being loved and being produced.\n\nQuestions to answer:\n- Placement: before or after ROLL BOUNCE? (Phase logic says before the almost-kiss.)\n\nRipple effects:\n- \"Loved vs. produced\" confusion is the exact blade the leak twists later.\n\nPossible script actions:\n- Write new.\n\nStatus:\n- rewrite (unwritten)\n\n---\n\n## THE SPA\nPages: within GAME TIME / THE SQUEEZE boundary\nSequence: THE SQUEEZE\n\nWhat happens now:\n- Drafted: knock at her suite (\"I heard the Theragun\"), rented-out spa, \"100% hidden camera-free,\" Olga/Udvartana comedy, his apology, poor-little-rich-boy volley, and the PINK CHAIR confession (the dip in the cushion, birthdays waiting at the window) + \"part of me worries I'll never be able to buy it… I can't go back.\" He just sits with her.\n- Old intro notes still frame his apology around JOINING THE SHOW (contestant-era) — dead.\n\nWhat this scene is doing:\n- Her wound, spoken, in the one place she believes is unseen. The betrayal's payload gets recorded here.\n\nWhat April is considering:\n- NEW REASON for the apology since he's not joining: maybe he's responsible for a huge on-set disaster (post-boat?). (The alt idea — he half-approves airing something while insecure — was struck in the card.)\n- ADD (locked, 5/9): she talks about genuinely wanting to get to know Joe Nathan / Dylan / Xavier — so when the footage airs, the audience knows she never faked the season.\n- Cut the \"promise of no cameras\"? Note says cut it from the spa — but Rupert's Chateau line and the betrayal both depend on the audience believing the spa was off the record. Decide what he promises vs. what Rupert violated.\n\nQuestions to answer:\n- What is Ethan apologizing FOR (the disaster candidate needs picking — boat punch fallout? the polygraph ambush? the Suit incident?).\n- The protection promise (\"I said I would protect you\") — the parking lot quotes it. It isn't in the draft anywhere. This scene is its natural home. Put it on the page.\n\nRipple effects:\n- Everything in the back half stands on this scene: THE CHOICE, THE BETRAYAL, SHE LIED Y'ALL's \"she was real the whole time,\" ME + HER (fans supporting her AFTER seeing the footage).\n- Pink chair: confession here → chair looked at mid-film → dragged to the curb in ME + HER.\n\nPossible script actions:\n- Rebuild the entry reason; add contestant-interest lines; add the protection promise.\n\nStatus:\n- rewrite (high priority)\n\n---\n\n## MIC PACK MOMENT\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\n\nWhat happens now:\n- Drafted (beach): Ethan takes over the lavalier placement from the sound tech, ends up inches from her face, alliances/\"certain forces\" flub, Omar's cough, \"Just prepping our girl,\" instant regret.\n\nWhat this scene is doing:\n- Post-almost-kiss charge in a working context. Hands shaking while adjusting her mic.\n\nWhat April is considering:\n- Song: \"Selene\" (NIKI).\n\nQuestions to answer:\n- Placement locked 7/4: between the pink chair confession and the success montage. The draft currently runs it BEFORE the spa. Move it.\n\nRipple effects:\n- Order swap touches the commercial-promo scene beside it (which is being cut anyway).\n\nPossible script actions:\n- Move after THE SPA.\n\nStatus:\n- keep (move)\n\n---\n\n## ROSE GARDEN PROMO (LEGACY)\nPages: currently in draft between beach and spa\nSequence: —\nFormerly: ETHAN-JOINS-THE-SHOW COMMERCIAL\n\nWhat happens now:\n- Fully contestant-era: tuxedo reveal, \"Hey Autumn. Ready to Pick Me?\"\n\nWhat this scene is doing:\n- Nothing survivable — it announces Ethan as a contestant.\n\nWhat April is considering:\n- Cut.\n\nQuestions to answer:\n- Is there a producer-era replacement promo worth having (a mid-season show promo for texture), or does WE UP cover it?\n\nRipple effects:\n- Its deletion also deletes the \"brain trust tells Ethan about fan demand\" beat above it.\n\nPossible script actions:\n- Cut.\n\nStatus:\n- rewrite (cut — decision made, page not changed)\n\n---\n\n## HOTEL GYM (LEGACY) → SUITORS CLOCK ETHAN\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\n\nWhat happens now:\n- Draft notes are contestant-era (\"first morning of Ethan as a contestant,\" guys grill him with a shock polygraph, he's vulnerable about dad/Victoria/fraud, they accept him).\n\nWhat this scene is doing (new job):\n- The suitors clock that the producer is emotionally in it — outside POV pressure without him ever joining the cast.\n\nWhat April is considering:\n- Keep the shock-polygraph comedy but reframe: the guys corner the PRODUCER. Xavier pushes past the surface answer — \"what do you actually want?\" — and the machine doesn't shock him because he's not lying: he genuinely doesn't know. (Card kept this beat.)\n- Xavier vouches for him; unintentionally homoerotic workout; cramp-simulator callback if the This Woman's Work date exists.\n- Related done-cards that can nest in or near here: SUITORS CLOCK ETHAN; XAVIER ONE-ON-ONE (\"You're pretty invested for a producer\"); MOMENT OF JN CHOOSING TO SET FOR ETHAN.\n\nQuestions to answer:\n- Does Ethan owe the guys vulnerability at all now that he's not competing — and if yes, what's the story reason (fairness after the spa mess? Xavier's push)?\n\nRipple effects:\n- \"He genuinely doesn't know what he wants\" is the last honest reading of Ethan before the kiss forces an answer.\n\nPossible script actions:\n- Rebuild as producer version; strip Victoria.\n\nStatus:\n- rewrite\n\n---\n\n## TRANSPO VAN\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\n\nWhat happens now:\n- Drafted: \"Are you gonna be weird to me now that you know what's wrong with me?\" / \"Don't flatter yourself. There are many, many more things wrong with you than just that.\" Mutual relief. Smile.\n\nWhat this scene is doing:\n- The button on the pink chair confession — proof he can hold her wound without handling her.\n\nWhat April is considering:\n- Nothing. Ranked #2 with the confession in the 7/5 read.\n\nPossible script actions:\n- keep\n\nStatus:\n- keep\n\n---\n\n## BILLBOARD (SUNSET BLVD)\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\n\nWhat happens now:\n- Drafted: dawn kidnapping, bonnet + mouth guard, BREAKOUT HIT billboard with falling rose petals, her in a rumpled Spice Girls shirt looking up at the Other Her, can't finish the sentence.\n\nWhat this scene is doing:\n- Visibility without punishment — but she doesn't recognize that version of herself, so the win feels hollow (the Big Lie: the packaging did it, not me).\n\nWhat April is considering:\n- Make the billboard moment more explicit about the hollowness.\n- At the billboard he asks about the bonnet, biggest glasses he's ever seen, asks to try them on.\n- Billboard motif (new): #1 was a GAME she designed (front-half plant), #2 is this, #3 is her getting REPLACED (spiral).\n\nQuestions to answer:\n- Where does billboard #1 go in the job rebuild?\n\nRipple effects:\n- Billboard #3 lands in AUTUMN'S SPIRAL (covered by a super-gonorrhea warning per the card).\n\nPossible script actions:\n- Adjust; add motif plants.\n\nStatus:\n- rewrite (adjust)\n\n---\n\n## WE UP\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\n\nWhat happens now:\n- Beat-notes: success montage (designer freebies, Zendaya tweet, watch parties, trivia games, tabloid sellers), Nathan Fielder DMs + Ethan seething (\"you're not available\"), hotel-suite call home — Old Ma is sick, they didn't want to bother her.\n\nWhat this scene is doing:\n- The Big Lie validated at scale — the world says \"star,\" she hears \"the packaging works.\"\n\nWhat April is considering:\n- ADD fear: people are falling in love with the fake version; her real self still isn't accepted.\n- Fans love the confessional; HS rival flips (\"knew she was a star\"); TikTokers pretending to like fat girls for clout; Black bisexual TikTok citing Fearing the Black Body; the manosphere response (\"the angry feminists make everything homework\").\n- SOCIAL MEDIA TEAM: \"Threads loves her\"; terrified 19-year-old intern with the lanyard; boxes of brand freebies; they know they made it because they reached Facebook (boomer comments confused about Peacock).\n- She thinks people like her because she's memeable with dramatic music behind her.\n- THREE SPONSORED SEGMENTS live here or nearby: edibles sponsor pre-hometowns (THIS is where she gets the mints — plant it), veneer glue (pays the cracked tooth), KFC like MAFS.\n- Songs: \"Cool Girl\" (Tove Lo) — living up to expectations; \"Superstar\" (Jamelia) candidate.\n- Escalation rungs to seat in this stretch: asks to do the clapper (\"you can do whatever you want\" — Monica); Patrick Zweig fuck-it-we're-doing-it-my-way energy building.\n- Autumn misses something important in Nowai's life during this stretch (Kiya's birthday? moving day?) — the cost of visibility. Unplaced within the montage; place it.\n\nQuestions to answer:\n- Which Nowai moment does she miss? (Blocks the Nowai-confrontation card and the funeral heart-to-heart.)\n- Old Ma sick call: calibrate against the misdirection — this is the beat that primes the wrong death.\n\nRipple effects:\n- Mints → OVERNIGHT DATE. Fickle-audience beads → SHE LIED Y'ALL reversals. Clapper rung → eulogy ladder.\n\nPossible script actions:\n- Write montage; plant mints; seat the missed-Nowai-moment.\n\nStatus:\n- rewrite (unwritten)\n\n---\n\n## CHATEAU MARMONT\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\n\nWhat happens now:\n- Fully drafted: Rupert's handshake, \"secret weapon,\" cash-cow language, the teen fan interrupting (moved to State Fair per note — but the scene as written still contains her), the spa \"mix-up\" apology (\"it did work out in your favor… quite the ratings boost\"), the \"fraud\" speech naming Ethan's wound, Victoria invoked, Autumn detonating on Rupert and storming out.\n\nWhat this scene is doing:\n- Rupert names the wound to Ethan's face; Autumn defends Ethan with a ferocity she never spends on herself. Ranked #3 strongest scene.\n\nWhat April is considering:\n- Remove the Victoria mention (card).\n- MOVE the fan moment to State Fair (locked) — the scene as drafted hasn't been updated.\n- Rupert beats to thread (from the Rupert card): he's RIGHT once professionally somewhere in Act Two; one privately observed moment of attention he'd deny under oath (his \"stone-faced but rapt\" watching is the seed — keep a version of it even with the fan gone); he respects Autumn more than his own son (cash cow = the highest compliment he knows).\n\nQuestions to answer:\n- TIMELINE CONFLICT: the spa dialogue here says the footage ALREADY AIRED (\"ratings boost\"). The locked betrayal has the airing as THE Act Four blow. Either the Chateau references only the secret cameras being discovered (not aired), or this dialogue goes. Decide — it changes what Autumn knows walking into the wedding.\n- The \"putting yourself on camera\" exchange is contestant-era — what replaces it? (Candidate: Rupert attacks the \"new school approach\" — coddling the star, no frankenbiting, the earpiece intimacy he's noticed.)\n- With the fan gone, what interrupts the dinner so Autumn sees Rupert watching Ethan get hollowed out in public?\n\nRipple effects:\n- Everything at THE CHOICE quotes this scene. The fraud speech is the wound-naming Victoria used to do — it now does all of it alone.\n\nPossible script actions:\n- Cut Victoria + fan + contestant lines; fix the spa timeline; keep the fraud speech and Autumn's detonation intact.\n\nStatus:\n- rewrite (surgical — the spine is right)\n\n---\n\n## OVERNIGHT DATE / FAKE FANTASY SUITES\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\nFormerly: FANTASY SUITES / COUPLE'S SUITE (contestant-era)\n\nWhat happens now:\n- Drafted in the OLD configuration: Monica's \"Because it's Ethan, right? Who won the vote?\" (contestant-era — dead), edible mints, stoned terrace dinner (\"because of the government\"), Bel-Air suite fake-out with the crew, Fred 62 fries + Fizz Wiz + lipstick origin story + Bad Dads Club + dagger speech + her hyping him up, RAP placeholder, couple's suite (lingerie, rapping, GERD, \"daddy issues\" thanks, \"you don't have to make the very real shit you deal with into a bit with me\").\n\nWhat this scene is doing:\n- The real date disguised as production. Her most unguarded night; his first taste of being hyped by someone with no agenda.\n\nWhat April is considering (locked + live):\n- LOCKED RESTRUCTURE (5/9 + card): America votes her onto an overnight with a CONTESTANT (Joe Nathan or Xavier); she panics, pulls Ethan aside — \"I need help\"; he coaches her through faking the night, fights his jealousy watching, clocks when she exits the guy's embrace off-camera, then extracts her \"for production reasons\" → Fred 62.\n- RAP options (new notes): (a) she's more stoned through the whole Fred 62 stretch, ending in her twerking/rapping to Monaleo \"Flush Em\" / Nicki Minaj while Ethan watches in awe — bed convo gets loopier; (b) they share HIS room, he walks in on her in lingerie rapping to YouTube, the date knocks, Ethan pretends he was alone and it was him rapping; taunt run — \"don't say it\" / \"I'm not gonna\" / \"don't. omg\"; next day: \"we don't discuss that. we don't bring it up.\"\n- Fred 62 adds (cards): he refuses the fries, then after they talk he lets himself eat one even though his dad would frown; \"Did your dad ever actually say thank you for the lipstick idea?\" / \"I think using it was the thank you.\" — awkward beat, they let it sit; fry throw after Fizz Wiz, he dodges; \"the night of attachment style horrors\"; dagger poke — \"has anyone ever actually used it?\" she changes the subject; add the beat where he REGISTERS that she pulled back; \"how do you keep tricking me into complimenting you.\"\n- Bed adds: she shows him her most embarrassing commercial; he says she stole the show and always belonged in the front; \"how come you didn't advocate for yourself the way you did for me… if you're angry you should be angry… and if anyone has a problem with it I've got your back\"; the GERD/moan run (\"you're getting me hot\" / \"stop flirting with me\" / \"I'm just being your producer\" / \"you're not my producer anymore\"); he watches her sleep — perhaps with CPAP; Autumn learns Ethan is an actual softie — cries so hard describing a juice commercial he can't get it out.\n- Her humility speech lives here (locked): \"I had to, and yes, it was rough. But I don't answer to anybody… I'm free.\" — plants his ending.\n- Song thought: this is the \"night of attachment style horrors\" unit.\n\nQuestions to answer:\n- Which RAP version — Fred 62 public version or shared-room lingerie version? (Changes the room logistics of the whole night.)\n- Which contestant is the voted date — Joe Nathan or Xavier? (JN doubles his cooking-date real-connection load; Xavier sharpens the \"It's Ethan, isn't it?\" elimination.)\n- \"You're not my producer anymore\" — in the producer-only canon he IS still her producer. Either the line goes, or it's her declaring what he's become to her (which is a strong reading — decide it's that on purpose).\n- Commercial-in-bed beat depends on the commercials surviving the job rebuild.\n\nRipple effects:\n- The leaked conversation later references the faked fantasy suite (\"they should even reference faking fantasy suites\" — wedding note). Whatever gets faked here is what the public later believes indicts the whole season.\n- Mints must be planted at WE UP.\n- Monica's dialogue needs the contestant-vote rewrite.\n\nPossible script actions:\n- Restructure to the voted-contestant version; choose the rap; layer the Fred 62 / bed adds.\n\nStatus:\n- rewrite (top-priority restructure)\n\n---\n\n## ACCIDENTAL CYRANO / COOKING DATE\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\nFormerly: KITCHEN\n\nWhat happens now:\n- Partially drafted: JN's Liberian cooking date, \"feel the spirit of the pepper,\" she genuinely laughs and loosens — but her eyes drift to the doorway; notes: JN asks Ethan for advice on getting through to her → JN's date is suspiciously full of lines only Ethan could have fed him → Omar clocks it, wtf; Ethan jealous of the authentic cultural connection he can't offer, then guilty for not supporting her real connections.\n\nWhat this scene is doing:\n- Swaps the Cyrano: Ethan's coaching leaks his feelings THROUGH a contestant. She connects — and it's not as fun as the fake fantasy suite was.\n\nWhat April is considering:\n- Still needs a comedy game for the cooking date.\n- Order swap (card): FIRST Ethan gives JN the advice, THEN the date where JN parrots it, so Omar's clock reads clean.\n\nQuestions to answer:\n- The comedy game. (Open since two sessions ago.)\n\nRipple effects:\n- JN's genuine warmth here is what makes his funeral appearance (dating her cousin) land as comedy, and what made the \"JN films the kiss\" version too dark — the cousin films it (locked).\n\nPossible script actions:\n- Write the game; run the swap.\n\nStatus:\n- rewrite\n\n---\n\n## ELIMINATION BEFORE HOMETOWNS\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\n\nWhat happens now:\n- Card only (marked done as a definition): Xavier eliminated, says to her: \"It's Ethan, isn't it?\" She can't deny it anymore.\n\nWhat this scene is doing:\n- Forces her private truth into words via the person who's known her longest.\n\nWhat April is considering:\n- Nothing further filed.\n\nQuestions to answer:\n- Sits before or after the State Fair travel?\n\nRipple effects:\n- Xavier knowing cleanly sets his non-betrayal when the leak hits (his reaction card exists in SHE LIED Y'ALL quick cuts).\n\nPossible script actions:\n- Write.\n\nStatus:\n- rewrite (unwritten, defined)\n\n---\n\n## FAN FAIR (MSP + STATE FAIR)\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\nFormerly: (fan moment formerly at CHATEAU MARMONT)\n\nWhat happens now:\n- Partially drafted: MSP arrival (maybe big banner + fan swarm), State Fair with buttons (\"WHO WILL AUTUMN FALL FOR?\"), family treated like royalty, the young plus-size fan — \"You make me feel like I can be the lead in my own life.\" Autumn freezes. LATER — Ethan: \"What if you just accepted it? No strings attached. No performance. Just let them love you.\"\n\nWhat this scene is doing:\n- Beautiful + crushing at once. Her vulnerability is now the foundation of strangers' self-worth — conditional love at scale, a debt being extended, not a gift; it mirrors the Samuel contract instead of offering something new.\n\nWhat April is considering:\n- What can Autumn no longer do in private now that she's a symbol?\n- The plus-size fans' vicarious living stresses her out.\n- \"Black Party — Sweet\" moment lands here (her dream scenario: family + Ethan).\n- Family talking heads: Musu proud — \"it even looks like she lost a little weight from all the stress\" as a GOOD thing.\n- Wedding-invite bridge (open): old version had Ma Kebbeh passing out → hospital → wedding. Options filed: Ethan just gets along with the family at the fair; OR Nowai — who's been clocking A+E — pushes Musu to invite him as a thank-you, really so she can interrogate him; OR bring back the pass-out (the hospital \"Warblahs all turn on each other in a crisis\" scene could return and lead to the wedding).\n\nQuestions to answer:\n- The invite mechanism (blocks the wedding).\n- If the hospital returns, it's another set piece against the ceiling — count it.\n\nRipple effects:\n- Fan beat replaces the Chateau fan — Chateau needs its new interruption.\n- The State-Fair version of the fan encounter should be crueler in retrospect once SHE LIED Y'ALL hits (the same fans turning).\n\nPossible script actions:\n- Write; decide invite; place Sweet.\n\nStatus:\n- rewrite (invite decision blocks it)\n\n---\n\n## HAM LAKE WEDDING\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\nFormerly: THE WEDDING\n\nWhat happens now:\n- Partially drafted: Cynthia (the childhood duet cousin) is the bride; auntie food mountain, \"too skinny\" cousins, pepper-sauce choking (Autumn saves him), uncle's waterproof-socks scam, Riz-Ahmed-style overlapping-voices drift (\"He's a white man, but he has spirit… he's a contestant now\" — that last line is legacy, cut), Nowai's \"What do you want with my sister?\" / \"I promise I will never let her get hurt,\" the Grand March (JN + Autumn as the cultural ideal), Musu's \"everyone is getting married, don't miss your chance,\" Ethan steps out. Musu talking head: \"He doesn't look at her like a TV show. He looks at her like she is the only person in the room.\"\n- Cards add: Ma Kebbeh's boyfriend bonds with Ethan; TWO FAT PEOPLE cousin warning (\"don't pick a chubby guy, you'll suffocate each other\"); \"I SHOULDN'T EVEN BE TELLING YOU THIS\" uncle scam; GG Friday-Night-Dinner texture (Ethan thinks they're fighting, this is just how they talk; Musu cracking bones; Ma Kebbeh: \"That thing not done\"); LIB chaos.\n\nWhat this scene is doing:\n- Ethan inside her world without production; the family as chorus; the pressure that sends them both to the parking lot.\n\nWhat April is considering:\n- Whether Ma Kebbeh's boyfriend bragging returns (MA KEBBEH card: bring it back).\n- Nowai's promise extraction here is the protection promise's public echo — if the promise originates at the spa, this is its witness version.\n\nQuestions to answer:\n- Cut the \"he's a contestant now\" voice.\n- Is the wedding where Musu's confrontation/heart-to-heart alternative lives (the notes say move Musu confrontation to either funeral or hometowns — maybe she reveals Samuel was an actor back home, too)?\n\nRipple effects:\n- She watches him for a beat through the window before coming out — mirrors the church-window beat at the funeral. Keep the rhyme deliberate.\n\nPossible script actions:\n- Trim legacy line; place the Musu question; write connective beats.\n\nStatus:\n- rewrite\n\n---\n\n## THE KISS (WEDDING PARKING LOT)\nPages: within THE SQUEEZE\nSequence: THE SQUEEZE\n\nWhat happens now:\n- Fully drafted — but in the OLD polarity: the scene text has AUTUMN breaking first (\"She breaks, burying her fingers in the back of his hair\"). The note above it says ETHAN kisses AUTUMN (locked), and the post-kiss exchange is drafted right: \"Was that real or just for the show?\" / \"I've wanted that for a long while. For real.\"\n- Both leak versions still on the page: Joe Nathan recording from a few rows away (scene text) AND \"Autumn's cousin films them from inside and posts it for clout\" (note). Locked answer: the cousin.\n\nWhat this scene is doing:\n- His first surrender of control — he initiates, risking rejection. The conversation AFTER the kiss is the leak payload: the public reads \"I've wanted that for a long while\" as proof the whole season was manufactured.\n\nWhat April is considering:\n- FAKE DATING card (new, ?): seed a few fake-dating beats earlier so when the kiss happens she can say \"is this practice for the show / a dress rehearsal\" — gives her a deniability line to grab for in the moment.\n- Wedding notes: they should even reference faking the fantasy suites in the conversation (that's what damns them publicly).\n\nQuestions to answer:\n- Do the fake-dating seeds go in (and where — Bachelorette study session? A+E ACT LIKE A COUPLE card? the overnight coaching)? They change the flavor of \"Was that real?\" from pure sincerity-check to genre-aware deflection.\n\nRipple effects:\n- Rewrite the kiss polarity; delete JN's recording; the cousin needs one prior beat (clout-hungry plant at the fair or wedding) so the filming isn't from nowhere.\n\nPossible script actions:\n- Flip initiation to Ethan on the page; cousin films; add fantasy-suite reference to the overheard talk.\n\nStatus:\n- rewrite (decisions made, page not changed)";
@@ -6369,6 +6324,8 @@ function displayStatusLabel(value) {
   const status = normalizeStatus(value);
   if (status === "todo") return "TO-DO";
   if (status === "drafted") return "DRAFTED";
+  if (status === "needs_edits") return "NEEDS EDITS";
+  if (status === "cut") return "CUT";
   if (status === "done") return "DONE";
   return "TASK";
 }
@@ -9824,17 +9781,12 @@ function sortSceneCards(list) {
 
 
 function ScriptCompanionTab({ scenes, setScenes, showToast }) {
-  const [query, setQuery] = React.useState("");
   const [sequenceFilter, setSequenceFilter] = React.useState(() => localStorage.getItem("pickme_companion_sequence_focus") || "AUTO");
   const [activeId, setActiveId] = React.useState(null);
-  const [focusSceneOnly, setFocusSceneOnly] = React.useState(() => {
-    const saved = localStorage.getItem("pickme_companion_focus_only");
-    if (saved !== null) return saved === "1";
-    return APP_BUILD === "PWA";
-  });
-  const [actionDrafts, setActionDrafts] = React.useState({});
-  const [questionDrafts, setQuestionDrafts] = React.useState({});
-  const [newActionText, setNewActionText] = React.useState("");
+  const [changeDrafts, setChangeDrafts] = React.useState({});
+  const [noteDrafts, setNoteDrafts] = React.useState({});
+  const [newChangeText, setNewChangeText] = React.useState("");
+  const changeSaveTimers = React.useRef({});
 
   const state = normalizeState({ scenes });
   const companionCards = sortSceneCards(state.scenes.filter(card => !card.archived && !card.maybe && (card.kind === "SCENE" || card.kind === "TWEAK")));
@@ -9846,20 +9798,10 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   });
   const firstFocusedSequence = (counts.UNPLACED > 0 && "UNPLACED") || SEQUENCE_ORDER.find(seq => counts[seq] > 0) || "ALL";
   const effectiveSequenceFilter = sequenceFilter === "AUTO" || sequenceFilter === "ALL" ? firstFocusedSequence : sequenceFilter;
-  const sequenceLabel = effectiveSequenceFilter === "ALL" ? "All scenes" : effectiveSequenceFilter === "UNPLACED" ? "Unplaced" : SEQUENCE_TITLES[effectiveSequenceFilter];
-  const q = query.trim().toLowerCase();
   const filtered = companionCards.filter(card => {
     if (effectiveSequenceFilter === "UNPLACED" && card.sequence) return false;
     if (effectiveSequenceFilter !== "ALL" && effectiveSequenceFilter !== "UNPLACED" && (card.sequence || "") !== effectiveSequenceFilter) return false;
-    if (!q) return true;
-    const haystack = [
-      card.title,
-      safeArray(card.formerTitles).join(" "),
-      card.description,
-      card.openQuestions,
-      safeArray(card.changes).map(change => change.text).join(" ")
-    ].join(" ").toLowerCase();
-    return haystack.includes(q);
+    return true;
   });
   const selected = filtered.find(card => card.id === activeId) || filtered[0] || null;
   const visibleChanges = selected ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
@@ -9872,23 +9814,26 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
     const stats = taskStats(card);
     acc.total += stats.total;
     acc.open += stats.open;
-    acc.questions += lineCount(card.openQuestions);
     return acc;
-  }, { total:0, open:0, questions:0 });
+  }, { total:0, open:0 });
   const selectedStats = selected ? taskStats(selected) : { total:0, complete:0, open:0 };
+  const selectedStatus = selected ? normalizeStatus(selected.status) : "needs_edits";
+  const companionStatusValue = COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "needs_edits";
 
   React.useEffect(() => {
     localStorage.setItem("pickme_companion_sequence_focus", effectiveSequenceFilter);
   }, [effectiveSequenceFilter]);
 
   React.useEffect(() => {
-    localStorage.setItem("pickme_companion_focus_only", focusSceneOnly ? "1" : "0");
-  }, [focusSceneOnly]);
-
-  React.useEffect(() => {
     if (selected && activeId !== selected.id) setActiveId(selected.id);
     if (!selected && activeId) setActiveId(null);
   }, [selected && selected.id]); // eslint-disable-line
+
+  React.useEffect(() => {
+    return () => {
+      Object.keys(changeSaveTimers.current || {}).forEach(key => window.clearTimeout(changeSaveTimers.current[key]));
+    };
+  }, []);
 
   const patchCard = (id, patch) => {
     if (!setScenes) return;
@@ -9915,55 +9860,75 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
       changes:safeArray(card.changes).map(change => asId(change.id) === asId(changeId) ? touchRecord(change, typeof patch === "function" ? patch(change) : patch) : change)
     }));
   };
-  const actionDraftValue = change => Object.prototype.hasOwnProperty.call(actionDrafts, change.id) ? actionDrafts[change.id] : (change.text || "");
-  const commitActionDraft = changeId => {
-    if (!selected || !Object.prototype.hasOwnProperty.call(actionDrafts, changeId)) return;
-    const text = String(actionDrafts[changeId] || "");
+  const changeDraftValue = change => Object.prototype.hasOwnProperty.call(changeDrafts, change.id) ? changeDrafts[change.id] : (change.text || "");
+  const clearChangeTimer = changeId => {
+    if (changeSaveTimers.current && changeSaveTimers.current[changeId]) {
+      window.clearTimeout(changeSaveTimers.current[changeId]);
+      delete changeSaveTimers.current[changeId];
+    }
+  };
+  const commitChangeDraft = (changeId, forcedText, quiet) => {
+    const hasForcedText = forcedText !== undefined;
+    if (!selected || (!hasForcedText && !Object.prototype.hasOwnProperty.call(changeDrafts, changeId))) return;
+    const text = String(hasForcedText ? forcedText : (changeDrafts[changeId] || ""));
     if (!text.trim()) {
-      if (showToast) showToast("Action cannot be blank");
+      if (!quiet && showToast) showToast("Scene change cannot be blank");
       return;
     }
+    clearChangeTimer(changeId);
     patchChange(changeId, { text });
-    setActionDrafts(prev => {
+    setChangeDrafts(prev => {
+      if (hasForcedText && String(prev[changeId] || "") !== text) return prev;
       const copy = { ...prev };
       delete copy[changeId];
       return copy;
     });
+  };
+  const queueChangeDraft = (changeId, value) => {
+    setChangeDrafts(prev => ({ ...prev, [changeId]:value }));
+    clearChangeTimer(changeId);
+    changeSaveTimers.current[changeId] = window.setTimeout(() => commitChangeDraft(changeId, value, true), 900);
   };
   const toggleChangeDone = (changeId, done) => {
     if (!selected) return;
     patchCard(selected.id, card => applyChangeDone(card, changeId, done));
   };
   const archiveChange = (changeId) => {
-    commitActionDraft(changeId);
-    patchChange(changeId, archiveFields());
-    if (showToast) showToast("Action archived");
+    clearChangeTimer(changeId);
+    const draftText = Object.prototype.hasOwnProperty.call(changeDrafts, changeId) ? String(changeDrafts[changeId] || "").trim() : "";
+    patchChange(changeId, change => ({ ...(draftText ? { text:draftText } : {}), ...archiveFields() }));
+    setChangeDrafts(prev => {
+      const copy = { ...prev };
+      delete copy[changeId];
+      return copy;
+    });
+    if (showToast) showToast("Scene change archived");
   };
 
-  const addAction = () => {
+  const addSceneChange = () => {
     if (!selected) return;
-    const text = newActionText.trim();
+    const text = newChangeText.trim();
     if (!text) return;
     patchCard(selected.id, card => {
       const next = normalizeCard(card, 0);
       ensureChange(next, "ADJUST", text, { id:"change-" + slugify(next.id) + "-" + Date.now().toString(36), isRewriteTask:true });
       return { changes:next.changes };
     });
-    setNewActionText("");
-    if (showToast) showToast("Action added");
+    setNewChangeText("");
+    if (showToast) showToast("Scene change added");
   };
 
   const setStatus = status => {
     if (!selected) return;
     patchSelected({ status });
-    if (showToast) showToast("Companion status updated");
+    if (showToast) showToast("Status updated");
   };
 
-  const questionValue = selected ? (Object.prototype.hasOwnProperty.call(questionDrafts, selected.id) ? questionDrafts[selected.id] : (selected.openQuestions || "")) : "";
-  const commitQuestions = () => {
-    if (!selected || !Object.prototype.hasOwnProperty.call(questionDrafts, selected.id)) return;
-    patchSelected({ openQuestions:questionDrafts[selected.id] || "" });
-    setQuestionDrafts(prev => {
+  const noteValue = selected ? (Object.prototype.hasOwnProperty.call(noteDrafts, selected.id) ? noteDrafts[selected.id] : (selected.openQuestions || "")) : "";
+  const commitNotes = () => {
+    if (!selected || !Object.prototype.hasOwnProperty.call(noteDrafts, selected.id)) return;
+    patchSelected({ openQuestions:noteDrafts[selected.id] || "" });
+    setNoteDrafts(prev => {
       const copy = { ...prev };
       delete copy[selected.id];
       return copy;
@@ -9981,117 +9946,90 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
           </select>
         </div>
         <div>
-          <label className="companion-label" htmlFor="companion-search">Find Scene</label>
-          <input
-            id="companion-search"
-            className="companion-search"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Search"
-          />
+          <label className="companion-label" htmlFor="companion-scene-select">Scene</label>
+          <select
+            id="companion-scene-select"
+            className="companion-select"
+            value={selected ? selected.id : ""}
+            onChange={e => setActiveId(e.target.value)}
+            disabled={filtered.length === 0}
+          >
+            {filtered.length === 0 && <option value="">No scenes</option>}
+            {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
+          </select>
         </div>
-        <button type="button" className="companion-focus-button" onClick={() => setFocusSceneOnly(prev => !prev)}>
-          {focusSceneOnly ? "Show List" : "One Scene"}
-        </button>
+        <div>
+          <label className="companion-label" htmlFor="companion-status-select">Status</label>
+          <select
+            id="companion-status-select"
+            className="companion-status-select"
+            value={companionStatusValue}
+            onChange={e => setStatus(e.target.value)}
+            disabled={!selected}
+          >
+            {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{displayStatusLabel(status)}</option>)}
+          </select>
+        </div>
       </div>
 
-      <div className={focusSceneOnly ? "companion-workbench is-focused" : "companion-workbench"}>
-        {!focusSceneOnly && (
-          <div className="companion-panel">
-            <div className="companion-list-heading">
-              <div>
-                <div className="companion-list-title">{sequenceLabel}</div>
-                <div className="companion-meta">{filtered.length} scenes - {sequenceStats.open} open - {sequenceStats.questions} questions</div>
-              </div>
-            </div>
-            <div className="companion-results">
-              {filtered.length === 0 && <div className="companion-empty-note">No companion cards match.</div>}
-              {filtered.map(card => {
-                const stats = taskStats(card);
-                const active = selected && selected.id === card.id;
-                return (
-                  <button
-                    key={card.id}
-                    className={active ? "companion-row is-active" : "companion-row"}
-                    onClick={() => setActiveId(card.id)}
-                  >
-                    <div className="companion-row-title">{card.title || "Untitled"}</div>
-                    <div className="companion-meta">
-                      {stats.open ? stats.open + " open" : stats.total ? "all checked" : "no actions"}{card.page ? " - p. " + card.page : (card.pageRange ? " - " + card.pageRange : "")}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <div className="companion-panel">
+      <div className="companion-workbench is-focused">
+        <div className="companion-panel companion-log-panel">
           {!selected ? (
-            <div className="companion-empty-note">Pick a scene in this sequence.</div>
+            <div className="companion-empty-note">Pick a sequence with scenes.</div>
           ) : (
             <>
-              <div className="companion-detail-head">
-                <div className="companion-detail-meta-row">
-                  <div>
-                    <div className="companion-meta" style={{marginTop:0}}>{selected.sequence ? SEQUENCE_TITLES[selected.sequence] : "Unplaced"}{selected.page ? " - p. " + selected.page : (selected.pageRange ? " - " + selected.pageRange : "")}</div>
-                    <div className="companion-detail-title">{selected.title || "Untitled"}</div>
-                  </div>
-                  <div>
-                    <label className="companion-label" htmlFor="companion-status-select">Status</label>
-                    <select id="companion-status-select" className="companion-status-select" value={normalizeStatus(selected.status)} onChange={e => setStatus(e.target.value)}>
-                      {STATUS_VALUES.map(status => <option key={status} value={status}>{displayStatusLabel(status)}</option>)}
-                    </select>
-                  </div>
-                </div>
+              <div className="companion-scene-meta">
+                {selected.sequence ? SEQUENCE_TITLES[selected.sequence] : "Unplaced"}{selected.page ? " - p. " + selected.page : (selected.pageRange ? " - " + selected.pageRange : "")}
+                {" - "}{selectedStats.open} open scene changes / {selectedStats.total}
               </div>
 
               <details className="companion-section" open>
                 <summary className="companion-section-toggle">
-                  <span>Action Log - {selectedStats.complete} / {selectedStats.total}</span>
+                  <span>Scene Changes - {selectedStats.open} open / {selectedStats.total}</span>
                   <span>+</span>
                 </summary>
                 <div className="companion-section-body">
-                {visibleChanges.length === 0 && <div className="companion-empty-note">No actions yet.</div>}
-                {visibleChanges.map(change => (
-                  <div key={change.id} className="companion-task-row">
-                    <input type="checkbox" checked={!!change.done} onChange={e => toggleChangeDone(change.id, e.target.checked)} />
-                    <textarea
-                      className="companion-textarea companion-task-text"
-                      value={actionDraftValue(change)}
-                      onChange={e => setActionDrafts(prev => ({ ...prev, [change.id]:e.target.value }))}
-                      onBlur={() => commitActionDraft(change.id)}
-                      rows={2}
+                  {visibleChanges.length === 0 && <div className="companion-empty-note">No scene changes yet.</div>}
+                  {visibleChanges.map(change => (
+                    <div key={change.id} className="companion-task-row">
+                      <input type="checkbox" checked={!!change.done} onChange={e => toggleChangeDone(change.id, e.target.checked)} aria-label="Mark scene change done" />
+                      <input
+                        className="companion-task-input companion-task-text"
+                        value={changeDraftValue(change)}
+                        onChange={e => queueChangeDraft(change.id, e.target.value)}
+                        onBlur={() => commitChangeDraft(change.id)}
+                      />
+                      <button type="button" className="companion-archive-button" onClick={() => archiveChange(change.id)} title="Archive scene change" aria-label="Archive scene change">
+                        <ArchiveTrayIcon size={15} />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="companion-add-row">
+                    <input
+                      className="companion-task-input"
+                      value={newChangeText}
+                      onChange={e => setNewChangeText(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") addSceneChange(); }}
+                      placeholder="Add scene change"
                     />
-                    <button type="button" className="companion-add-button" onClick={() => archiveChange(change.id)}>Archive</button>
+                    <button type="button" className="companion-add-button" disabled={!newChangeText.trim()} onClick={addSceneChange}>Add</button>
                   </div>
-                ))}
-                <div className="companion-add-row">
-                  <input
-                    className="companion-task-input"
-                    value={newActionText}
-                    onChange={e => setNewActionText(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter") addAction(); }}
-                    placeholder="Add action"
-                  />
-                  <button type="button" className="companion-add-button" disabled={!newActionText.trim()} onClick={addAction}>Add</button>
-                </div>
                 </div>
               </details>
 
               <details className="companion-section" open>
                 <summary className="companion-section-toggle">
-                  <span>Questions - {lineCount(questionValue)}</span>
+                  <span>Notes - {lineCount(noteValue)}</span>
                   <span>+</span>
                 </summary>
                 <div className="companion-section-body">
-                <textarea
-                  className="companion-textarea"
-                  value={questionValue}
-                  onChange={e => setQuestionDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
-                  onBlur={commitQuestions}
-                  rows={6}
-                />
+                  <textarea
+                    className="companion-textarea"
+                    value={noteValue}
+                    onChange={e => setNoteDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
+                    onBlur={commitNotes}
+                    rows={6}
+                  />
                 </div>
               </details>
             </>
@@ -10698,7 +10636,7 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
     seq,
     label: seq === "UNPLACED" ? "Unplaced" : SEQUENCE_TITLES[seq],
     data: taskAudit.bySequence[seq] || { cardCount:0, total:0, open:0, done:0, questions:0 }
-  })).filter(row => row.data.cardCount || row.data.total || row.data.questions);
+  })).filter(row => row.data.cardCount || row.data.total);
   return (
     <div>
       <div className="progress-edit-grid">
@@ -10713,16 +10651,16 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
       </div>
       <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",marginBottom:"10px"}}>{pagesDone} / {pageGoal} pages</div>
       {bar(pctPages, "#DA005F")}
-      <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} companion tasks left</div>
+      <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} scene changes left</div>
       {bar(pctRewriteTasks, "#63B6A4")}
-      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>Counted from active Action Log entries in Companion. Archived and maybe items do not count.</div>
+      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>Counted from active Scene Changes in Companion. Archived and maybe items do not count.</div>
       <div className="archive-summary-grid progress-archive-summary">
-        <div className="archive-summary-box"><div>Done companion tasks</div><strong>{stats.completedRewriteTasks}</strong></div>
+        <div className="archive-summary-box"><div>Done scene changes</div><strong>{stats.completedRewriteTasks}</strong></div>
         <div className="archive-summary-box"><div>Ready to archive</div><strong>{archiveBuckets.completedTaskRows.length}</strong></div>
         <div className="archive-summary-box"><div>Archived</div><strong>{archivedTotal}</strong></div>
       </div>
       <details className="companion-task-audit" open>
-        <summary>Companion task audit <span>{taskAudit.open} open / {taskAudit.total} total</span></summary>
+        <summary>Scene change audit <span>{taskAudit.open} open / {taskAudit.total} total</span></summary>
         <div className="companion-task-audit-body">
           {taskAuditRows.map(row => (
             <div key={row.seq} className="companion-task-audit-row">
@@ -10730,7 +10668,6 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
               <span>{row.data.cardCount} scenes</span>
               <span>{row.data.open} open</span>
               <span>{row.data.done} done</span>
-              <span>{row.data.questions} questions</span>
             </div>
           ))}
         </div>
@@ -10753,7 +10690,7 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
               </div>
             </div>
             <div style={{fontSize:"0.88em",marginTop:"8px"}}>{getStoredNumber(sequences, seq, 0)} / {getSequencePageTarget(sequences, seq)} pages</div>
-            <div style={{fontSize:"0.88em"}}>{(stats.bySequence[seq]?.totalRewriteTasks || 0) - (stats.bySequence[seq]?.completedRewriteTasks || 0)} / {stats.bySequence[seq]?.totalRewriteTasks || 0} companion tasks left</div>
+            <div style={{fontSize:"0.88em"}}>{(stats.bySequence[seq]?.totalRewriteTasks || 0) - (stats.bySequence[seq]?.completedRewriteTasks || 0)} / {stats.bySequence[seq]?.totalRewriteTasks || 0} scene changes left</div>
             <div style={{fontSize:"0.78em",color:"var(--text-light)"}}>Last touched {formatDateShort(state.sequenceMeta && state.sequenceMeta[seq] && state.sequenceMeta[seq].lastTouchedAt)}</div>
           </div>
         );
@@ -11128,7 +11065,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260812a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260812b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
