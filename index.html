@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260813A */
+        /* COMPANION LOG MODE 20260813B */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -3304,7 +3304,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260813A */
+        /* PWA MOBILE BUILD OVERRIDES 20260813B */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3398,7 +3398,7 @@
 
         body.pwa-build .companion-triage-tabs {
             gap: 5px;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
 
         body.pwa-build .companion-triage-tab {
@@ -3453,6 +3453,8 @@
         body.pwa-build .companion-add-row .companion-add-button {
             width: 100%;
         }
+
+
 
     </style>
     <link rel="manifest" href="manifest.json">
@@ -3642,7 +3644,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260813a";
+const APP_VERSION = "20260813b";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -3669,9 +3671,8 @@ const KIND_VALUES = ["SCENE","THREAD","TWEAK","DECISION"];
 const STATUS_VALUES = ["todo","drafted","done","needs_edits","cut"];
 const COMPANION_STATUS_VALUES = ["drafted","needs_edits","cut"];
 const IDEA_INBOX_BUCKETS = [
-  { id:"all", label:"ALL" },
+  { id:"maybe", label:"MAYBE" },
   { id:"new", label:"NEW" },
-  { id:"next", label:"NEXT" },
   { id:"need", label:"NEED" },
   { id:"cut", label:"CUT" }
 ];
@@ -9378,7 +9379,7 @@ function SettingsTab({
       alert("No script companion data was found.");
       return;
     }
-    if (!confirm("Load the 7/16 script companion into Scene List? This replaces the current Scene List cards in this browser, but saves a backup first. Songs, playlist notes, and settings stay untouched.")) return;
+    if (!confirm("Load the 7/16 script companion into Companion? This replaces the current Companion cards in this browser, but saves a backup first. Songs, playlist notes, and settings stay untouched.")) return;
     localStorage.setItem("pickme_backup_before_script_companion_" + Date.now(), JSON.stringify(currentState()));
     window.__pickmeSkipNextDropboxPush = true;
     const nextScenes = companionCards.map((card, index) => touchRecord(normalizeCard(card, index), { order:index }));
@@ -9422,11 +9423,11 @@ function SettingsTab({
           <input type="checkbox" checked={!!showAdvancedTabs} onChange={e => setShowAdvancedTabs(e.target.checked)} />
           Show advanced organizing screens
         </label>
-        <div style={{fontSize:"0.82em",color:"var(--text-light)",lineHeight:1.5,marginTop:"8px"}}>Advanced screens stay available, but Scene List is the default source of truth.</div>
+        <div style={{fontSize:"0.82em",color:"var(--text-light)",lineHeight:1.5,marginTop:"8px"}}>Advanced screens stay available, but Companion is the default source of truth.</div>
       </div>
       <div style={{marginTop:"32px",borderTop:"1px solid var(--border-pink)",paddingTop:"24px"}}>
-        <div style={{fontWeight:800,color:"var(--hot-pink,#eb2e90)",marginBottom:"12px"}}>Archived Scene List Items</div>
-        <div style={{fontSize:"0.86em",color:"var(--text-light)",lineHeight:1.5,marginBottom:"12px"}}>Archived scenes and archived rewrite tasks live here so the Scene List can stay clean while you write.</div>
+        <div style={{fontWeight:800,color:"var(--hot-pink,#eb2e90)",marginBottom:"12px"}}>Archived Companion Items</div>
+        <div style={{fontSize:"0.86em",color:"var(--text-light)",lineHeight:1.5,marginBottom:"12px"}}>Archived scenes and archived rewrite tasks live here so Companion can stay clean while you write.</div>
         {!archivedSceneCards.length && !archivedTaskRows.length && <div style={{fontSize:"0.9em",color:"var(--text-light)"}}>Nothing archived yet.</div>}
         {archivedSceneCards.length > 0 && (
           <details open style={{marginBottom:"12px"}}>
@@ -10073,29 +10074,30 @@ function companionCardSearchText(card) {
 
 function normalizeIdeaBucket(value) {
   const raw = String(value || "").trim().toLowerCase();
-  if (!raw || raw === "all") return "all";
+  if (!raw || raw === "all") return "maybe";
+  if (raw === "maybe" || raw === "?" || raw === "candidate") return "maybe";
   if (raw === "new" || raw === "new_scene" || raw === "later") return "new";
-  if (raw === "next" || raw === "edit" || raw === "scene_change") return "next";
-  if (raw === "need" || raw === "needs" || raw === "completed" || raw === "maybe" || raw === "?") return "need";
+  if (raw === "need" || raw === "needs" || raw === "completed" || raw === "next" || raw === "edit" || raw === "scene_change") return "need";
   if (raw === "cut" || raw === "x") return "cut";
   return null;
 }
 
 function inferIdeaBucket(card) {
   const legacy = normalizeIdeaBucket(card && card.category);
-  if (legacy && legacy !== "all") return legacy;
+  if (legacy) return legacy;
+  if (card && card.maybe) return "maybe";
   const text = companionCardSearchText(card).toLowerCase();
   if (normalizeStatus(card && card.status) === "cut" || /\b(cut|delete|remove|drop|lose|kill)\b/.test(text)) return "cut";
   if (/\b(new scene|new beat|new bridge|add scene|not in the draft|not on the page|unwritten)\b/.test(text)) return "new";
-  if (/\b(next|place it|placement tbd|somewhere|candidate|later)\b/.test(text)) return "next";
+  if (/\b(next|place it|placement tbd|somewhere|candidate|later|maybe|potential)\b/.test(text)) return "maybe";
   if (/\b(need|needs|question|decide|answer|blocks|blocked|figure out|clarify)\b/.test(text)) return "need";
-  if (normalizeKind(card && card.kind) === "TWEAK" || safeArray(card && card.changes).length || /\b(adjust|rewrite|move|replace|change|trim|tighten|restore|thread|plant)\b/.test(text)) return "next";
-  return "need";
+  if (normalizeKind(card && card.kind) === "TWEAK" || safeArray(card && card.changes).length || /\b(adjust|rewrite|move|replace|change|trim|tighten|restore|thread|plant)\b/.test(text)) return "need";
+  return "maybe";
 }
 
 function ideaBucketLabel(bucketId) {
   const bucket = IDEA_INBOX_BUCKETS.find(item => item.id === bucketId);
-  return bucket ? bucket.label : "NEED";
+  return bucket ? bucket.label : "MAYBE";
 }
 
 function companionSnippet(card) {
@@ -10120,8 +10122,8 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   const [activeId, setActiveId] = React.useState(null);
   const [companionMode, setCompanionMode] = React.useState(() => localStorage.getItem("pickme_companion_mode") === "ideas" ? "ideas" : "sequence");
   const [ideaBucket, setIdeaBucket] = React.useState(() => {
-    const stored = localStorage.getItem("pickme_companion_idea_bucket") || localStorage.getItem("pickme_companion_unplaced_bucket") || "all";
-    return normalizeIdeaBucket(stored) || "all";
+    const stored = localStorage.getItem("pickme_companion_idea_bucket") || localStorage.getItem("pickme_companion_unplaced_bucket") || "maybe";
+    return normalizeIdeaBucket(stored) || "maybe";
   });
   const [ideaSearch, setIdeaSearch] = React.useState("");
   const [changeDrafts, setChangeDrafts] = React.useState({});
@@ -10130,8 +10132,8 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   const changeSaveTimers = React.useRef({});
 
   const state = normalizeState({ scenes });
-  const companionCards = sortSceneCards(state.scenes.filter(card => !card.archived && !card.maybe && (card.kind === "SCENE" || card.kind === "TWEAK")));
-  const sequencedCards = companionCards.filter(card => SEQUENCE_ORDER.includes(card.sequence));
+  const companionCards = sortSceneCards(state.scenes.filter(card => !card.archived && (card.kind === "SCENE" || card.kind === "TWEAK")));
+  const sequencedCards = companionCards.filter(card => SEQUENCE_ORDER.includes(card.sequence) && !card.maybe);
   const ideaCards = companionCards.filter(card => !SEQUENCE_ORDER.includes(card.sequence));
   const counts = {};
   SEQUENCE_ORDER.forEach(seq => counts[seq] = 0);
@@ -10145,7 +10147,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   const ideaSearchNeedle = ideaSearch.trim().toLowerCase();
   const triageCards = ideaCards.filter(card => {
     const bucket = inferIdeaBucket(card);
-    if (ideaBucket !== "all" && bucket !== ideaBucket) return false;
+    if (bucket !== ideaBucket) return false;
     if (ideaSearchNeedle && !companionCardSearchText(card).toLowerCase().includes(ideaSearchNeedle)) return false;
     return true;
   });
@@ -11106,7 +11108,7 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
       {bar(pctPages, "#DA005F")}
       <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} scene changes left</div>
       {bar(pctRewriteTasks, "#63B6A4")}
-      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>Counted from active Scene Changes on sequenced Companion scenes. Ideas, archived items, and maybe items do not count.</div>
+      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>Counted from active Scene Changes on sequenced Companion scenes. Ideas and archived items do not count.</div>
       <div className="archive-summary-grid progress-archive-summary">
         <div className="archive-summary-box"><div>Done scene changes</div><strong>{stats.completedRewriteTasks}</strong></div>
         <div className="archive-summary-box"><div>Ready to archive</div><strong>{archiveBuckets.completedTaskRows.length}</strong></div>
@@ -11156,7 +11158,7 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
 function App() {
   const [activeTab, setActiveTab] = useState(() => {
     const savedTab = localStorage.getItem("pickme_active_tab");
-    return savedTab && savedTab !== "script" ? savedTab : "scene-list";
+    return savedTab && savedTab !== "script" && savedTab !== "scene-list" ? savedTab : "companion";
   });
   const [dbxSyncStatus, setDbxSyncStatus] = useState('idle'); // 'idle'|'syncing'|'error'
   const [dbxConnected, setDbxConnected] = useState(() => DBX.isConnected());
@@ -11171,9 +11173,9 @@ function App() {
 
   React.useEffect(() => { localStorage.setItem("pickme_show_advanced_tabs", showAdvancedTabs ? "1" : "0"); }, [showAdvancedTabs]);
   React.useEffect(() => {
-    const simpleTabs = new Set(["scene-list","companion","progress","archive","notes","playlist","settings"]);
+    const simpleTabs = new Set(["companion","progress","archive","notes","playlist","settings"]);
     const advancedTabs = new Set(["script","scenes","question","eval","ritual"]);
-    if (!simpleTabs.has(activeTab) && (!showAdvancedTabs || !advancedTabs.has(activeTab))) setActiveTab("scene-list");
+    if (activeTab === "scene-list" || (!simpleTabs.has(activeTab) && (!showAdvancedTabs || !advancedTabs.has(activeTab)))) setActiveTab("companion");
   }, [activeTab, showAdvancedTabs]);
 
   React.useEffect(() => { localStorage.setItem("pickme_active_tab", activeTab); }, [activeTab]);
@@ -11304,7 +11306,7 @@ function App() {
       setNotionUrl(migrated.notionUrl || notionUrl);
       setNowState(migrated.now);
       setConversionReport(migrated.conversionReport);
-      setActiveTab("scene-list");
+      setActiveTab("companion");
       setPendingUpdate(null);
     });
   };
@@ -11323,7 +11325,7 @@ function App() {
       setNotionUrl(migrated.notionUrl || notionUrl);
       setNowState(migrated.now);
       setConversionReport(migrated.conversionReport);
-      setActiveTab("scene-list");
+      setActiveTab("companion");
       setDuplicateReview(null);
     });
   };
@@ -11382,7 +11384,6 @@ function App() {
   const [showSequenceBar, setShowSequenceBar] = useState(true);
 
   const SIMPLE_TABS = [
-    { id: "scene-list", label: "Scene List" },
     { id: "companion",  label: "Companion" },
     { id: "progress",   label: "Progress" },
     { id: "archive",    label: "Archive" },
@@ -11400,7 +11401,7 @@ function App() {
   const TABS = showAdvancedTabs
     ? [SIMPLE_TABS[0], ...ADVANCED_TABS, ...SIMPLE_TABS.slice(1)]
     : SIMPLE_TABS;
-  const showGlobalSequenceProgress = activeTab !== "scene-list" && activeTab !== "companion";
+  const showGlobalSequenceProgress = activeTab !== "companion";
 
   return (
     <div className="container">
@@ -11471,9 +11472,6 @@ function App() {
       )}
 
       <div className="card">
-        {activeTab === "scene-list" && (
-          <SceneListTab scenes={scenes} setScenes={setScenes} nowState={nowState} setNowState={setNowState} showToast={showToast} />
-        )}
         {activeTab === "companion" && (
           <ScriptCompanionTab scenes={scenes} setScenes={setScenes} showToast={showToast} />
         )}
@@ -11518,7 +11516,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260813a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260813b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
