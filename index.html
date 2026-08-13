@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260812G */
+        /* COMPANION LOG MODE 20260812H */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2518,7 +2518,7 @@
             border: 1px solid var(--companion-line);
             border-radius: 6px;
             display: grid;
-            gap: 10px;
+            gap: 12px;
             grid-template-columns: 1fr;
             padding: 12px;
         }
@@ -2557,7 +2557,7 @@
 
         .companion-sequence-controls {
             display: grid;
-            gap: 16px;
+            gap: 10px;
             margin: 0 auto;
             width: 100%;
         }
@@ -2721,7 +2721,7 @@
 
         .companion-log-panel {
             display: grid;
-            gap: 12px;
+            gap: 10px;
         }
 
         .companion-scene-meta {
@@ -2733,10 +2733,9 @@
         }
 
         .companion-scene-header {
-            border-bottom: 1px solid var(--companion-line);
             display: grid;
-            gap: 12px;
-            padding-bottom: 12px;
+            gap: 8px;
+            padding-bottom: 2px;
         }
 
         .companion-status-field {
@@ -3300,7 +3299,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260812G */
+        /* PWA MOBILE BUILD OVERRIDES 20260812H */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3383,7 +3382,7 @@
         }
 
         body.pwa-build .companion-sequence-controls {
-            gap: 14px;
+            gap: 8px;
         }
 
         body.pwa-build .companion-select,
@@ -3638,7 +3637,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260812g";
+const APP_VERSION = "20260812h";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10306,42 +10305,38 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
 
         {!isIdeasMode && (
           <div className="companion-sequence-controls">
-            <div>
-              <label className="companion-kicker" htmlFor="companion-sequence-select">Sequence</label>
-              <select
-                id="companion-sequence-select"
-                className="companion-select"
-                value={effectiveSequenceFilter}
-                onChange={e => {
-                  setSequenceFilter(e.target.value);
-                  setActiveId(null);
-                }}
-              >
-                {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="companion-label" htmlFor="companion-scene-select">Scene</label>
-              <select
-                id="companion-scene-select"
-                className="companion-select"
-                value={selected ? selected.id : ""}
-                onChange={e => setActiveId(e.target.value)}
-                disabled={filtered.length === 0}
-              >
-                {filtered.length === 0 && <option value="">No scenes</option>}
-                {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
-              </select>
-            </div>
+            <select
+              id="companion-sequence-select"
+              className="companion-select"
+              aria-label="Sequence"
+              value={effectiveSequenceFilter}
+              onChange={e => {
+                setSequenceFilter(e.target.value);
+                setActiveId(null);
+              }}
+            >
+              {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
+            </select>
+            <select
+              id="companion-scene-select"
+              className="companion-select"
+              aria-label="Scene"
+              value={selected ? selected.id : ""}
+              onChange={e => setActiveId(e.target.value)}
+              disabled={filtered.length === 0}
+            >
+              {filtered.length === 0 && <option value="">No scenes</option>}
+              {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
+            </select>
           </div>
         )}
 
         {isIdeasMode && (
           <div className="companion-unplaced-tools">
-            <label className="companion-label" htmlFor="companion-idea-search">Ideas</label>
             <input
               id="companion-idea-search"
               className="companion-search"
+              aria-label="Search ideas"
               value={ideaSearch}
               onChange={e => {
                 setIdeaSearch(e.target.value);
@@ -10414,10 +10409,6 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
           ) : (
             <>
               <div className="companion-scene-header">
-                <div>
-                  <div className="companion-scene-meta">{SEQUENCE_TITLES[selected.sequence]}</div>
-                  <div className="companion-detail-title">{selected.title || "Untitled"}</div>
-                </div>
                 <label className="companion-status-field" htmlFor="companion-status-select">
                   <span>Status</span>
                   <select
@@ -11516,7 +11507,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260812g').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260812h').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
