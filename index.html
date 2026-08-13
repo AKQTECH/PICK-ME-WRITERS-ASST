@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260812D */
+        /* COMPANION LOG MODE 20260812E */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2526,7 +2526,7 @@
         .companion-picker-tabs {
             display: grid;
             gap: 6px;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
 
         .companion-picker-tab {
@@ -2887,7 +2887,7 @@
         .companion-triage-tabs {
             display: grid;
             gap: 6px;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
         }
 
         .companion-triage-tab {
@@ -2964,6 +2964,17 @@
             font-size: 0.78rem;
             font-weight: 650;
             line-height: 1.35;
+        }
+
+        .companion-idea-preview {
+            border-top: 1px solid var(--companion-line);
+            color: var(--companion-muted);
+            font-size: 0.95rem;
+            font-weight: 650;
+            line-height: 1.55;
+            margin-top: 12px;
+            padding-top: 12px;
+            white-space: pre-wrap;
         }
 
         .companion-unplaced-actions {
@@ -3257,7 +3268,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260812D */
+        /* PWA MOBILE BUILD OVERRIDES 20260812E */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3329,11 +3340,14 @@
 
         body.pwa-build .companion-picker-tabs {
             gap: 5px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
 
         body.pwa-build .companion-picker-tab {
+            font-size: 0.62rem;
+            letter-spacing: 0.04em;
             min-height: 36px;
-            padding: 7px 5px;
+            padding: 7px 4px;
         }
 
         body.pwa-build .companion-select,
@@ -3343,11 +3357,14 @@
         }
 
         body.pwa-build .companion-triage-tabs {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 5px;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
         }
 
         body.pwa-build .companion-triage-tab {
+            font-size: 0.62rem;
             min-height: 38px;
+            padding-inline: 3px;
         }
 
         body.pwa-build .companion-unplaced-list {
@@ -3581,7 +3598,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260812d";
+const APP_VERSION = "20260812e";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -3607,11 +3624,12 @@ const SEQUENCE_TARGETS = { s1:7, s2:7, s3:4, s4:10, s5:28, s6:28, s7:7, s8:4, s9
 const KIND_VALUES = ["SCENE","THREAD","TWEAK","DECISION"];
 const STATUS_VALUES = ["todo","drafted","done","needs_edits","cut"];
 const COMPANION_STATUS_VALUES = ["drafted","needs_edits","cut"];
-const UNPLACED_TRIAGE_BUCKETS = [
-  { id:"all", label:"All" },
-  { id:"new_scene", label:"New Scenes" },
-  { id:"scene_change", label:"Scene Changes" },
-  { id:"cut", label:"Cuts" }
+const IDEA_INBOX_BUCKETS = [
+  { id:"all", label:"ALL" },
+  { id:"new", label:"NEW" },
+  { id:"next", label:"NEXT" },
+  { id:"need", label:"NEED" },
+  { id:"cut", label:"CUT" }
 ];
 const CHANGE_VERBS = ["CUT","ADD","ADJUST","MOVE","VERIFY"];
 
@@ -7224,13 +7242,16 @@ function isRewriteTaskRecord(record) {
 function isCompanionActionCard(card) {
   return !!(card && !card.archived && !card.maybe && (card.kind === "SCENE" || card.kind === "TWEAK"));
 }
+function isSequencedCompanionActionCard(card) {
+  return !!(isCompanionActionCard(card) && SEQUENCE_ORDER.includes(card.sequence));
+}
 function isCompanionAction(change) {
   return !!(change && !change.archived && !change.maybe);
 }
 function getCompanionActionRows(scenesInput) {
   const rows = [];
   safeArray(scenesInput).forEach(card => {
-    if (!isCompanionActionCard(card)) return;
+    if (!isSequencedCompanionActionCard(card)) return;
     safeArray(card.changes).forEach(change => {
       if (isCompanionAction(change)) rows.push({ card, change });
     });
@@ -7263,16 +7284,16 @@ function computeProgressStats(stateInput) {
 }
 function getCompanionTaskAudit(stateInput) {
   const state = normalizeState(stateInput);
-  const bySequence = { UNPLACED:{ cardCount:0, total:0, open:0, done:0, questions:0 } };
+  const bySequence = {};
   SEQUENCE_ORDER.forEach(seq => { bySequence[seq] = { cardCount:0, total:0, open:0, done:0, questions:0 }; });
-  const activeCards = state.scenes.filter(isCompanionActionCard);
+  const activeCards = state.scenes.filter(isSequencedCompanionActionCard);
   activeCards.forEach(card => {
-    const seq = card.sequence && bySequence[card.sequence] ? card.sequence : "UNPLACED";
+    const seq = card.sequence;
     bySequence[seq].cardCount += 1;
     bySequence[seq].questions += String(card.openQuestions || "").split(/\n+/).map(line => line.trim()).filter(Boolean).length;
   });
   const rows = getCompanionActionRows(state.scenes).map(({ card, change }) => {
-    const seq = card.sequence && bySequence[card.sequence] ? card.sequence : "UNPLACED";
+    const seq = card.sequence;
     bySequence[seq].total += 1;
     if (change.done) bySequence[seq].done += 1;
     else bySequence[seq].open += 1;
@@ -7300,17 +7321,20 @@ function collectArchiveBuckets(scenesInput) {
   state.scenes.forEach(card => {
     if (!card || card.maybe) return;
     const isSceneLike = card.kind === "SCENE" || card.kind === "TWEAK";
+    const isSequencedSceneLike = isSceneLike && SEQUENCE_ORDER.includes(card.sequence);
     const activeChanges = safeArray(card.changes).filter(change => !change.archived && !change.maybe);
     if (card.archived) {
       buckets.archivedCards.push(card);
-    } else if (isSceneLike && (card.status === "done" || (activeChanges.length > 0 && activeChanges.every(change => !!change.done)))) {
+    } else if (isSequencedSceneLike && (card.status === "done" || (activeChanges.length > 0 && activeChanges.every(change => !!change.done)))) {
       buckets.completedSceneCards.push(card);
     }
-    safeArray(card.changes).forEach(change => {
-      if (!change || change.maybe) return;
-      if (change.archived) buckets.archivedTaskRows.push({ card, change });
-      else if (change.done) buckets.completedTaskRows.push({ card, change });
-    });
+    if (isSequencedSceneLike) {
+      safeArray(card.changes).forEach(change => {
+        if (!change || change.maybe) return;
+        if (change.archived) buckets.archivedTaskRows.push({ card, change });
+        else if (change.done) buckets.completedTaskRows.push({ card, change });
+      });
+    }
     safeArray(card.moments).forEach(moment => {
       if (!moment || moment.maybe) return;
       if (moment.archived) buckets.archivedMomentRows.push({ card, moment });
@@ -10003,31 +10027,60 @@ function companionCardSearchText(card) {
   ].join(" ");
 }
 
-function inferUnplacedBucket(card) {
-  const text = companionCardSearchText(card).toLowerCase();
-  if (normalizeStatus(card && card.status) === "cut" || /\b(cut|delete|remove|drop|lose|kill)\b/.test(text)) return "cut";
-  if (/\b(new scene|new beat|new bridge|add scene|not in the draft|not on the page|unwritten|place it|placement tbd|somewhere|candidate)\b/.test(text)) return "new_scene";
-  if (normalizeKind(card && card.kind) === "TWEAK" || safeArray(card && card.changes).length || /\b(adjust|rewrite|move|replace|change|trim|tighten|restore|thread|plant)\b/.test(text)) return "scene_change";
-  return "scene_change";
+function normalizeIdeaBucket(value) {
+  const raw = String(value || "").trim().toLowerCase();
+  if (!raw || raw === "all") return "all";
+  if (raw === "new" || raw === "new_scene" || raw === "later") return "new";
+  if (raw === "next" || raw === "edit" || raw === "scene_change") return "next";
+  if (raw === "need" || raw === "needs" || raw === "completed" || raw === "maybe" || raw === "?") return "need";
+  if (raw === "cut" || raw === "x") return "cut";
+  return null;
 }
 
-function unplacedBucketLabel(bucketId) {
-  const bucket = UNPLACED_TRIAGE_BUCKETS.find(item => item.id === bucketId);
-  return bucket ? bucket.label : "Scene Changes";
+function inferIdeaBucket(card) {
+  const legacy = normalizeIdeaBucket(card && card.category);
+  if (legacy && legacy !== "all") return legacy;
+  const text = companionCardSearchText(card).toLowerCase();
+  if (normalizeStatus(card && card.status) === "cut" || /\b(cut|delete|remove|drop|lose|kill)\b/.test(text)) return "cut";
+  if (/\b(new scene|new beat|new bridge|add scene|not in the draft|not on the page|unwritten)\b/.test(text)) return "new";
+  if (/\b(next|place it|placement tbd|somewhere|candidate|later)\b/.test(text)) return "next";
+  if (/\b(need|needs|question|decide|answer|blocks|blocked|figure out|clarify)\b/.test(text)) return "need";
+  if (normalizeKind(card && card.kind) === "TWEAK" || safeArray(card && card.changes).length || /\b(adjust|rewrite|move|replace|change|trim|tighten|restore|thread|plant)\b/.test(text)) return "next";
+  return "need";
+}
+
+function ideaBucketLabel(bucketId) {
+  const bucket = IDEA_INBOX_BUCKETS.find(item => item.id === bucketId);
+  return bucket ? bucket.label : "NEED";
 }
 
 function companionSnippet(card) {
-  const cleaned = cleanCompanionDisplayText(card && (card.description || card.openQuestions || safeArray(card.changes)[0]?.text || ""));
+  const isSequenced = card && SEQUENCE_ORDER.includes(card.sequence);
+  const cleaned = cleanCompanionDisplayText(card && (
+    card.description ||
+    card.openQuestions ||
+    card.rippleEffects ||
+    card.storyThreads ||
+    (isSequenced ? safeArray(card.changes)[0]?.text : "") ||
+    ""
+  ));
   return cleaned ? cleaned.slice(0, 190) + (cleaned.length > 190 ? "..." : "") : "No notes yet.";
 }
 
 
 function ScriptCompanionTab({ scenes, setScenes, showToast }) {
-  const [sequenceFilter, setSequenceFilter] = React.useState(() => localStorage.getItem("pickme_companion_sequence_focus") || "AUTO");
+  const [sequenceFilter, setSequenceFilter] = React.useState(() => {
+    const stored = localStorage.getItem("pickme_companion_sequence_focus");
+    return SEQUENCE_ORDER.includes(stored) ? stored : "AUTO";
+  });
   const [activeId, setActiveId] = React.useState(null);
   const [pickerStep, setPickerStep] = React.useState("sequence");
-  const [unplacedBucket, setUnplacedBucket] = React.useState(() => localStorage.getItem("pickme_companion_unplaced_bucket") || "all");
-  const [unplacedSearch, setUnplacedSearch] = React.useState("");
+  const [companionMode, setCompanionMode] = React.useState(() => localStorage.getItem("pickme_companion_mode") === "ideas" ? "ideas" : "sequence");
+  const [ideaBucket, setIdeaBucket] = React.useState(() => {
+    const stored = localStorage.getItem("pickme_companion_idea_bucket") || localStorage.getItem("pickme_companion_unplaced_bucket") || "all";
+    return normalizeIdeaBucket(stored) || "all";
+  });
+  const [ideaSearch, setIdeaSearch] = React.useState("");
   const [changeDrafts, setChangeDrafts] = React.useState({});
   const [noteDrafts, setNoteDrafts] = React.useState({});
   const [newChangeText, setNewChangeText] = React.useState("");
@@ -10035,30 +10088,28 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
 
   const state = normalizeState({ scenes });
   const companionCards = sortSceneCards(state.scenes.filter(card => !card.archived && !card.maybe && (card.kind === "SCENE" || card.kind === "TWEAK")));
-  const counts = { UNPLACED:0, ALL:companionCards.length };
+  const sequencedCards = companionCards.filter(card => SEQUENCE_ORDER.includes(card.sequence));
+  const ideaCards = companionCards.filter(card => !SEQUENCE_ORDER.includes(card.sequence));
+  const counts = {};
   SEQUENCE_ORDER.forEach(seq => counts[seq] = 0);
-  companionCards.forEach(card => {
-    if (card.sequence && counts[card.sequence] !== undefined) counts[card.sequence] += 1;
-    else counts.UNPLACED += 1;
+  sequencedCards.forEach(card => {
+    counts[card.sequence] += 1;
   });
-  const firstFocusedSequence = (counts.UNPLACED > 0 && "UNPLACED") || SEQUENCE_ORDER.find(seq => counts[seq] > 0) || "ALL";
-  const effectiveSequenceFilter = sequenceFilter === "AUTO" || sequenceFilter === "ALL" ? firstFocusedSequence : sequenceFilter;
-  const isUnplacedMode = effectiveSequenceFilter === "UNPLACED";
-  const filtered = companionCards.filter(card => {
-    if (effectiveSequenceFilter === "UNPLACED" && card.sequence) return false;
-    if (effectiveSequenceFilter !== "ALL" && effectiveSequenceFilter !== "UNPLACED" && (card.sequence || "") !== effectiveSequenceFilter) return false;
+  const firstFocusedSequence = SEQUENCE_ORDER.find(seq => counts[seq] > 0) || SEQUENCE_ORDER[0];
+  const effectiveSequenceFilter = SEQUENCE_ORDER.includes(sequenceFilter) ? sequenceFilter : firstFocusedSequence;
+  const isIdeasMode = companionMode === "ideas";
+  const filtered = sequencedCards.filter(card => card.sequence === effectiveSequenceFilter);
+  const ideaSearchNeedle = ideaSearch.trim().toLowerCase();
+  const triageCards = ideaCards.filter(card => {
+    const bucket = inferIdeaBucket(card);
+    if (ideaBucket !== "all" && bucket !== ideaBucket) return false;
+    if (ideaSearchNeedle && !companionCardSearchText(card).toLowerCase().includes(ideaSearchNeedle)) return false;
     return true;
   });
-  const unplacedSearchNeedle = unplacedSearch.trim().toLowerCase();
-  const triageCards = filtered.filter(card => {
-    const bucket = inferUnplacedBucket(card);
-    if (unplacedBucket !== "all" && bucket !== unplacedBucket) return false;
-    if (unplacedSearchNeedle && !companionCardSearchText(card).toLowerCase().includes(unplacedSearchNeedle)) return false;
-    return true;
-  });
-  const selected = isUnplacedMode ? (triageCards.find(card => card.id === activeId) || null) : (filtered.find(card => card.id === activeId) || filtered[0] || null);
-  const visibleChanges = selected ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
-  const selectedStatus = selected ? normalizeStatus(selected.status) : "needs_edits";
+  const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (filtered.find(card => card.id === activeId) || filtered[0] || null);
+  const selectedIsSequenced = !!(selected && SEQUENCE_ORDER.includes(selected.sequence));
+  const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
+  const selectedStatus = selectedIsSequenced ? normalizeStatus(selected.status) : "needs_edits";
   const companionStatusValue = COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "needs_edits";
 
   React.useEffect(() => {
@@ -10066,17 +10117,21 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   }, [effectiveSequenceFilter]);
 
   React.useEffect(() => {
-    localStorage.setItem("pickme_companion_unplaced_bucket", unplacedBucket);
-  }, [unplacedBucket]);
+    localStorage.setItem("pickme_companion_mode", companionMode);
+  }, [companionMode]);
 
   React.useEffect(() => {
-    if (isUnplacedMode) {
+    localStorage.setItem("pickme_companion_idea_bucket", ideaBucket);
+  }, [ideaBucket]);
+
+  React.useEffect(() => {
+    if (isIdeasMode) {
       if (activeId && !triageCards.some(card => card.id === activeId)) setActiveId(null);
       return;
     }
     if (selected && activeId !== selected.id) setActiveId(selected.id);
     if (!selected && activeId) setActiveId(null);
-  }, [isUnplacedMode, selected && selected.id, activeId, triageCards.map(card => card.id).join("|")]); // eslint-disable-line
+  }, [isIdeasMode, selected && selected.id, activeId, triageCards.map(card => card.id).join("|")]); // eslint-disable-line
 
   React.useEffect(() => {
     return () => {
@@ -10104,7 +10159,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   };
 
   const patchChange = (changeId, patch) => {
-    if (!selected) return;
+    if (!selected || isIdeasMode || !selectedIsSequenced) return;
     patchCard(selected.id, card => ({
       changes:safeArray(card.changes).map(change => asId(change.id) === asId(changeId) ? touchRecord(change, typeof patch === "function" ? patch(change) : patch) : change)
     }));
@@ -10139,7 +10194,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
     changeSaveTimers.current[changeId] = window.setTimeout(() => commitChangeDraft(changeId, value, true), 900);
   };
   const toggleChangeDone = (changeId, done) => {
-    if (!selected) return;
+    if (!selected || isIdeasMode || !selectedIsSequenced) return;
     patchCard(selected.id, card => applyChangeDone(card, changeId, done));
   };
   const archiveChange = (changeId) => {
@@ -10155,7 +10210,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   };
 
   const addSceneChange = () => {
-    if (!selected) return;
+    if (!selected || isIdeasMode || !selectedIsSequenced) return;
     const text = newChangeText.trim();
     if (!text) return;
     patchCard(selected.id, card => {
@@ -10168,27 +10223,33 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   };
 
   const setStatus = status => {
-    if (!selected) return;
+    if (!selected || isIdeasMode || !selectedIsSequenced) return;
     patchSelected({ status });
     if (showToast) showToast("Status updated");
   };
-  const assignUnplacedCard = (cardId, sequence) => {
+  const assignIdeaCard = (cardId, sequence) => {
     if (!cardId || !SEQUENCE_ORDER.includes(sequence)) return;
-    patchCard(cardId, { sequence });
-    setActiveId(null);
+    patchCard(cardId, card => ({
+      sequence,
+      status: normalizeStatus(card.status) === "cut" || inferIdeaBucket(card) === "cut" ? "cut" : "needs_edits"
+    }));
+    setCompanionMode("sequence");
+    setSequenceFilter(sequence);
+    setActiveId(cardId);
+    setPickerStep("status");
     if (showToast) showToast("Assigned to " + SEQUENCE_TITLES[sequence]);
   };
-  const archiveUnplacedCard = (cardId) => {
+  const archiveIdeaCard = (cardId) => {
     if (!cardId) return;
     patchCard(cardId, archiveFields());
     setActiveId(null);
-    if (showToast) showToast("Unplaced idea archived");
+    if (showToast) showToast("Idea archived");
   };
   const changeRowCount = value => Math.min(12, Math.max(2, Math.ceil(String(value || "").length / 22)));
 
   const noteValue = selected ? (Object.prototype.hasOwnProperty.call(noteDrafts, selected.id) ? noteDrafts[selected.id] : (selected.openQuestions || "")) : "";
   const commitNotes = () => {
-    if (!selected || !Object.prototype.hasOwnProperty.call(noteDrafts, selected.id)) return;
+    if (!selected || isIdeasMode || !selectedIsSequenced || !Object.prototype.hasOwnProperty.call(noteDrafts, selected.id)) return;
     patchSelected({ openQuestions:noteDrafts[selected.id] || "" });
     setNoteDrafts(prev => {
       const copy = { ...prev };
@@ -10201,12 +10262,13 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
     <div className="companion-notebook">
       <div className="companion-focus-bar">
         <div className="companion-picker-tabs" aria-label="Companion picker steps">
-          <button type="button" className={pickerStep === "sequence" ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => setPickerStep("sequence")}>Sequence</button>
-          <button type="button" className={pickerStep === "scene" ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => setPickerStep("scene")} disabled={filtered.length === 0}>{isUnplacedMode ? "Inbox" : "Scene"}</button>
-          <button type="button" className={pickerStep === "status" ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => setPickerStep("status")} disabled={!selected}>Status</button>
+          <button type="button" className={!isIdeasMode && pickerStep === "sequence" ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => { setCompanionMode("sequence"); setPickerStep("sequence"); }}>Sequence</button>
+          <button type="button" className={!isIdeasMode && pickerStep === "scene" ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => { setCompanionMode("sequence"); setPickerStep("scene"); }} disabled={filtered.length === 0}>Scene</button>
+          <button type="button" className={!isIdeasMode && pickerStep === "status" ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => { setCompanionMode("sequence"); setPickerStep("status"); }} disabled={!selectedIsSequenced}>Status</button>
+          <button type="button" className={isIdeasMode ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => { setCompanionMode("ideas"); setPickerStep("ideas"); setActiveId(null); }}>Ideas</button>
         </div>
 
-        {pickerStep === "sequence" && (
+        {!isIdeasMode && pickerStep === "sequence" && (
           <div>
             <label className="companion-kicker" htmlFor="companion-sequence-select">Sequence</label>
             <select
@@ -10219,33 +10281,32 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                 setPickerStep("scene");
               }}
             >
-              <option value="UNPLACED">Unplaced</option>
               {SEQUENCE_ORDER.map(seq => <option key={seq} value={seq}>{SEQUENCE_TITLES[seq]}</option>)}
             </select>
           </div>
         )}
 
-        {pickerStep === "scene" && isUnplacedMode && (
+        {isIdeasMode && (
           <div className="companion-unplaced-tools">
-            <label className="companion-label" htmlFor="companion-unplaced-search">Unplaced</label>
+            <label className="companion-label" htmlFor="companion-idea-search">Ideas</label>
             <input
-              id="companion-unplaced-search"
+              id="companion-idea-search"
               className="companion-search"
-              value={unplacedSearch}
+              value={ideaSearch}
               onChange={e => {
-                setUnplacedSearch(e.target.value);
+                setIdeaSearch(e.target.value);
                 setActiveId(null);
               }}
-              placeholder="Search unplaced ideas"
+              placeholder="Search ideas"
             />
-            <div className="companion-triage-tabs" aria-label="Unplaced categories">
-              {UNPLACED_TRIAGE_BUCKETS.map(bucket => (
+            <div className="companion-triage-tabs" aria-label="Idea categories">
+              {IDEA_INBOX_BUCKETS.map(bucket => (
                 <button
                   key={bucket.id}
                   type="button"
-                  className={unplacedBucket === bucket.id ? "companion-triage-tab is-active" : "companion-triage-tab"}
+                  className={ideaBucket === bucket.id ? "companion-triage-tab is-active" : "companion-triage-tab"}
                   onClick={() => {
-                    setUnplacedBucket(bucket.id);
+                    setIdeaBucket(bucket.id);
                     setActiveId(null);
                   }}
                 >
@@ -10254,14 +10315,14 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
               ))}
             </div>
             <div className="companion-unplaced-list">
-              {triageCards.length === 0 && <div className="companion-empty-note">No unplaced ideas match this view.</div>}
+              {triageCards.length === 0 && <div className="companion-empty-note">No ideas match this view.</div>}
               {triageCards.map(card => {
                 const active = selected && selected.id === card.id;
-                const bucketId = inferUnplacedBucket(card);
+                const bucketId = inferIdeaBucket(card);
                 return (
                   <article key={card.id} className={active ? "companion-unplaced-card is-active" : "companion-unplaced-card"}>
                     <button type="button" className="companion-unplaced-card-main" onClick={() => setActiveId(active ? null : card.id)}>
-                      <span className="companion-unplaced-type">{unplacedBucketLabel(bucketId)}</span>
+                      <span className="companion-unplaced-type">{ideaBucketLabel(bucketId)}</span>
                       <span className="companion-unplaced-title">{card.title || "Untitled"}</span>
                       <span className="companion-unplaced-snippet">{companionSnippet(card)}</span>
                     </button>
@@ -10269,13 +10330,13 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                       <div className="companion-unplaced-actions">
                         <div className="companion-assign-grid" aria-label="Assign unplaced idea to sequence">
                           {SEQUENCE_ORDER.map(seq => (
-                            <button key={seq} type="button" className="companion-assign-button" onClick={() => assignUnplacedCard(card.id, seq)}>
+                            <button key={seq} type="button" className="companion-assign-button" onClick={() => assignIdeaCard(card.id, seq)}>
                               {SEQUENCE_TITLES[seq]}
                             </button>
                           ))}
                         </div>
                         <div className="companion-unplaced-action-row">
-                          <button type="button" className="companion-archive-button" onClick={() => archiveUnplacedCard(card.id)} title="Archive unplaced idea" aria-label="Archive unplaced idea">
+                          <button type="button" className="companion-archive-button" onClick={() => archiveIdeaCard(card.id)} title="Archive idea" aria-label="Archive idea">
                             <ArchiveTrayIcon size={18} />
                           </button>
                         </div>
@@ -10288,7 +10349,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
           </div>
         )}
 
-        {pickerStep === "scene" && !isUnplacedMode && (
+        {!isIdeasMode && pickerStep === "scene" && (
           <div>
             <label className="companion-label" htmlFor="companion-scene-select">Scene</label>
             <select
@@ -10307,7 +10368,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
           </div>
         )}
 
-        {pickerStep === "status" && (
+        {!isIdeasMode && pickerStep === "status" && (
           <div>
             <label className="companion-label" htmlFor="companion-status-select">Status</label>
             <select
@@ -10326,11 +10387,17 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
       <div className="companion-workbench is-focused">
         <div className="companion-panel companion-log-panel">
           {!selected ? (
-            <div className="companion-empty-note">{isUnplacedMode ? "Choose an unplaced idea above to review its changes and notes." : "Pick a sequence with scenes."}</div>
+            <div className="companion-empty-note">{isIdeasMode ? "Choose an idea above, assign it to a sequence, or file it away." : "Pick a sequence with scenes."}</div>
+          ) : isIdeasMode ? (
+            <>
+              <div className="companion-scene-meta">IDEA - {ideaBucketLabel(inferIdeaBucket(selected))}</div>
+              <div className="companion-detail-title">{selected.title || "Untitled"}</div>
+              <div className="companion-idea-preview">{companionSnippet(selected)}</div>
+            </>
           ) : (
             <>
               <div className="companion-scene-meta">
-                {selected.sequence ? SEQUENCE_TITLES[selected.sequence] : "UNPLACED - " + unplacedBucketLabel(inferUnplacedBucket(selected))}
+                {SEQUENCE_TITLES[selected.sequence]}
               </div>
 
               <details className="companion-section" open>
@@ -10984,9 +11051,9 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
   const setSequenceValue = (key, value) => setSequences(prev => ({ ...(prev || {}), [key]: value === "" ? "" : Number(value) }));
   const currentInputValue = sequences && sequences._pageCurrent !== undefined ? sequences._pageCurrent : pagesDone;
   const goalInputValue = sequences && sequences._pageGoal !== undefined ? sequences._pageGoal : pageGoal;
-  const taskAuditRows = ["UNPLACED", ...SEQUENCE_ORDER].map(seq => ({
+  const taskAuditRows = SEQUENCE_ORDER.map(seq => ({
     seq,
-    label: seq === "UNPLACED" ? "Unplaced" : SEQUENCE_TITLES[seq],
+    label: SEQUENCE_TITLES[seq],
     data: taskAudit.bySequence[seq] || { cardCount:0, total:0, open:0, done:0, questions:0 }
   })).filter(row => row.data.cardCount || row.data.total);
   return (
@@ -11005,7 +11072,7 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
       {bar(pctPages, "#DA005F")}
       <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} scene changes left</div>
       {bar(pctRewriteTasks, "#63B6A4")}
-      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>Counted from active Scene Changes in Companion. Archived and maybe items do not count.</div>
+      <div style={{marginTop:"12px",fontSize:"0.9em",color:"var(--text-light)"}}>Counted from active Scene Changes on sequenced Companion scenes. Ideas, archived items, and maybe items do not count.</div>
       <div className="archive-summary-grid progress-archive-summary">
         <div className="archive-summary-box"><div>Done scene changes</div><strong>{stats.completedRewriteTasks}</strong></div>
         <div className="archive-summary-box"><div>Ready to archive</div><strong>{archiveBuckets.completedTaskRows.length}</strong></div>
@@ -11417,7 +11484,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260812d').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260812e').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
