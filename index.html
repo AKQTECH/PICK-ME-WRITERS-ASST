@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260813B */
+        /* COMPANION LOG MODE 20260813C */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2942,8 +2942,8 @@
         }
 
         .companion-triage-tab.is-active {
-            background: var(--companion-active);
-            border-color: #8B0040;
+            background: #ffa9da;
+            border-color: #ea258d;
             color: var(--companion-text);
         }
 
@@ -2965,7 +2965,7 @@
 
         .companion-unplaced-card.is-active {
             background: var(--companion-active);
-            border-color: #B47DA4;
+            border-color: #ea258d;
         }
 
         .companion-unplaced-card-main {
@@ -2981,7 +2981,7 @@
         }
 
         .companion-unplaced-type {
-            color: #8B0040;
+            color: #ea258d;
             font-size: 0.62rem;
             font-weight: 900;
             letter-spacing: 0.06em;
@@ -3304,7 +3304,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260813B */
+        /* PWA MOBILE BUILD OVERRIDES 20260813C */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3398,7 +3398,7 @@
 
         body.pwa-build .companion-triage-tabs {
             gap: 5px;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0, 1fr));
         }
 
         body.pwa-build .companion-triage-tab {
@@ -3453,8 +3453,6 @@
         body.pwa-build .companion-add-row .companion-add-button {
             width: 100%;
         }
-
-
 
     </style>
     <link rel="manifest" href="manifest.json">
@@ -3644,7 +3642,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260813b";
+const APP_VERSION = "20260813c";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -3671,6 +3669,7 @@ const KIND_VALUES = ["SCENE","THREAD","TWEAK","DECISION"];
 const STATUS_VALUES = ["todo","drafted","done","needs_edits","cut"];
 const COMPANION_STATUS_VALUES = ["drafted","needs_edits","cut"];
 const IDEA_INBOX_BUCKETS = [
+  { id:"all", label:"ALL" },
   { id:"maybe", label:"MAYBE" },
   { id:"new", label:"NEW" },
   { id:"need", label:"NEED" },
@@ -10074,7 +10073,7 @@ function companionCardSearchText(card) {
 
 function normalizeIdeaBucket(value) {
   const raw = String(value || "").trim().toLowerCase();
-  if (!raw || raw === "all") return "maybe";
+  if (!raw || raw === "all") return "all";
   if (raw === "maybe" || raw === "?" || raw === "candidate") return "maybe";
   if (raw === "new" || raw === "new_scene" || raw === "later") return "new";
   if (raw === "need" || raw === "needs" || raw === "completed" || raw === "next" || raw === "edit" || raw === "scene_change") return "need";
@@ -10122,8 +10121,8 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   const [activeId, setActiveId] = React.useState(null);
   const [companionMode, setCompanionMode] = React.useState(() => localStorage.getItem("pickme_companion_mode") === "ideas" ? "ideas" : "sequence");
   const [ideaBucket, setIdeaBucket] = React.useState(() => {
-    const stored = localStorage.getItem("pickme_companion_idea_bucket") || localStorage.getItem("pickme_companion_unplaced_bucket") || "maybe";
-    return normalizeIdeaBucket(stored) || "maybe";
+    const stored = localStorage.getItem("pickme_companion_idea_bucket") || localStorage.getItem("pickme_companion_unplaced_bucket") || "all";
+    return normalizeIdeaBucket(stored) || "all";
   });
   const [ideaSearch, setIdeaSearch] = React.useState("");
   const [changeDrafts, setChangeDrafts] = React.useState({});
@@ -10147,8 +10146,8 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   const ideaSearchNeedle = ideaSearch.trim().toLowerCase();
   const triageCards = ideaCards.filter(card => {
     const bucket = inferIdeaBucket(card);
-    if (bucket !== ideaBucket) return false;
     if (ideaSearchNeedle && !companionCardSearchText(card).toLowerCase().includes(ideaSearchNeedle)) return false;
+    if (!ideaSearchNeedle && ideaBucket !== "all" && bucket !== ideaBucket) return false;
     return true;
   });
   const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (filtered.find(card => card.id === activeId) || filtered[0] || null);
@@ -10355,7 +10354,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
                 setIdeaSearch(e.target.value);
                 setActiveId(null);
               }}
-              placeholder="Search ideas"
+              placeholder="Search all ideas"
             />
             <div className="companion-triage-tabs" aria-label="Idea categories">
               {IDEA_INBOX_BUCKETS.map(bucket => (
@@ -11516,7 +11515,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260813b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260813c').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
