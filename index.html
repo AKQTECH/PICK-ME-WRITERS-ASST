@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260813C */
+        /* COMPANION LOG MODE 20260813D */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2942,9 +2942,9 @@
         }
 
         .companion-triage-tab.is-active {
-            background: #ffa9da;
-            border-color: #ea258d;
-            color: var(--companion-text);
+            background: #F7C7DE;
+            border-color: #F7C7DE;
+            color: #E668A7;
         }
 
         .companion-unplaced-list {
@@ -3304,7 +3304,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260813C */
+        /* PWA MOBILE BUILD OVERRIDES 20260813D */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3642,7 +3642,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260813c";
+const APP_VERSION = "20260813d";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10071,6 +10071,17 @@ function companionCardSearchText(card) {
   ].join(" ");
 }
 
+function companionIdeaSearchText(card) {
+  const snippet = companionSnippet(card);
+  const visibleSnippet = snippet === "No notes yet." ? "" : snippet;
+  return [
+    ideaBucketLabel(inferIdeaBucket(card)),
+    card && card.title,
+    card && card.description,
+    visibleSnippet
+  ].join(" ");
+}
+
 function normalizeIdeaBucket(value) {
   const raw = String(value || "").trim().toLowerCase();
   if (!raw || raw === "all") return "all";
@@ -10146,7 +10157,7 @@ function ScriptCompanionTab({ scenes, setScenes, showToast }) {
   const ideaSearchNeedle = ideaSearch.trim().toLowerCase();
   const triageCards = ideaCards.filter(card => {
     const bucket = inferIdeaBucket(card);
-    if (ideaSearchNeedle && !companionCardSearchText(card).toLowerCase().includes(ideaSearchNeedle)) return false;
+    if (ideaSearchNeedle && !companionIdeaSearchText(card).toLowerCase().includes(ideaSearchNeedle)) return false;
     if (!ideaSearchNeedle && ideaBucket !== "all" && bucket !== ideaBucket) return false;
     return true;
   });
@@ -11515,7 +11526,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260813c').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260813d').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
