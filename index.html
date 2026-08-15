@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION FOCUS FLOW 20260814B */
+        /* COMPANION MENU FLOW 20260814C */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2525,7 +2525,13 @@
 
         .companion-picker-tabs {
             display: grid;
-            gap: 6px;
+            gap: 10px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .companion-main-menu {
+            display: grid;
+            gap: 10px;
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
@@ -2542,6 +2548,27 @@
             min-height: 34px;
             padding: 7px 8px;
             text-transform: uppercase;
+        }
+
+        .companion-menu-choice {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 4px;
+            color: var(--companion-text);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            min-height: 54px;
+            padding: 12px;
+            text-transform: uppercase;
+        }
+
+        .companion-menu-choice:hover,
+        .companion-picker-tab:hover {
+            background: var(--companion-active);
+            border-color: #8B0040;
         }
 
         .companion-picker-tab.is-active {
@@ -2563,35 +2590,9 @@
         }
 
         .companion-sequence-picker,
-        .companion-scene-nav-wrap {
+        .companion-workspace-nav {
             display: grid;
             gap: 10px;
-        }
-
-        .companion-scene-nav {
-            display: grid;
-            gap: 8px;
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        .companion-back-button {
-            background: #FFFFFF;
-            border: 1px solid var(--companion-line);
-            border-radius: 4px;
-            color: var(--companion-text);
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.7rem;
-            font-weight: 900;
-            letter-spacing: 0.05em;
-            min-height: 38px;
-            padding: 8px 10px;
-            text-transform: uppercase;
-        }
-
-        .companion-back-button:hover {
-            background: var(--companion-active);
-            border-color: #8B0040;
         }
 
         .companion-scene-list {
@@ -3453,7 +3454,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260814B */
+        /* PWA MOBILE BUILD OVERRIDES 20260814C */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3543,6 +3544,11 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
+        body.pwa-build .companion-main-menu {
+            gap: 10px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         body.pwa-build .companion-picker-tab {
             border-radius: 7px;
             font-size: 0.78rem;
@@ -3550,25 +3556,20 @@
             padding: 11px 8px;
         }
 
+        body.pwa-build .companion-menu-choice {
+            border-radius: 7px;
+            font-size: 0.82rem;
+            min-height: 54px;
+            padding: 12px 8px;
+        }
+
         body.pwa-build .companion-sequence-controls {
             gap: 12px;
         }
 
         body.pwa-build .companion-sequence-picker,
-        body.pwa-build .companion-scene-nav-wrap {
+        body.pwa-build .companion-workspace-nav {
             gap: 12px;
-        }
-
-        body.pwa-build .companion-scene-nav {
-            gap: 10px;
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        body.pwa-build .companion-back-button {
-            border-radius: 7px;
-            font-size: 0.72rem;
-            min-height: 46px;
-            padding: 10px 8px;
         }
 
         body.pwa-build .companion-scene-list {
@@ -3953,7 +3954,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260814b";
+const APP_VERSION = "20260814c";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10456,8 +10457,8 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     return SEQUENCE_ORDER.includes(stored) ? stored : "AUTO";
   });
   const [activeId, setActiveId] = React.useState(null);
-  const [companionMode, setCompanionMode] = React.useState(() => localStorage.getItem("pickme_companion_mode") === "ideas" ? "ideas" : "sequence");
-  const [sequenceView, setSequenceView] = React.useState(() => localStorage.getItem("pickme_companion_sequence_view") === "pick" ? "pick" : "scene");
+  const [companionMode, setCompanionMode] = React.useState("menu");
+  const [sequenceView, setSequenceView] = React.useState("pick");
   const [ideaBucket, setIdeaBucket] = React.useState(() => {
     const stored = localStorage.getItem("pickme_companion_idea_bucket") || localStorage.getItem("pickme_companion_unplaced_bucket") || "all";
     return normalizeIdeaBucket(stored) || "all";
@@ -10482,6 +10483,8 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const firstFocusedSequence = activeSequenceOrder.find(seq => counts[seq] > 0) || activeSequenceOrder[0] || "";
   const effectiveSequenceFilter = activeSequenceOrder.includes(sequenceFilter) ? sequenceFilter : firstFocusedSequence;
   const currentSequenceTitle = effectiveSequenceFilter ? getSequenceTitle(state.sequences, effectiveSequenceFilter) : "";
+  const isMenuMode = companionMode === "menu";
+  const isSequenceMode = companionMode === "sequence";
   const isIdeasMode = companionMode === "ideas";
   const filtered = sequencedCards.filter(card => card.sequence === effectiveSequenceFilter);
   const ideaSearchNeedle = ideaSearch.trim().toLowerCase();
@@ -10491,13 +10494,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     if (!ideaSearchNeedle && ideaBucket !== "all" && bucket !== ideaBucket) return false;
     return true;
   });
-  const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (sequenceView === "pick" ? null : (filtered.find(card => card.id === activeId) || filtered[0] || null));
+  const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (isSequenceMode && sequenceView === "scene" ? (filtered.find(card => card.id === activeId) || filtered[0] || null) : null);
   const selectedIsSequenced = !!(selected && activeSequenceOrder.includes(selected.sequence));
   const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
   const selectedStatus = selectedIsSequenced ? normalizeStatus(selected.status) : "needs_edits";
   const companionStatusValue = COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "needs_edits";
   const selectedSceneTitle = selected && !isIdeasMode ? (selected.title || "Untitled") : "";
-  const isSequencePickerOpen = !isIdeasMode && sequenceView === "pick";
+  const isSequencePickerOpen = isSequenceMode && sequenceView === "pick";
+  const showCompanionWorkbench = isIdeasMode || (isSequenceMode && sequenceView === "scene");
 
   React.useEffect(() => {
     if (effectiveSequenceFilter) localStorage.setItem("pickme_companion_sequence_focus", effectiveSequenceFilter);
@@ -10524,10 +10528,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       if (activeId && !triageCards.some(card => card.id === activeId)) setActiveId(null);
       return;
     }
+    if (isMenuMode) {
+      if (activeId) setActiveId(null);
+      return;
+    }
     if (sequenceView === "pick") return;
     if (selected && activeId !== selected.id) setActiveId(selected.id);
     if (!selected && activeId) setActiveId(null);
-  }, [isIdeasMode, sequenceView, selected && selected.id, activeId, triageCards.map(card => card.id).join("|")]); // eslint-disable-line
+  }, [isIdeasMode, isMenuMode, sequenceView, selected && selected.id, activeId, triageCards.map(card => card.id).join("|")]); // eslint-disable-line
 
   React.useEffect(() => {
     return () => {
@@ -10662,6 +10670,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     setSequenceFilter(nextSequence || "AUTO");
     setActiveId(null);
     setSequenceView("pick");
+    setCompanionMode("sequence");
     if (showToast) showToast("Sequence deleted");
   };
   const assignIdeaCard = (cardId, sequence) => {
@@ -10704,13 +10713,19 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   return (
     <div className="companion-notebook">
       <div className="companion-focus-bar">
-        <div className="companion-picker-tabs" aria-label="Companion views">
-          <button type="button" className={!isIdeasMode ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => { setCompanionMode("sequence"); setSequenceView("pick"); }}>Sequence</button>
-          <button type="button" className={isIdeasMode ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => { setCompanionMode("ideas"); setActiveId(null); }}>Ideas</button>
-        </div>
+        {isMenuMode && (
+          <div className="companion-main-menu" aria-label="Companion menu">
+            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("pick"); setActiveId(null); }}>Sequence</button>
+            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("ideas"); setActiveId(null); }}>Ideas</button>
+          </div>
+        )}
 
-        {!isIdeasMode && (
+        {isSequenceMode && (
           <div className="companion-sequence-controls">
+            <div className="companion-picker-tabs companion-workspace-nav" aria-label="Sequence workspace">
+              <button type="button" className="companion-picker-tab is-active" onClick={() => { setSequenceView("pick"); setActiveId(null); }}>Sequence</button>
+              <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setSequenceView("pick"); setActiveId(null); }}>Menu</button>
+            </div>
             {sequenceView === "pick" ? (
               <div className="companion-sequence-picker">
                 <select
@@ -10775,18 +10790,16 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   </div>
                 </details>
               </div>
-            ) : (
-              <div className="companion-scene-nav-wrap">
-                <div className="companion-scene-nav" aria-label="Scene navigation">
-                  <button type="button" className="companion-back-button" onClick={() => setSequenceView("pick")}>Back to Sequence</button>
-                </div>
-              </div>
-            )}
+            ) : null}
           </div>
         )}
 
         {isIdeasMode && (
           <div className="companion-unplaced-tools">
+            <div className="companion-picker-tabs companion-workspace-nav" aria-label="Ideas workspace">
+              <button type="button" className="companion-picker-tab is-active">Ideas</button>
+              <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setActiveId(null); }}>Menu</button>
+            </div>
             <input
               id="companion-idea-search"
               className="companion-search"
@@ -10850,7 +10863,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
 
       </div>
 
-      {!isSequencePickerOpen && (
+      {showCompanionWorkbench && (
       <div className="companion-workbench is-focused">
         <div className="companion-panel companion-log-panel">
           {!selected ? (
@@ -11974,7 +11987,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260814b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260814c').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
