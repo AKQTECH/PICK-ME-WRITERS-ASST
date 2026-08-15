@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'none';
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com;
@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260813E */
+        /* COMPANION LOG MODE 20260814A */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -3355,11 +3355,12 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260813E */
+        /* PWA MOBILE BUILD OVERRIDES 20260814A */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
             overflow-x: hidden;
+            width: 100%;
         }
 
         body.pwa-build input,
@@ -3367,141 +3368,225 @@
         body.pwa-build select,
         body.pwa-build button {
             font-size: 16px;
+            letter-spacing: 0;
         }
 
         body.pwa-build .container {
             box-sizing: border-box;
             margin: 0 auto;
-            max-width: 640px;
-            padding: 8px;
+            max-width: 520px;
+            padding: max(18px, calc(env(safe-area-inset-top) + 12px)) 16px max(24px, calc(env(safe-area-inset-bottom) + 16px));
             width: 100%;
         }
 
         body.pwa-build .header {
-            border-width: 0;
-            margin-bottom: 10px;
-            padding: 16px 10px 14px;
+            background: #FFFFFF;
+            border: 2px solid #1C1410;
+            border-radius: 8px;
+            box-shadow: none;
+            margin-bottom: 14px;
+            padding: 18px 14px 16px;
+            text-align: center;
         }
 
         body.pwa-build .header-lip {
-            display: none;
+            align-items: center;
+            display: flex !important;
+            font-size: 2.2rem !important;
+            justify-content: center;
+            line-height: 1;
+            margin: 0 auto 8px !important;
         }
 
         body.pwa-build .header h1 {
-            font-size: 1.35rem;
+            font-size: 1.12rem;
+            letter-spacing: 0;
             line-height: 1.1;
-            margin: 0 0 8px;
+            margin: 0;
         }
 
         body.pwa-build .header-sub {
-            font-size: 0.78rem;
+            display: none;
         }
 
         body.pwa-build .tabs {
-            margin: 0 0 10px;
+            margin: 0 0 16px;
         }
 
         body.pwa-build .tab-select,
         body.pwa-build .tab-select:hover,
         body.pwa-build .tab-select:focus {
-            min-height: 48px;
-            padding: 11px 46px 11px 14px;
+            background-color: #FFFFFF;
+            border: 2px solid #1C1410;
+            border-radius: 8px;
+            min-height: 54px;
+            padding: 13px 46px 13px 16px;
         }
 
         body.pwa-build .card {
             border: 0;
-            border-radius: 6px;
-            padding: 12px;
+            border-radius: 10px;
+            padding: 14px;
         }
 
         body.pwa-build .companion-notebook {
-            gap: 10px;
+            gap: 16px;
         }
 
         body.pwa-build .companion-focus-bar {
-            border-radius: 6px;
-            gap: 10px;
+            border-radius: 8px;
+            gap: 14px;
             grid-template-columns: 1fr;
-            padding: 10px;
+            padding: 14px;
         }
 
         body.pwa-build .companion-picker-tabs {
-            gap: 5px;
+            gap: 10px;
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         body.pwa-build .companion-picker-tab {
-            font-size: 0.68rem;
-            letter-spacing: 0.04em;
-            min-height: 38px;
-            padding: 8px 5px;
+            border-radius: 7px;
+            font-size: 0.78rem;
+            min-height: 48px;
+            padding: 11px 8px;
         }
 
         body.pwa-build .companion-sequence-controls {
-            gap: 8px;
+            gap: 12px;
         }
 
         body.pwa-build .companion-sequence-admin {
-            grid-template-columns: minmax(0, 1fr) 82px 38px;
+            gap: 8px;
+            grid-template-columns: minmax(0, 1fr) 48px;
         }
 
-        body.pwa-build .companion-sequence-name-input,
-        body.pwa-build .companion-sequence-rename-button,
+        body.pwa-build .companion-sequence-name-input {
+            border-radius: 7px;
+            font-size: 1rem;
+            grid-column: 1 / -1;
+            min-height: 52px;
+            padding: 12px 14px;
+        }
+
+        body.pwa-build .companion-sequence-rename-button {
+            border-radius: 7px;
+            min-height: 46px;
+            width: 100%;
+        }
+
         body.pwa-build .companion-sequence-delete-button {
-            min-height: 42px;
+            border-radius: 7px;
+            height: 46px;
+            min-height: 46px;
+            width: 48px;
         }
 
         body.pwa-build .companion-select,
         body.pwa-build .companion-status-select {
-            min-height: 44px;
-            padding-block: 9px;
+            border-radius: 7px;
+            min-height: 54px;
+            padding: 13px 42px 13px 14px;
         }
 
         body.pwa-build .companion-triage-tabs {
-            gap: 5px;
+            gap: 8px;
             grid-template-columns: repeat(5, minmax(0, 1fr));
         }
 
         body.pwa-build .companion-triage-tab {
-            font-size: 0.62rem;
-            min-height: 38px;
-            padding-inline: 3px;
+            border-radius: 7px;
+            font-size: 0.7rem;
+            min-height: 44px;
+            padding-inline: 4px;
         }
 
         body.pwa-build .companion-unplaced-list {
-            max-height: min(54vh, 560px);
+            max-height: none;
+            overflow: visible;
+            padding-right: 0;
         }
 
         body.pwa-build .companion-assign-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            grid-template-columns: 1fr;
         }
 
         body.pwa-build .companion-assign-button {
-            font-size: 0.64rem;
-            min-height: 38px;
+            border-radius: 7px;
+            font-size: 0.78rem;
+            min-height: 44px;
+            text-align: left;
         }
 
         body.pwa-build .companion-panel {
-            border-radius: 6px;
-            padding: 12px;
+            border-radius: 8px;
+            padding: 14px;
         }
 
         body.pwa-build .companion-scene-header {
-            gap: 10px;
+            gap: 12px;
+        }
+
+        body.pwa-build .companion-status-field span,
+        body.pwa-build .companion-section-toggle span:first-child,
+        body.pwa-build .companion-scene-meta {
+            color: #E668A7;
+        }
+
+        body.pwa-build .companion-section {
+            padding-top: 14px;
+        }
+
+        body.pwa-build .companion-section + .companion-section {
+            margin-top: 14px;
+        }
+
+        body.pwa-build .companion-section-toggle {
+            min-height: 42px;
         }
 
         body.pwa-build .companion-task-row {
-            gap: 6px;
-            grid-template-columns: 20px minmax(0, 1fr) 34px;
+            gap: 8px;
+            grid-template-columns: 28px minmax(0, 1fr);
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        body.pwa-build .companion-task-row input[type="checkbox"] {
+            height: 24px;
+            margin-top: 16px;
+            width: 24px;
         }
 
         body.pwa-build .companion-task-text {
-            min-height: 56px;
+            border-radius: 7px;
+            line-height: 1.45;
+            min-height: 96px;
+            padding: 14px 44px 14px 14px;
         }
 
-        body.pwa-build .companion-archive-button {
-            height: 34px;
-            width: 34px;
+        body.pwa-build .companion-task-row .companion-archive-button {
+            height: 38px;
+            position: absolute;
+            right: 4px;
+            top: 6px;
+            width: 38px;
+            z-index: 1;
+        }
+
+        body.pwa-build .companion-unplaced-action-row .companion-archive-button {
+            height: 40px;
+            margin-left: auto;
+            position: static;
+            width: 40px;
+        }
+
+        body.pwa-build .companion-note-text {
+            border-radius: 7px;
+            line-height: 1.45;
+            min-height: 156px;
+            padding: 14px;
         }
 
         body.pwa-build .companion-add-row,
@@ -3513,6 +3598,30 @@
 
         body.pwa-build .companion-add-row .companion-add-button {
             width: 100%;
+        }
+
+        body.pwa-build .companion-add-row {
+            gap: 8px;
+        }
+
+        body.pwa-build .companion-task-input {
+            border-radius: 7px;
+            min-height: 52px;
+            padding: 13px 14px;
+        }
+
+        body.pwa-build .companion-unplaced-card,
+        body.pwa-build .companion-row {
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        body.pwa-build .companion-unplaced-card-main {
+            padding: 14px;
+        }
+
+        body.pwa-build .companion-empty-note {
+            line-height: 1.45;
         }
 
     </style>
@@ -3703,7 +3812,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260813e";
+const APP_VERSION = "20260814a";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -11689,7 +11798,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260813e').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260814a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
