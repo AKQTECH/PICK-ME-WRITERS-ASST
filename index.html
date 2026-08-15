@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION LOG MODE 20260814A */
+        /* COMPANION FOCUS FLOW 20260814B */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2562,11 +2562,109 @@
             width: 100%;
         }
 
+        .companion-sequence-picker,
+        .companion-scene-nav-wrap {
+            display: grid;
+            gap: 10px;
+        }
+
+        .companion-scene-nav {
+            display: grid;
+            gap: 8px;
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .companion-back-button {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 4px;
+            color: var(--companion-text);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.7rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            min-height: 38px;
+            padding: 8px 10px;
+            text-transform: uppercase;
+        }
+
+        .companion-back-button:hover {
+            background: var(--companion-active);
+            border-color: #8B0040;
+        }
+
+        .companion-scene-list {
+            display: grid;
+            gap: 8px;
+            max-height: min(46vh, 500px);
+            overflow-y: auto;
+            padding-right: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .companion-scene-pick-button {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 4px;
+            color: var(--companion-text);
+            cursor: pointer;
+            display: grid;
+            gap: 5px;
+            min-height: 46px;
+            padding: 10px 12px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .companion-scene-pick-button:hover,
+        .companion-scene-pick-button.is-active {
+            background: var(--companion-active);
+            border-color: #8B0040;
+        }
+
+        .companion-scene-pick-title {
+            font-size: 0.84rem;
+            font-weight: 900;
+            line-height: 1.18;
+            text-transform: uppercase;
+        }
+
+        .companion-scene-pick-meta {
+            color: var(--companion-muted);
+            font-size: 0.68rem;
+            font-weight: 800;
+            line-height: 1.25;
+            text-transform: uppercase;
+        }
+
+        .companion-sequence-admin-panel {
+            border-top: 1px solid var(--companion-line);
+            padding-top: 8px;
+        }
+
+        .companion-sequence-admin-panel > summary {
+            color: var(--companion-muted);
+            cursor: pointer;
+            font-size: 0.68rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            list-style: none;
+            min-height: 30px;
+            padding-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .companion-sequence-admin-panel > summary::-webkit-details-marker {
+            display: none;
+        }
+
         .companion-sequence-admin {
             align-items: center;
             display: grid;
             gap: 8px;
             grid-template-columns: minmax(0, 1fr) auto 34px;
+            margin-top: 8px;
         }
 
         .companion-sequence-name-input {
@@ -3355,7 +3453,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260814A */
+        /* PWA MOBILE BUILD OVERRIDES 20260814B */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3454,6 +3552,49 @@
 
         body.pwa-build .companion-sequence-controls {
             gap: 12px;
+        }
+
+        body.pwa-build .companion-sequence-picker,
+        body.pwa-build .companion-scene-nav-wrap {
+            gap: 12px;
+        }
+
+        body.pwa-build .companion-scene-nav {
+            gap: 10px;
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        body.pwa-build .companion-back-button {
+            border-radius: 7px;
+            font-size: 0.72rem;
+            min-height: 46px;
+            padding: 10px 8px;
+        }
+
+        body.pwa-build .companion-scene-list {
+            gap: 10px;
+            max-height: none;
+            overflow: visible;
+            padding-right: 0;
+        }
+
+        body.pwa-build .companion-scene-pick-button {
+            border-radius: 7px;
+            min-height: 54px;
+            padding: 14px;
+        }
+
+        body.pwa-build .companion-scene-pick-title {
+            font-size: 0.92rem;
+        }
+
+        body.pwa-build .companion-sequence-admin-panel {
+            padding-top: 10px;
+        }
+
+        body.pwa-build .companion-sequence-admin-panel > summary {
+            min-height: 40px;
+            padding-top: 10px;
         }
 
         body.pwa-build .companion-sequence-admin {
@@ -3812,7 +3953,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260814a";
+const APP_VERSION = "20260814b";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10316,6 +10457,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   });
   const [activeId, setActiveId] = React.useState(null);
   const [companionMode, setCompanionMode] = React.useState(() => localStorage.getItem("pickme_companion_mode") === "ideas" ? "ideas" : "sequence");
+  const [sequenceView, setSequenceView] = React.useState(() => localStorage.getItem("pickme_companion_sequence_view") === "pick" ? "pick" : "scene");
   const [ideaBucket, setIdeaBucket] = React.useState(() => {
     const stored = localStorage.getItem("pickme_companion_idea_bucket") || localStorage.getItem("pickme_companion_unplaced_bucket") || "all";
     return normalizeIdeaBucket(stored) || "all";
@@ -10349,11 +10491,13 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     if (!ideaSearchNeedle && ideaBucket !== "all" && bucket !== ideaBucket) return false;
     return true;
   });
-  const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (filtered.find(card => card.id === activeId) || filtered[0] || null);
+  const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (sequenceView === "pick" ? null : (filtered.find(card => card.id === activeId) || filtered[0] || null));
   const selectedIsSequenced = !!(selected && activeSequenceOrder.includes(selected.sequence));
   const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
   const selectedStatus = selectedIsSequenced ? normalizeStatus(selected.status) : "needs_edits";
   const companionStatusValue = COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "needs_edits";
+  const selectedSceneTitle = selected && !isIdeasMode ? (selected.title || "Untitled") : "";
+  const isSequencePickerOpen = !isIdeasMode && sequenceView === "pick";
 
   React.useEffect(() => {
     if (effectiveSequenceFilter) localStorage.setItem("pickme_companion_sequence_focus", effectiveSequenceFilter);
@@ -10368,6 +10512,10 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   }, [companionMode]);
 
   React.useEffect(() => {
+    localStorage.setItem("pickme_companion_sequence_view", sequenceView);
+  }, [sequenceView]);
+
+  React.useEffect(() => {
     localStorage.setItem("pickme_companion_idea_bucket", ideaBucket);
   }, [ideaBucket]);
 
@@ -10376,9 +10524,10 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       if (activeId && !triageCards.some(card => card.id === activeId)) setActiveId(null);
       return;
     }
+    if (sequenceView === "pick") return;
     if (selected && activeId !== selected.id) setActiveId(selected.id);
     if (!selected && activeId) setActiveId(null);
-  }, [isIdeasMode, selected && selected.id, activeId, triageCards.map(card => card.id).join("|")]); // eslint-disable-line
+  }, [isIdeasMode, sequenceView, selected && selected.id, activeId, triageCards.map(card => card.id).join("|")]); // eslint-disable-line
 
   React.useEffect(() => {
     return () => {
@@ -10512,6 +10661,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     setScenes(prev => safeArray(prev).map(card => card.sequence === seq ? touchRecord(normalizeCard(card, 0), { sequence:null }) : card));
     setSequenceFilter(nextSequence || "AUTO");
     setActiveId(null);
+    setSequenceView("pick");
     if (showToast) showToast("Sequence deleted");
   };
   const assignIdeaCard = (cardId, sequence) => {
@@ -10523,6 +10673,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     setCompanionMode("sequence");
     setSequenceFilter(sequence);
     setActiveId(cardId);
+    setSequenceView("scene");
     if (showToast) showToast("Assigned to " + getSequenceTitle(state.sequences, sequence));
   };
   const archiveIdeaCard = (cardId) => {
@@ -10554,64 +10705,83 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     <div className="companion-notebook">
       <div className="companion-focus-bar">
         <div className="companion-picker-tabs" aria-label="Companion views">
-          <button type="button" className={!isIdeasMode ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => setCompanionMode("sequence")}>Sequence</button>
+          <button type="button" className={!isIdeasMode ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => { setCompanionMode("sequence"); setSequenceView("pick"); }}>Sequence</button>
           <button type="button" className={isIdeasMode ? "companion-picker-tab is-active" : "companion-picker-tab"} onClick={() => { setCompanionMode("ideas"); setActiveId(null); }}>Ideas</button>
         </div>
 
         {!isIdeasMode && (
           <div className="companion-sequence-controls">
-            <select
-              id="companion-sequence-select"
-              className="companion-select"
-              aria-label="Sequence"
-              value={effectiveSequenceFilter}
-              onChange={e => {
-                setSequenceFilter(e.target.value);
-                setActiveId(null);
-              }}
-            >
-              {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
-              {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
-            </select>
-            <select
-              id="companion-scene-select"
-              className="companion-select"
-              aria-label="Scene"
-              value={selected ? selected.id : ""}
-              onChange={e => setActiveId(e.target.value)}
-              disabled={filtered.length === 0}
-            >
-              {filtered.length === 0 && <option value="">No scenes</option>}
-              {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
-            </select>
-            <div className="companion-sequence-admin">
-              <input
-                className="companion-sequence-name-input"
-                value={sequenceNameDraft}
-                onChange={e => setSequenceNameDraft(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && sequenceNameDraft.trim()) renameSequence(); }}
-                disabled={!effectiveSequenceFilter}
-                aria-label="Sequence name"
-              />
-              <button
-                type="button"
-                className="companion-sequence-rename-button"
-                onClick={renameSequence}
-                disabled={!effectiveSequenceFilter || !sequenceNameDraft.trim() || sequenceNameDraft.trim().replace(/\s+/g, " ") === currentSequenceTitle}
-              >
-                Rename
-              </button>
-              <button
-                type="button"
-                className="companion-sequence-delete-button"
-                onClick={deleteSequence}
-                disabled={!effectiveSequenceFilter || activeSequenceOrder.length <= 1}
-                title="Delete sequence"
-                aria-label="Delete sequence"
-              >
-                <TrashIcon size={16} />
-              </button>
-            </div>
+            {sequenceView === "pick" ? (
+              <div className="companion-sequence-picker">
+                <select
+                  id="companion-sequence-select"
+                  className="companion-select"
+                  aria-label="Sequence"
+                  value={effectiveSequenceFilter}
+                  onChange={e => {
+                    setSequenceFilter(e.target.value);
+                    setActiveId(null);
+                    setSequenceView("pick");
+                  }}
+                >
+                  {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
+                  {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
+                </select>
+                <div className="companion-scene-list" aria-label="Scenes in selected sequence">
+                  {filtered.length === 0 && <div className="companion-empty-note">No scenes in this sequence.</div>}
+                  {filtered.map(card => (
+                    <button
+                      key={card.id}
+                      type="button"
+                      className={asId(activeId) === asId(card.id) ? "companion-scene-pick-button is-active" : "companion-scene-pick-button"}
+                      onClick={() => {
+                        setActiveId(card.id);
+                        setSequenceView("scene");
+                      }}
+                    >
+                      <span className="companion-scene-pick-title">{card.title || "Untitled"}</span>
+                    </button>
+                  ))}
+                </div>
+                <details className="companion-sequence-admin-panel">
+                  <summary>Sequence settings</summary>
+                  <div className="companion-sequence-admin">
+                    <input
+                      className="companion-sequence-name-input"
+                      value={sequenceNameDraft}
+                      onChange={e => setSequenceNameDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" && sequenceNameDraft.trim()) renameSequence(); }}
+                      disabled={!effectiveSequenceFilter}
+                      aria-label="Sequence name"
+                    />
+                    <button
+                      type="button"
+                      className="companion-sequence-rename-button"
+                      onClick={renameSequence}
+                      disabled={!effectiveSequenceFilter || !sequenceNameDraft.trim() || sequenceNameDraft.trim().replace(/\s+/g, " ") === currentSequenceTitle}
+                    >
+                      Rename
+                    </button>
+                    <button
+                      type="button"
+                      className="companion-sequence-delete-button"
+                      onClick={deleteSequence}
+                      disabled={!effectiveSequenceFilter || activeSequenceOrder.length <= 1}
+                      title="Delete sequence"
+                      aria-label="Delete sequence"
+                    >
+                      <TrashIcon size={16} />
+                    </button>
+                  </div>
+                </details>
+              </div>
+            ) : (
+              <div className="companion-scene-nav-wrap">
+                <div className="companion-scene-nav" aria-label="Scene navigation">
+                  <button type="button" className="companion-back-button" onClick={() => setSequenceView("pick")}>Back to Sequence</button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -10680,6 +10850,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
 
       </div>
 
+      {!isSequencePickerOpen && (
       <div className="companion-workbench is-focused">
         <div className="companion-panel companion-log-panel">
           {!selected ? (
@@ -10693,6 +10864,10 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
           ) : (
             <>
               <div className="companion-scene-header">
+                <div>
+                  <div className="companion-scene-meta">{currentSequenceTitle}</div>
+                  <div className="companion-detail-title">{selectedSceneTitle}</div>
+                </div>
                 <label className="companion-status-field" htmlFor="companion-status-select">
                   <span>Status</span>
                   <select
@@ -10761,6 +10936,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -11798,7 +11974,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260814a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260814b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
