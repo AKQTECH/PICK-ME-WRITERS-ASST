@@ -2500,7 +2500,7 @@
             width: 100%;
         }
 
-        /* COMPANION MENU FLOW 20260815A */
+        /* COMPANION MENU FLOW 20260815B */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2610,52 +2610,24 @@
             gap: 14px;
         }
 
-        .companion-scene-list {
+        .companion-picker-field {
             display: grid;
             gap: 8px;
-            max-height: min(46vh, 500px);
-            overflow-y: auto;
-            padding-right: 4px;
-            -webkit-overflow-scrolling: touch;
         }
 
-        .companion-scene-pick-button {
-            background: #FFFFFF;
-            border: 1px solid var(--companion-line);
-            border-radius: 4px;
-            color: var(--companion-text);
-            cursor: pointer;
-            display: grid;
-            gap: 5px;
-            min-height: 46px;
-            padding: 10px 12px;
-            text-align: left;
-            width: 100%;
-        }
-
-        .companion-scene-pick-button:hover,
-        .companion-scene-pick-button.is-active {
-            background: var(--companion-hover);
-            border-color: var(--companion-active);
-        }
-
-        .companion-scene-pick-button.is-active .companion-scene-pick-title {
+        .companion-picker-label {
             color: var(--companion-active-text);
-        }
-
-        .companion-scene-pick-title {
-            font-size: 0.84rem;
-            font-weight: 900;
-            line-height: 1.18;
-            text-transform: uppercase;
-        }
-
-        .companion-scene-pick-meta {
-            color: var(--companion-muted);
             font-size: 0.68rem;
-            font-weight: 800;
-            line-height: 1.25;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            line-height: 1.1;
             text-transform: uppercase;
+        }
+
+        .companion-scene-select {
+            background-color: #FFF7FA !important;
+            border-color: #F1BBD6 !important;
+            font-weight: 900;
         }
 
         .companion-sequence-admin-panel {
@@ -2664,7 +2636,7 @@
         }
 
         .companion-sequence-admin-panel > summary {
-            color: var(--companion-muted);
+            color: var(--companion-active-text);
             cursor: pointer;
             font-size: 0.68rem;
             font-weight: 900;
@@ -2885,12 +2857,12 @@
             border: 1px solid var(--companion-line);
             border-radius: 6px;
             min-width: 0;
-            padding: 14px;
+            padding: 16px 18px;
         }
 
         .companion-log-panel {
             display: grid;
-            gap: 10px;
+            gap: 16px;
         }
 
         .companion-scene-meta {
@@ -2903,13 +2875,18 @@
 
         .companion-scene-header {
             display: grid;
-            gap: 8px;
-            padding-bottom: 2px;
+            gap: 16px;
+            padding-bottom: 6px;
+        }
+
+        .companion-scene-title-block {
+            display: grid;
+            gap: 7px;
         }
 
         .companion-status-field {
             display: grid;
-            gap: 6px;
+            gap: 8px;
         }
 
         .companion-status-field span {
@@ -2992,6 +2969,7 @@
             font-size: 1.22rem;
             font-weight: 900;
             line-height: 1.12;
+            margin: 0;
             text-transform: uppercase;
         }
 
@@ -3473,7 +3451,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260815A */
+        /* PWA MOBILE BUILD OVERRIDES 20260815B */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3596,21 +3574,12 @@
             gap: 12px;
         }
 
-        body.pwa-build .companion-scene-list {
-            gap: 10px;
-            max-height: none;
-            overflow: visible;
-            padding-right: 0;
+        body.pwa-build .companion-picker-field {
+            gap: 9px;
         }
 
-        body.pwa-build .companion-scene-pick-button {
-            border-radius: 7px;
-            min-height: 54px;
-            padding: 14px;
-        }
-
-        body.pwa-build .companion-scene-pick-title {
-            font-size: 0.92rem;
+        body.pwa-build .companion-picker-label {
+            font-size: 0.72rem;
         }
 
         body.pwa-build .companion-sequence-admin-panel {
@@ -3687,11 +3656,16 @@
 
         body.pwa-build .companion-panel {
             border-radius: 8px;
-            padding: 14px;
+            padding: 18px 14px;
         }
 
         body.pwa-build .companion-scene-header {
-            gap: 12px;
+            gap: 16px;
+            padding-bottom: 8px;
+        }
+
+        body.pwa-build .companion-scene-title-block {
+            gap: 8px;
         }
 
         body.pwa-build .companion-status-field span,
@@ -3978,7 +3952,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260815a";
+const APP_VERSION = "20260815b";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10752,36 +10726,41 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
             </div>
             {sequenceView === "pick" ? (
               <div className="companion-sequence-picker">
-                <select
-                  id="companion-sequence-select"
-                  className="companion-select"
-                  aria-label="Sequence"
-                  value={effectiveSequenceFilter}
-                  onChange={e => {
-                    setSequenceFilter(e.target.value);
-                    setActiveId(null);
-                    setSequenceView("pick");
-                  }}
-                >
-                  {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
-                  {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
-                </select>
-                <div className="companion-scene-list" aria-label="Scenes in selected sequence">
-                  {filtered.length === 0 && <div className="companion-empty-note">No scenes in this sequence.</div>}
-                  {filtered.map(card => (
-                    <button
-                      key={card.id}
-                      type="button"
-                      className={asId(activeId) === asId(card.id) ? "companion-scene-pick-button is-active" : "companion-scene-pick-button"}
-                      onClick={() => {
-                        setActiveId(card.id);
-                        setSequenceView("scene");
-                      }}
-                    >
-                      <span className="companion-scene-pick-title">{card.title || "Untitled"}</span>
-                    </button>
-                  ))}
-                </div>
+                <label className="companion-picker-field" htmlFor="companion-sequence-select">
+                  <span className="companion-picker-label">Sequence</span>
+                  <select
+                    id="companion-sequence-select"
+                    className="companion-select"
+                    aria-label="Sequence"
+                    value={effectiveSequenceFilter}
+                    onChange={e => {
+                      setSequenceFilter(e.target.value);
+                      setActiveId(null);
+                      setSequenceView("pick");
+                    }}
+                  >
+                    {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
+                    {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
+                  </select>
+                </label>
+                <label className="companion-picker-field" htmlFor="companion-scene-select">
+                  <span className="companion-picker-label">Scene</span>
+                  <select
+                    id="companion-scene-select"
+                    className="companion-select companion-scene-select"
+                    aria-label="Scene"
+                    value=""
+                    disabled={filtered.length === 0}
+                    onChange={e => {
+                      if (!e.target.value) return;
+                      setActiveId(e.target.value);
+                      setSequenceView("scene");
+                    }}
+                  >
+                    <option value="">{filtered.length === 0 ? "No scenes in this sequence" : "Choose scene"}</option>
+                    {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
+                  </select>
+                </label>
                 <details className="companion-sequence-admin-panel">
                   <summary>Sequence settings</summary>
                   <div className="companion-sequence-admin">
@@ -10901,7 +10880,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
           ) : (
             <>
               <div className="companion-scene-header">
-                <div>
+                <div className="companion-scene-title-block">
                   <div className="companion-scene-meta">{currentSequenceTitle}</div>
                   <div className="companion-detail-title">{selectedSceneTitle}</div>
                 </div>
@@ -12011,7 +11990,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260815a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260815b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
