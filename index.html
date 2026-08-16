@@ -2500,17 +2500,19 @@
             width: 100%;
         }
 
-        /* COMPANION MENU FLOW 20260814C */
+        /* COMPANION MENU FLOW 20260815A */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
             --companion-muted: #6F6864;
             --companion-text: #1C1410;
             --companion-line: #D8D0D4;
-            --companion-active: #FFF7FA;
+            --companion-active: #F7C7DE;
+            --companion-active-text: #E668A7;
+            --companion-hover: #FFF3F9;
             --companion-surface: #FFFFFF;
             display: grid;
-            gap: 14px;
+            gap: 20px;
         }
 
         .companion-focus-bar {
@@ -2518,63 +2520,76 @@
             border: 1px solid var(--companion-line);
             border-radius: 6px;
             display: grid;
-            gap: 12px;
+            gap: 16px;
             grid-template-columns: 1fr;
-            padding: 12px;
+            padding: 18px 20px;
+        }
+
+        .companion-focus-bar.is-menu-home {
+            background: #FFF7FA;
+            border-color: #F1BBD6;
+            padding: 22px;
         }
 
         .companion-picker-tabs {
             display: grid;
-            gap: 10px;
+            gap: 14px;
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .companion-main-menu {
             display: grid;
-            gap: 10px;
+            gap: 14px;
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .companion-picker-tab {
             background: #FFFFFF;
             border: 1px solid var(--companion-line);
-            border-radius: 4px;
-            color: var(--companion-muted);
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.68rem;
-            font-weight: 900;
-            letter-spacing: 0.06em;
-            min-height: 34px;
-            padding: 7px 8px;
-            text-transform: uppercase;
-        }
-
-        .companion-menu-choice {
-            background: #FFFFFF;
-            border: 1px solid var(--companion-line);
-            border-radius: 4px;
-            color: var(--companion-text);
+            border-radius: 7px;
+            color: var(--companion-active-text);
             cursor: pointer;
             font-family: inherit;
             font-size: 0.78rem;
             font-weight: 900;
             letter-spacing: 0.06em;
-            min-height: 54px;
-            padding: 12px;
+            min-height: 48px;
+            padding: 12px 14px;
+            text-transform: uppercase;
+        }
+
+        .companion-menu-choice {
+            background: var(--companion-active);
+            border: 1px solid var(--companion-active);
+            border-radius: 7px;
+            color: var(--companion-active-text);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            min-height: 76px;
+            padding: 18px;
             text-transform: uppercase;
         }
 
         .companion-menu-choice:hover,
         .companion-picker-tab:hover {
-            background: var(--companion-active);
-            border-color: #8B0040;
+            background: var(--companion-hover);
+            border-color: var(--companion-hover);
+            color: var(--companion-active-text);
         }
 
         .companion-picker-tab.is-active {
-            background: #F7C7DE;
-            border-color: #F7C7DE;
-            color: #E668A7;
+            background: var(--companion-active);
+            border-color: var(--companion-active);
+            color: var(--companion-active-text);
+        }
+
+        .companion-picker-tab:focus-visible,
+        .companion-menu-choice:focus-visible {
+            outline: 2px solid #F7C7DE;
+            outline-offset: 3px;
         }
 
         .companion-picker-tab:disabled {
@@ -2584,7 +2599,7 @@
 
         .companion-sequence-controls {
             display: grid;
-            gap: 10px;
+            gap: 16px;
             margin: 0 auto;
             width: 100%;
         }
@@ -2592,7 +2607,7 @@
         .companion-sequence-picker,
         .companion-workspace-nav {
             display: grid;
-            gap: 10px;
+            gap: 14px;
         }
 
         .companion-scene-list {
@@ -2620,8 +2635,12 @@
 
         .companion-scene-pick-button:hover,
         .companion-scene-pick-button.is-active {
-            background: var(--companion-active);
-            border-color: #8B0040;
+            background: var(--companion-hover);
+            border-color: var(--companion-active);
+        }
+
+        .companion-scene-pick-button.is-active .companion-scene-pick-title {
+            color: var(--companion-active-text);
         }
 
         .companion-scene-pick-title {
@@ -2806,8 +2825,8 @@
         }
 
         .companion-task-row .companion-add-button:hover {
-            border-color: #8B0040;
-            color: var(--companion-text);
+            border-color: var(--companion-active);
+            color: var(--companion-active-text);
         }
 
         .companion-archive-button {
@@ -3193,7 +3212,7 @@
 
         .companion-assign-button:hover {
             background: var(--companion-active);
-            border-color: #8B0040;
+            border-color: var(--companion-active);
         }
 
         .companion-unplaced-action-row {
@@ -3454,7 +3473,7 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260814C */
+        /* PWA MOBILE BUILD OVERRIDES 20260815A */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
@@ -3534,33 +3553,38 @@
 
         body.pwa-build .companion-focus-bar {
             border-radius: 8px;
-            gap: 14px;
+            gap: 16px;
             grid-template-columns: 1fr;
-            padding: 14px;
+            padding: 16px;
+        }
+
+        body.pwa-build .companion-focus-bar.is-menu-home {
+            background: #FFF3F9;
+            padding: 16px;
         }
 
         body.pwa-build .companion-picker-tabs {
-            gap: 10px;
+            gap: 12px;
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         body.pwa-build .companion-main-menu {
-            gap: 10px;
+            gap: 12px;
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         body.pwa-build .companion-picker-tab {
             border-radius: 7px;
             font-size: 0.78rem;
-            min-height: 48px;
-            padding: 11px 8px;
+            min-height: 52px;
+            padding: 12px 8px;
         }
 
         body.pwa-build .companion-menu-choice {
             border-radius: 7px;
-            font-size: 0.82rem;
-            min-height: 54px;
-            padding: 12px 8px;
+            font-size: 0.86rem;
+            min-height: 64px;
+            padding: 14px 8px;
         }
 
         body.pwa-build .companion-sequence-controls {
@@ -3954,7 +3978,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260814c";
+const APP_VERSION = "20260815a";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10712,7 +10736,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
 
   return (
     <div className="companion-notebook">
-      <div className="companion-focus-bar">
+      <div className={isMenuMode ? "companion-focus-bar is-menu-home" : "companion-focus-bar"}>
         {isMenuMode && (
           <div className="companion-main-menu" aria-label="Companion menu">
             <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("pick"); setActiveId(null); }}>Sequence</button>
@@ -11987,7 +12011,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260814c').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260815a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
