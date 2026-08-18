@@ -656,11 +656,137 @@
         }
         .empty-state-icon { font-size: 2.5em; margin-bottom: 10px; opacity: 0.5; }
         .empty-state-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.05em; }
+        .scene-notes-sequence-bar {
+            min-width: 0;
+        }
+        .scene-notes-sequence-select-wrap {
+            min-width: 0;
+        }
+        .scene-notes-action-button,
+        .scene-notes-delete-link,
+        .scene-notes-add-scene-button {
+            color: #ea258d !important;
+            -webkit-text-fill-color: #ea258d;
+            font-weight: 800;
+        }
+        .scene-notes-delete-link {
+            display: inline-block;
+            margin-top: 6px;
+        }
+        .scene-notes-action-primary {
+            color: #fff !important;
+            -webkit-text-fill-color: #fff;
+        }
+        .scene-notes-add-scene-button {
+            border-color: #ea258d !important;
+        }
+        .scene-notes-select-wrap {
+            min-width: 0;
+        }
 
         /* SETTINGS */
-        .settings-section { max-width: 600px; }
+        .settings-section {
+            box-sizing: border-box;
+            margin: 0 auto;
+            max-width: 760px;
+            width: 100%;
+        }
+        .settings-section *,
+        .settings-section *::before,
+        .settings-section *::after {
+            box-sizing: border-box;
+            min-width: 0;
+        }
         .settings-field { margin-bottom: 20px; }
+        .settings-field input,
+        .settings-field textarea,
+        .settings-field select {
+            max-width: 100%;
+            width: 100%;
+        }
         .settings-hint { font-size: 0.8em; color: var(--text-light); margin-top: 5px; font-style: italic; }
+        .settings-block {
+            border-top: 1px solid var(--border-pink);
+            margin-top: 32px;
+            padding-top: 24px;
+        }
+        .settings-block-title {
+            color: var(--hot-pink,#eb2e90);
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        .settings-muted-copy {
+            color: var(--text-light);
+            font-size: 0.86em;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            overflow-wrap: anywhere;
+        }
+        .settings-toggle-row {
+            align-items: start;
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 26px minmax(0, 1fr);
+            line-height: 1.5;
+        }
+        .settings-toggle-row input {
+            height: 24px;
+            margin: 2px 0 0;
+            width: 24px;
+        }
+        .settings-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .settings-archive-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .settings-archive-row {
+            align-items: center;
+            background: #fff;
+            border: 1px solid var(--border-pink);
+            display: grid;
+            gap: 10px;
+            grid-template-columns: minmax(0, 1fr) auto;
+            padding: 9px 10px;
+        }
+        .settings-archive-row.is-task {
+            align-items: start;
+        }
+        .settings-archive-title {
+            color: #1C1410;
+            font-size: 0.9em;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+        .settings-archive-kicker {
+            color: var(--neon-pink);
+            font-size: 0.78em;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .settings-archive-copy {
+            color: #1C1410;
+            font-size: 0.86em;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+        .settings-block .claude-notes-section {
+            margin-bottom: 0 !important;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        .settings-block .claude-notes-pre {
+            max-width: 100%;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
 
         @media (max-width: 640px) {
             /* Body & container */
@@ -701,6 +827,19 @@
             .scene-notes-grid {
                 grid-template-columns: 1fr !important;
             }
+            .scene-notes-sequence-bar,
+            .scene-notes-rename-row {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+                align-items: stretch !important;
+            }
+            .scene-notes-sequence-bar button,
+            .scene-notes-rename-row button,
+            .scene-notes-add-scene-button {
+                min-height: 44px;
+                width: 100%;
+            }
             .scene-notes-grid > div:first-child {
                 border-right: none !important;
                 padding-right: 0 !important;
@@ -708,6 +847,11 @@
                 padding-bottom: 12px;
                 margin-bottom: 16px;
             }
+            .settings-section { max-width: none; }
+            .settings-actions { display: grid; grid-template-columns: 1fr; }
+            .settings-actions .btn,
+            .settings-archive-row .btn { width: 100%; }
+            .settings-archive-row { grid-template-columns: 1fr; }
 
             /* Card general */
             .card { padding: 16px 12px; margin-bottom: 12px; }
@@ -2500,7 +2644,7 @@
             width: 100%;
         }
 
-        /* COMPANION MENU FLOW 20260815B */
+        /* COMPANION MENU FLOW 20260817A */
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
@@ -2718,6 +2862,7 @@
         .companion-select,
         .companion-status-select,
         .companion-search,
+        .companion-title-input,
         .companion-textarea,
         .companion-task-input {
             background: var(--companion-surface);
@@ -2733,6 +2878,7 @@
         .companion-notebook .companion-select,
         .companion-notebook .companion-status-select,
         .companion-notebook .companion-search,
+        .companion-notebook .companion-title-input,
         .companion-notebook .companion-textarea,
         .companion-notebook .companion-task-input {
             border: 1px solid var(--companion-line) !important;
@@ -2742,9 +2888,10 @@
         .companion-notebook .companion-select:focus,
         .companion-notebook .companion-status-select:focus,
         .companion-notebook .companion-search:focus,
+        .companion-notebook .companion-title-input:focus,
         .companion-notebook .companion-textarea:focus,
         .companion-notebook .companion-task-input:focus {
-            border-color: #8B0040 !important;
+            border-color: #E668A7 !important;
             outline: none !important;
         }
 
@@ -3060,6 +3207,33 @@
 
         .companion-task-row .companion-archive-button {
             margin-top: 5px;
+        }
+
+        .companion-title-row {
+            align-items: start;
+            display: grid;
+            gap: 10px;
+            grid-template-columns: minmax(0, 1fr) 38px;
+        }
+
+        .companion-title-input {
+            background: #FFFFFF;
+            border-radius: 4px;
+            color: var(--companion-text);
+            font-size: 1.22rem;
+            font-weight: 900;
+            line-height: 1.12;
+            min-height: 46px;
+            padding: 8px 10px;
+            text-transform: uppercase;
+        }
+
+        .companion-title-input.is-idea {
+            font-size: 1.05rem;
+        }
+
+        .companion-scene-archive-button {
+            margin-top: 3px;
         }
 
         .companion-unplaced-tools {
@@ -3432,6 +3606,10 @@
                 grid-template-columns: 1fr;
             }
 
+            .companion-title-row {
+                grid-template-columns: minmax(0, 1fr) 38px;
+            }
+
             .companion-add-button,
             .companion-focus-button {
                 width: 100%;
@@ -3451,12 +3629,18 @@
             }
         }
 
-        /* PWA MOBILE BUILD OVERRIDES 20260815B */
+        /* PWA MOBILE BUILD OVERRIDES 20260817A */
         body.pwa-build {
             background: #F7A8D0;
             min-width: 0;
             overflow-x: hidden;
             width: 100%;
+        }
+
+        body.pwa-build *,
+        body.pwa-build *::before,
+        body.pwa-build *::after {
+            box-sizing: border-box;
         }
 
         body.pwa-build input,
@@ -3465,6 +3649,21 @@
         body.pwa-build button {
             font-size: 16px;
             letter-spacing: 0;
+        }
+
+        body.pwa-build button,
+        body.pwa-build a,
+        body.pwa-build .scene-notes-action-button,
+        body.pwa-build .scene-notes-delete-link,
+        body.pwa-build .scene-notes-add-scene-button {
+            color: #ea258d;
+            -webkit-text-fill-color: #ea258d;
+        }
+
+        body.pwa-build .scene-notes-action-primary,
+        body.pwa-build .btn-yes {
+            color: #fff;
+            -webkit-text-fill-color: #fff;
         }
 
         body.pwa-build .container {
@@ -3476,53 +3675,163 @@
         }
 
         body.pwa-build .header {
-            background: #FFFFFF;
-            border: 2px solid #1C1410;
-            border-radius: 8px;
-            box-shadow: none;
-            margin-bottom: 14px;
-            padding: 18px 14px 16px;
+            background: #FFFFFF !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            margin: 54px 0 22px !important;
+            padding: 30px 14px 28px !important;
             text-align: center;
         }
 
         body.pwa-build .header-lip {
             align-items: center;
             display: flex !important;
-            font-size: 2.2rem !important;
+            font-size: 2.15rem !important;
             justify-content: center;
             line-height: 1;
             margin: 0 auto 8px !important;
         }
 
         body.pwa-build .header h1 {
-            font-size: 1.12rem;
-            letter-spacing: 0;
-            line-height: 1.1;
+            font-size: clamp(1rem, 4.8vw, 1.35rem) !important;
+            letter-spacing: 0 !important;
+            line-height: 1.12 !important;
             margin: 0;
+            overflow-wrap: anywhere;
         }
 
         body.pwa-build .header-sub {
-            display: none;
+            display: none !important;
         }
 
         body.pwa-build .tabs {
-            margin: 0 0 16px;
+            margin: 0 0 18px;
         }
 
         body.pwa-build .tab-select,
         body.pwa-build .tab-select:hover,
         body.pwa-build .tab-select:focus {
-            background-color: #FFFFFF;
-            border: 2px solid #1C1410;
-            border-radius: 8px;
+            background-color: #FFFFFF !important;
+            border: 2px solid #1C1410 !important;
+            border-radius: 8px !important;
             min-height: 54px;
             padding: 13px 46px 13px 16px;
         }
 
+        body.pwa-build .progress-bar-container {
+            margin-bottom: 16px;
+            max-width: 100%;
+        }
+
         body.pwa-build .card {
-            border: 0;
-            border-radius: 10px;
-            padding: 14px;
+            border: 0 !important;
+            border-radius: 10px !important;
+            max-width: 100%;
+            overflow: hidden;
+            padding: 18px 14px !important;
+        }
+
+        body.pwa-build .section-title {
+            align-items: center;
+            font-size: clamp(1.45rem, 9vw, 2rem);
+            gap: 12px;
+            line-height: 1;
+            margin-bottom: 28px;
+            overflow-wrap: anywhere;
+        }
+
+        body.pwa-build .section-title::after {
+            min-width: 54px;
+        }
+
+        body.pwa-build .settings-section {
+            max-width: none;
+            width: 100%;
+        }
+
+        body.pwa-build .settings-field input {
+            min-height: 54px;
+            padding: 12px 14px;
+        }
+
+        body.pwa-build .settings-block {
+            margin-top: 30px;
+            padding-top: 24px;
+        }
+
+        body.pwa-build .settings-toggle-row {
+            grid-template-columns: 34px minmax(0, 1fr);
+        }
+
+        body.pwa-build .settings-toggle-row input {
+            height: 30px;
+            width: 30px;
+        }
+
+        body.pwa-build .settings-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        body.pwa-build .settings-actions .btn,
+        body.pwa-build .settings-archive-row .btn {
+            min-height: 48px;
+            width: 100%;
+        }
+
+        body.pwa-build .settings-archive-row {
+            grid-template-columns: 1fr;
+            padding: 12px;
+        }
+
+        body.pwa-build .settings-block .claude-notes-section {
+            padding: 12px !important;
+        }
+
+        body.pwa-build .settings-block .claude-notes-pre {
+            font-size: 0.78rem;
+            max-height: 48vh;
+        }
+
+        body.pwa-build .scene-notes-sequence-bar,
+        body.pwa-build .scene-notes-rename-row {
+            align-items: stretch !important;
+            display: grid !important;
+            gap: 10px !important;
+            grid-template-columns: 1fr !important;
+        }
+
+        body.pwa-build .scene-notes-sequence-select-wrap,
+        body.pwa-build .scene-notes-sequence-bar select {
+            min-width: 0;
+            width: 100%;
+        }
+
+        body.pwa-build .scene-notes-sequence-bar select {
+            font-size: 0.78rem !important;
+            letter-spacing: 0 !important;
+            padding-left: 11px !important;
+            padding-right: 32px !important;
+        }
+
+        body.pwa-build .scene-notes-sequence-bar button,
+        body.pwa-build .scene-notes-rename-row button,
+        body.pwa-build .scene-notes-add-scene-button {
+            min-height: 46px;
+            width: 100%;
+        }
+
+        body.pwa-build .scene-notes-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        body.pwa-build .scene-notes-grid > div:first-child {
+            border-bottom: 1px solid #eb2e90 !important;
+            border-right: none !important;
+            margin-bottom: 16px !important;
+            padding-bottom: 12px !important;
+            padding-right: 0 !important;
         }
 
         body.pwa-build .companion-notebook {
@@ -3531,21 +3840,17 @@
 
         body.pwa-build .companion-focus-bar {
             border-radius: 8px;
-            gap: 16px;
+            gap: 18px;
             grid-template-columns: 1fr;
-            padding: 16px;
+            padding: 18px 14px;
         }
 
         body.pwa-build .companion-focus-bar.is-menu-home {
             background: #FFF3F9;
-            padding: 16px;
+            padding: 18px 14px;
         }
 
-        body.pwa-build .companion-picker-tabs {
-            gap: 12px;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
+        body.pwa-build .companion-picker-tabs,
         body.pwa-build .companion-main-menu {
             gap: 12px;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3554,24 +3859,21 @@
         body.pwa-build .companion-picker-tab {
             border-radius: 7px;
             font-size: 0.78rem;
-            min-height: 52px;
+            min-height: 54px;
             padding: 12px 8px;
         }
 
         body.pwa-build .companion-menu-choice {
             border-radius: 7px;
             font-size: 0.86rem;
-            min-height: 64px;
-            padding: 14px 8px;
+            min-height: 68px;
+            padding: 15px 8px;
         }
 
-        body.pwa-build .companion-sequence-controls {
-            gap: 12px;
-        }
-
+        body.pwa-build .companion-sequence-controls,
         body.pwa-build .companion-sequence-picker,
         body.pwa-build .companion-workspace-nav {
-            gap: 12px;
+            gap: 14px;
         }
 
         body.pwa-build .companion-picker-field {
@@ -3624,6 +3926,28 @@
             padding: 13px 42px 13px 14px;
         }
 
+        body.pwa-build .companion-title-row {
+            gap: 9px;
+            grid-template-columns: minmax(0, 1fr) 42px;
+        }
+
+        body.pwa-build .companion-title-input {
+            border-radius: 7px;
+            font-size: clamp(1rem, 5vw, 1.18rem);
+            min-height: 56px;
+            padding: 12px 14px;
+        }
+
+        body.pwa-build .companion-title-input.is-idea {
+            font-size: clamp(0.95rem, 4.5vw, 1.08rem);
+        }
+
+        body.pwa-build .companion-scene-archive-button {
+            height: 42px;
+            margin-top: 7px;
+            width: 42px;
+        }
+
         body.pwa-build .companion-triage-tabs {
             gap: 8px;
             grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -3650,22 +3974,22 @@
         body.pwa-build .companion-assign-button {
             border-radius: 7px;
             font-size: 0.78rem;
-            min-height: 44px;
+            min-height: 46px;
             text-align: left;
         }
 
         body.pwa-build .companion-panel {
             border-radius: 8px;
-            padding: 18px 14px;
+            padding: 20px 14px;
         }
 
         body.pwa-build .companion-scene-header {
-            gap: 16px;
+            gap: 18px;
             padding-bottom: 8px;
         }
 
         body.pwa-build .companion-scene-title-block {
-            gap: 8px;
+            gap: 9px;
         }
 
         body.pwa-build .companion-status-field span,
@@ -3675,27 +3999,27 @@
         }
 
         body.pwa-build .companion-section {
-            padding-top: 14px;
+            padding-top: 16px;
         }
 
         body.pwa-build .companion-section + .companion-section {
-            margin-top: 14px;
+            margin-top: 16px;
         }
 
         body.pwa-build .companion-section-toggle {
-            min-height: 42px;
+            min-height: 44px;
         }
 
         body.pwa-build .companion-task-row {
-            gap: 8px;
-            grid-template-columns: 28px minmax(0, 1fr);
+            gap: 9px;
+            grid-template-columns: 30px minmax(0, 1fr);
             margin-bottom: 16px;
             position: relative;
         }
 
         body.pwa-build .companion-task-row input[type="checkbox"] {
             height: 24px;
-            margin-top: 16px;
+            margin-top: 17px;
             width: 24px;
         }
 
@@ -3710,7 +4034,7 @@
             height: 38px;
             position: absolute;
             right: 4px;
-            top: 6px;
+            top: 7px;
             width: 38px;
             z-index: 1;
         }
@@ -3736,12 +4060,12 @@
             grid-template-columns: 1fr;
         }
 
-        body.pwa-build .companion-add-row .companion-add-button {
-            width: 100%;
-        }
-
         body.pwa-build .companion-add-row {
             gap: 8px;
+        }
+
+        body.pwa-build .companion-add-row .companion-add-button {
+            width: 100%;
         }
 
         body.pwa-build .companion-task-input {
@@ -3952,8 +4276,8 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260815b";
-const APP_BUILD = "PWA";
+const APP_VERSION = "20260817a";
+const APP_BUILD = "DESKTOP";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
 const PREUPDATE_BACKUP_KEY = "pickme_backup_before_script_rail_v2";
@@ -3979,7 +4303,7 @@ const SEQUENCE_TITLES_KEY = "_sequenceTitles";
 const DELETED_SEQUENCES_KEY = "_deletedSequences";
 const KIND_VALUES = ["SCENE","THREAD","TWEAK","DECISION"];
 const STATUS_VALUES = ["todo","drafted","done","needs_edits","cut"];
-const COMPANION_STATUS_VALUES = ["drafted","needs_edits","cut"];
+const COMPANION_STATUS_VALUES = ["todo","needs_edits","cut"];
 const IDEA_INBOX_BUCKETS = [
   { id:"all", label:"ALL" },
   { id:"maybe", label:"MAYBE" },
@@ -6906,9 +7230,9 @@ function normalizeStatus(value, fallback) {
 }
 function displayStatusLabel(value) {
   const status = normalizeStatus(value);
-  if (status === "todo") return "TO-DO";
-  if (status === "drafted") return "DRAFTED";
-  if (status === "needs_edits") return "NEEDS EDITS";
+  if (status === "todo") return "TO BE WRITTEN";
+  if (status === "drafted") return "TO BE WRITTEN";
+  if (status === "needs_edits") return "NEEDS EDIT";
   if (status === "cut") return "CUT";
   if (status === "done") return "DONE";
   return "TASK";
@@ -8952,6 +9276,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
 
   const currentSequence = sceneNotes?.find(s => s.id === selectedSequenceId);
   const currentScene = currentSequence?.scenes?.find(sc => sc.id === selectedSceneId);
+  const sceneNotesSequenceLabel = name => String(name || "").replace(/\s*\([^)]*\)\s*$/, "").trim() || "Untitled Sequence";
 
   // ── Content update ────────────────────────────────────────────
   const updateSceneContent = (newContent) => {
@@ -9077,12 +9402,11 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
 
   return (
     <div>
-      <ClaudeNotesSection showToast={showToast} />
       {/* ── Sequence selector row ── */}
       {showSeqBar ? (
-        <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "16px" }}>
+        <div className="scene-notes-sequence-bar" style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "16px" }}>
           {renamingSeq ? (
-            <div style={{ flex: 1, display: "flex", gap: "6px" }}>
+            <div className="scene-notes-rename-row" style={{ flex: 1, display: "flex", gap: "6px" }}>
               <input
                 autoFocus
                 value={seqNameDraft}
@@ -9090,12 +9414,12 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
                 onKeyDown={e => { if (e.key === "Enter") saveRenameSeq(); if (e.key === "Escape") setRenamingSeq(false); }}
                 style={{ flex: 1, padding: "10px 14px", border: "2px solid #eb2e90", borderRadius: "24px", fontSize: "0.95em", fontWeight: "700" }}
               />
-              <button onClick={saveRenameSeq} style={{ padding: "8px 16px", backgroundColor: "#ea258d", color: "white", border: "none", borderRadius: "20px", cursor: "pointer", fontWeight: "700", fontSize: "0.85em" }}>Save</button>
-              <button onClick={() => setRenamingSeq(false)} style={{ padding: "8px 12px", backgroundColor: "#fec3e4", border: "1px solid #eb2e90", borderRadius: "20px", cursor: "pointer", fontSize: "0.85em" }}>Cancel</button>
+              <button className="scene-notes-action-button scene-notes-action-primary" onClick={saveRenameSeq} style={{ padding: "8px 16px", backgroundColor: "#ea258d", color: "white", border: "none", borderRadius: "20px", cursor: "pointer", fontWeight: "700", fontSize: "0.85em" }}>Save</button>
+              <button className="scene-notes-action-button" onClick={() => setRenamingSeq(false)} style={{ padding: "8px 12px", backgroundColor: "#fec3e4", color:"#ea258d", border: "1px solid #eb2e90", borderRadius: "20px", cursor: "pointer", fontSize: "0.85em" }}>Cancel</button>
             </div>
           ) : (
             <>
-              <div style={{ flex: 1, position: "relative" }}>
+              <div className="scene-notes-sequence-select-wrap" style={{ flex: 1, position: "relative" }}>
                 <select
                   value={selectedSequenceId || ""}
                   onChange={e => {
@@ -9104,9 +9428,10 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
                   }}
                   style={dropdownStyle}
                 >
-                  {sceneNotes.map(seq => <option key={seq.id} value={seq.id}>{seq.name}</option>)}
+                  {sceneNotes.map(seq => <option key={seq.id} value={seq.id}>{sceneNotesSequenceLabel(seq.name)}</option>)}
                 </select>
                 <button
+  className="scene-notes-delete-link"
   onClick={() => {
     if (!selectedSequenceId) return;
     if (!confirm("Delete this sequence?")) return;
@@ -9138,15 +9463,15 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
   Delete
 </button>
               </div>
-              <button onClick={startRenameSeq} title="Rename this sequence" style={{ padding: "10px 12px", backgroundColor: "#fec3e4", border: "1px solid #eb2e90", borderRadius: "20px", cursor: "pointer", fontSize: "0.9em", whiteSpace: "nowrap" }}>Rename</button>
-              <button onClick={addSequence} title="Add new sequence" style={{ padding: "10px 12px", backgroundColor: "#ea258d", color: "white", border: "none", borderRadius: "20px", cursor: "pointer", fontSize: "0.9em", whiteSpace: "nowrap" }}>+ Sequence</button>
+              <button className="scene-notes-action-button" onClick={startRenameSeq} title="Rename this sequence" style={{ padding: "10px 12px", backgroundColor: "#fec3e4", color:"#ea258d", border: "1px solid #eb2e90", borderRadius: "20px", cursor: "pointer", fontSize: "0.9em", whiteSpace: "nowrap" }}>Rename</button>
+              <button className="scene-notes-action-button scene-notes-action-primary" onClick={addSequence} title="Add new sequence" style={{ padding: "10px 12px", backgroundColor: "#ea258d", color: "white", border: "none", borderRadius: "20px", cursor: "pointer", fontSize: "0.9em", whiteSpace: "nowrap" }}>+ Sequence</button>
               {pinkBtn("[ - ]", () => setShowSeqBar(false))}
             </>
           )}
         </div>
       ) : (
         <div style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "0.82em", color: "#E668A7" }}>Sequence: <strong style={{ color: "#E668A7" }}>{currentSequence?.name}</strong></span>
+          <span style={{ fontSize: "0.82em", color: "#E668A7" }}>Sequence: <strong style={{ color: "#E668A7" }}>{sceneNotesSequenceLabel(currentSequence?.name)}</strong></span>
           {pinkBtn("[ + ]", () => setShowSeqBar(true))}
         </div>
       )}
@@ -9230,7 +9555,8 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
           </div>
           <button
             onClick={addScene}
-            style={{ width: "100%", backgroundColor: "#fec3e4", border: "1px solid #8B0040", padding: "8px", borderRadius: "6px", cursor: "pointer", fontSize: "0.88em", fontWeight: "600" }}
+            className="scene-notes-add-scene-button"
+            style={{ width: "100%", backgroundColor: "#fec3e4", color:"#ea258d", border: "1px solid #ea258d", padding: "8px", borderRadius: "6px", cursor: "pointer", fontSize: "0.88em", fontWeight: "800" }}
           >
             + Add Scene
           </button>
@@ -9256,7 +9582,7 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
                   >
                     <option value="">Move to...</option>
                     {sceneNotes.filter(s => s.id !== selectedSequenceId).map(s => (
-                      <option key={s.id} value={s.id}>{s.name.split(" (")[0]}</option>
+                      <option key={s.id} value={s.id}>{sceneNotesSequenceLabel(s.name)}</option>
                     ))}
                   </select>
                 )}
@@ -9741,25 +10067,28 @@ function SettingsTab({
         <div className="settings-hint">When you click Copy & Open Notion, your notes are copied to clipboard and this page opens in a new tab.</div>
       </div>
       <button className="btn btn-primary" onClick={save}>{saved ? "Saved" : "Save Settings"}</button>
-      <div style={{marginTop:"32px",borderTop:"1px solid var(--border-pink)",paddingTop:"24px"}}>
-        <div style={{fontWeight:800,color:"var(--hot-pink,#eb2e90)",marginBottom:"12px"}}>Display</div>
-        <label style={{display:"flex",gap:"10px",alignItems:"center",fontSize:"0.92em",lineHeight:1.5}}>
+      <div className="settings-block">
+        <div className="settings-block-title">Display</div>
+        <label className="settings-toggle-row" style={{fontSize:"0.92em"}}>
           <input type="checkbox" checked={!!showAdvancedTabs} onChange={e => setShowAdvancedTabs(e.target.checked)} />
-          Show advanced organizing screens
+          <span>Show advanced organizing screens</span>
         </label>
-        <div style={{fontSize:"0.82em",color:"var(--text-light)",lineHeight:1.5,marginTop:"8px"}}>Advanced screens stay available, but Companion is the default source of truth.</div>
+        <div className="settings-muted-copy" style={{fontSize:"0.82em",marginTop:"8px"}}>Advanced screens stay available, but Companion is the default source of truth.</div>
       </div>
-      <div style={{marginTop:"32px",borderTop:"1px solid var(--border-pink)",paddingTop:"24px"}}>
-        <div style={{fontWeight:800,color:"var(--hot-pink,#eb2e90)",marginBottom:"12px"}}>Archived Companion Items</div>
-        <div style={{fontSize:"0.86em",color:"var(--text-light)",lineHeight:1.5,marginBottom:"12px"}}>Archived scenes and archived rewrite tasks live here so Companion can stay clean while you write.</div>
+      <div className="settings-block">
+        <ClaudeNotesSection showToast={showToast} />
+      </div>
+      <div className="settings-block">
+        <div className="settings-block-title">Archived Companion Items</div>
+        <div className="settings-muted-copy">Archived scenes and archived rewrite tasks live here so Companion can stay clean while you write.</div>
         {!archivedSceneCards.length && !archivedTaskRows.length && <div style={{fontSize:"0.9em",color:"var(--text-light)"}}>Nothing archived yet.</div>}
         {archivedSceneCards.length > 0 && (
           <details open style={{marginBottom:"12px"}}>
             <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Archived scenes ({archivedSceneCards.length})</summary>
-            <div style={{display:"grid",gap:"8px",marginTop:"10px"}}>
+            <div className="settings-archive-list">
               {archivedSceneCards.map(card => (
-                <div key={card.id} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:"10px",alignItems:"center",border:"1px solid var(--border-pink)",background:"#fff",padding:"9px 10px"}}>
-                  <div style={{fontWeight:800,color:"#1C1410",fontSize:"0.9em"}}>{card.title || "Untitled"}</div>
+                <div key={card.id} className="settings-archive-row">
+                  <div className="settings-archive-title">{card.title || "Untitled"}</div>
                   <button className="btn btn-secondary" onClick={() => restoreArchivedScene(card.id)}>Restore</button>
                 </div>
               ))}
@@ -9769,12 +10098,12 @@ function SettingsTab({
         {archivedTaskRows.length > 0 && (
           <details style={{marginBottom:"12px"}}>
             <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Archived tasks ({archivedTaskRows.length})</summary>
-            <div style={{display:"grid",gap:"8px",marginTop:"10px"}}>
+            <div className="settings-archive-list">
               {archivedTaskRows.map(({ card, change }) => (
-                <div key={(card.id || "card") + "-" + (change.id || change.text)} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:"10px",alignItems:"start",border:"1px solid var(--border-pink)",background:"#fff",padding:"9px 10px"}}>
+                <div key={(card.id || "card") + "-" + (change.id || change.text)} className="settings-archive-row is-task">
                   <div>
-                    <div style={{fontWeight:800,color:"var(--neon-pink)",fontSize:"0.78em",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:"4px"}}>{card.title || "Untitled"}</div>
-                    <div style={{fontSize:"0.86em",lineHeight:1.45,color:"#1C1410"}}>{change.text}</div>
+                    <div className="settings-archive-kicker">{card.title || "Untitled"}</div>
+                    <div className="settings-archive-copy">{change.text}</div>
                   </div>
                   <button className="btn btn-secondary" onClick={() => restoreArchivedTask(card.id, change.id)}>Restore</button>
                 </div>
@@ -9783,15 +10112,15 @@ function SettingsTab({
           </details>
         )}
       </div>
-      <div style={{marginTop:"32px",borderTop:"1px solid var(--border-pink)",paddingTop:"24px"}}>
-        <div style={{fontWeight:800,color:"var(--hot-pink,#eb2e90)",marginBottom:"12px"}}>Dropbox Sync</div>
-        <div style={{fontSize:"0.86em",color:"var(--text-light)",lineHeight:1.5,marginBottom:"12px"}}>
+      <div className="settings-block">
+        <div className="settings-block-title">Dropbox Sync</div>
+        <div className="settings-muted-copy">
           {dbxConnected ? "Connected" : "Connect Dropbox to keep desktop and mobile in sync."}
           {dbxAccount ? " as " + dbxAccount : ""}
           <br />Last synced: {lastSynced ? formatDateShort(Number(lastSynced)) : "Not yet"}
         </div>
         {dbxMsg && <div style={{padding:"8px 12px",background:"#fff3f9",border:"1px solid #fec3e4",borderRadius:"6px",fontSize:"0.85em",marginBottom:"12px"}}>{dbxMsg}</div>}
-        <div style={{display:"flex",gap:"10px",flexWrap:"wrap"}}>
+        <div className="settings-actions">
           {!dbxConnected ? (
             <button className="btn btn-secondary" onClick={() => DBX.startOAuth()}>Connect Dropbox</button>
           ) : (
@@ -9803,9 +10132,9 @@ function SettingsTab({
           )}
         </div>
       </div>
-      <div style={{marginTop:"32px",borderTop:"1px solid var(--border-pink)",paddingTop:"24px"}}>
-        <div style={{fontWeight:800,color:"var(--hot-pink,#eb2e90)",marginBottom:"12px"}}>Data</div>
-        <div style={{display:"flex",gap:"10px",flexWrap:"wrap"}}>
+      <div className="settings-block">
+        <div className="settings-block-title">Data</div>
+        <div className="settings-actions">
           <button className="btn btn-secondary" onClick={downloadAllData}>Export all data</button>
           <button className="btn btn-secondary" onClick={() => fileInputRef.current?.click()}>Import data</button>
           <button className="btn btn-secondary" onClick={loadScriptCompanion}>Load 7/16 script companion</button>
@@ -9818,8 +10147,8 @@ function SettingsTab({
         {dataSummary && <div style={{marginTop:"12px",fontSize:"0.9em"}}>{dataSummary}</div>}
       </div>
       {conversionReport && (
-        <div style={{marginTop:"32px",borderTop:"1px solid var(--border-pink)",paddingTop:"24px"}}>
-          <div style={{fontWeight:800,color:"var(--hot-pink,#eb2e90)",marginBottom:"12px"}}>Conversion report</div>
+        <div className="settings-block">
+          <div className="settings-block-title">Conversion report</div>
           <div style={{fontSize:"0.88em",lineHeight:1.6}}>
             Source cards: {conversionReport.sourceCardCount}<br />
             Retained as cards: {conversionReport.retainedAsCards}<br />
@@ -10462,6 +10791,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     return normalizeIdeaBucket(stored) || "all";
   });
   const [ideaSearch, setIdeaSearch] = React.useState("");
+  const [titleDrafts, setTitleDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
   const [noteDrafts, setNoteDrafts] = React.useState({});
   const [newChangeText, setNewChangeText] = React.useState("");
@@ -10496,8 +10826,9 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const selectedIsSequenced = !!(selected && activeSequenceOrder.includes(selected.sequence));
   const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
   const selectedStatus = selectedIsSequenced ? normalizeStatus(selected.status) : "needs_edits";
-  const companionStatusValue = COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "needs_edits";
+  const companionStatusValue = selectedStatus === "drafted" ? "todo" : (COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "todo");
   const selectedSceneTitle = selected && !isIdeasMode ? (selected.title || "Untitled") : "";
+  const titleDraftValue = selected ? (Object.prototype.hasOwnProperty.call(titleDrafts, selected.id) ? titleDrafts[selected.id] : (selected.title || "")) : "";
   const isSequencePickerOpen = isSequenceMode && sequenceView === "pick";
   const showCompanionWorkbench = isIdeasMode || (isSequenceMode && sequenceView === "scene");
 
@@ -10628,6 +10959,48 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     if (!selected || isIdeasMode || !selectedIsSequenced) return;
     patchSelected({ status });
     if (showToast) showToast("Status updated");
+  };
+  const commitTitleDraft = () => {
+    if (!selected || !Object.prototype.hasOwnProperty.call(titleDrafts, selected.id)) return;
+    const clean = String(titleDrafts[selected.id] || "").trim().replace(/\s+/g, " ");
+    if (!clean) {
+      setTitleDrafts(prev => {
+        const copy = { ...prev };
+        delete copy[selected.id];
+        return copy;
+      });
+      if (showToast) showToast("Name cannot be blank");
+      return;
+    }
+    patchSelected({ title:clean });
+    setTitleDrafts(prev => {
+      const copy = { ...prev };
+      delete copy[selected.id];
+      return copy;
+    });
+  };
+  const handleTitleKeyDown = event => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commitTitleDraft();
+      event.currentTarget.blur();
+    }
+    if (event.key === "Escape" && selected) {
+      event.preventDefault();
+      setTitleDrafts(prev => {
+        const copy = { ...prev };
+        delete copy[selected.id];
+        return copy;
+      });
+      event.currentTarget.blur();
+    }
+  };
+  const archiveSelectedScene = () => {
+    if (!selected || isIdeasMode || !selectedIsSequenced) return;
+    patchSelected(archiveFields());
+    setActiveId(null);
+    setSequenceView("pick");
+    if (showToast) showToast("Scene archived");
   };
   const renameSequence = () => {
     if (!setSequences || !effectiveSequenceFilter) return;
@@ -10874,7 +11247,20 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
           ) : isIdeasMode ? (
             <>
               <div className="companion-scene-meta">IDEA - {ideaBucketLabel(inferIdeaBucket(selected))}</div>
-              <div className="companion-detail-title">{selected.title || "Untitled"}</div>
+              <div className="companion-title-row">
+                <input
+                  className="companion-title-input is-idea"
+                  value={titleDraftValue}
+                  onChange={e => setTitleDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
+                  onBlur={commitTitleDraft}
+                  onKeyDown={handleTitleKeyDown}
+                  aria-label="Idea name"
+                  placeholder="Untitled idea"
+                />
+                <button type="button" className="companion-archive-button companion-scene-archive-button" onClick={() => archiveIdeaCard(selected.id)} title="Archive idea" aria-label="Archive idea">
+                  <ArchiveTrayIcon size={18} />
+                </button>
+              </div>
               <div className="companion-idea-preview">{companionSnippet(selected)}</div>
             </>
           ) : (
@@ -10882,7 +11268,20 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               <div className="companion-scene-header">
                 <div className="companion-scene-title-block">
                   <div className="companion-scene-meta">{currentSequenceTitle}</div>
-                  <div className="companion-detail-title">{selectedSceneTitle}</div>
+                  <div className="companion-title-row">
+                    <input
+                      className="companion-title-input"
+                      value={titleDraftValue}
+                      onChange={e => setTitleDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
+                      onBlur={commitTitleDraft}
+                      onKeyDown={handleTitleKeyDown}
+                      aria-label="Scene name"
+                      placeholder="Untitled scene"
+                    />
+                    <button type="button" className="companion-archive-button companion-scene-archive-button" onClick={archiveSelectedScene} title="Archive scene" aria-label="Archive scene">
+                      <ArchiveTrayIcon size={18} />
+                    </button>
+                  </div>
                 </div>
                 <label className="companion-status-field" htmlFor="companion-status-select">
                   <span>Status</span>
@@ -11974,7 +12373,7 @@ function App() {
           <SceneQuestionTab />
         )}
         {activeTab === "notes" && (
-          <SceneNotesTab sceneNotes={sceneNotes} setSceneNotes={setSceneNotes} showToast={showToast} />
+          <SceneNotesTab sceneNotes={sceneNotes} setSceneNotes={setSceneNotes} sequences={sequences} setSequences={setSequences} showToast={showToast} />
         )}
         {activeTab === "settings" && (
           <SettingsTab notionUrl={notionUrl} setNotionUrl={setNotionUrl} songs={songs} scenes={scenes} notes={notes} sequences={sequences} sceneNotes={sceneNotes} categoryNames={categoryNames} setCategoryNames={setCategoryNames} setSongs={setSongs} setScenes={setScenes} setNotes={setNotes} setSequences={setSequences} setSceneNotes={setSceneNotes} nowState={nowState} setNowState={setNowState} conversionReport={conversionReport} setConversionReport={setConversionReport} lastSynced={lastSynced} setPendingUpdate={setPendingUpdate} showToast={showToast} showAdvancedTabs={showAdvancedTabs} setShowAdvancedTabs={setShowAdvancedTabs} />
@@ -11990,7 +12389,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260815b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260817a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
