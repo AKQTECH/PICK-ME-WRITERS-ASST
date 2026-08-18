@@ -3337,8 +3337,33 @@
         .companion-unplaced-actions {
             border-top: 1px solid var(--companion-line);
             display: grid;
-            gap: 8px;
+            gap: 10px;
             padding: 10px;
+        }
+
+        .companion-idea-edit-fields {
+            display: grid;
+            gap: 10px;
+        }
+
+        .companion-idea-edit-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .companion-idea-edit-field span {
+            color: #E668A7;
+            font-size: 0.66rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+
+        .companion-idea-detail-text {
+            line-height: 1.45;
+            min-height: 108px;
+            resize: vertical;
         }
 
         .companion-assign-grid {
@@ -4276,7 +4301,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260817a";
+const APP_VERSION = "20260817b";
 const APP_BUILD = "DESKTOP";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10732,8 +10757,32 @@ function companionIdeaSearchText(card) {
     ideaBucketLabel(inferIdeaBucket(card)),
     card && card.title,
     card && card.description,
+    card && card.openQuestions,
     visibleSnippet
   ].join(" ");
+}
+
+function companionIdeaDetailsText(card) {
+  const chunks = [];
+  const seen = new Set();
+  const add = value => {
+    const text = String(value || "").trim();
+    if (!text) return;
+    const comparable = normalizeComparableText(text);
+    if (seen.has(comparable)) return;
+    seen.add(comparable);
+    chunks.push(text);
+  };
+  add(card && card.description);
+  add(card && card.openQuestions);
+  add(card && card.rippleEffects);
+  add(card && card.storyThreads);
+  if (!chunks.length) {
+    safeArray(card && card.changes)
+      .filter(change => !change.archived && !change.maybe && String(change.text || "").trim())
+      .forEach(change => add(change.text));
+  }
+  return chunks.join("\n\n");
 }
 
 function normalizeIdeaBucket(value) {
@@ -10792,10 +10841,12 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   });
   const [ideaSearch, setIdeaSearch] = React.useState("");
   const [titleDrafts, setTitleDrafts] = React.useState({});
+  const [ideaDetailDrafts, setIdeaDetailDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
   const [noteDrafts, setNoteDrafts] = React.useState({});
   const [newChangeText, setNewChangeText] = React.useState("");
   const [sequenceNameDraft, setSequenceNameDraft] = React.useState("");
+  const ideaDetailSaveTimers = React.useRef({});
   const changeSaveTimers = React.useRef({});
 
   const state = normalizeState({ scenes, sequences });
@@ -10816,21 +10867,27 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const isIdeasMode = companionMode === "ideas";
   const filtered = sequencedCards.filter(card => card.sequence === effectiveSequenceFilter);
   const ideaSearchNeedle = ideaSearch.trim().toLowerCase();
-  const triageCards = ideaCards.filter(card => {
+  const filteredIdeaCards = ideaCards.filter(card => {
     const bucket = inferIdeaBucket(card);
     if (ideaSearchNeedle && !companionIdeaSearchText(card).toLowerCase().includes(ideaSearchNeedle)) return false;
     if (!ideaSearchNeedle && ideaBucket !== "all" && bucket !== ideaBucket) return false;
     return true;
   });
+  const activeIdeaCard = activeId ? ideaCards.find(card => asId(card.id) === asId(activeId)) : null;
+  const triageCards = activeIdeaCard && !filteredIdeaCards.some(card => asId(card.id) === asId(activeIdeaCard.id))
+    ? [activeIdeaCard, ...filteredIdeaCards]
+    : filteredIdeaCards;
   const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (isSequenceMode && sequenceView === "scene" ? (filtered.find(card => card.id === activeId) || filtered[0] || null) : null);
   const selectedIsSequenced = !!(selected && activeSequenceOrder.includes(selected.sequence));
   const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
   const selectedStatus = selectedIsSequenced ? normalizeStatus(selected.status) : "needs_edits";
   const companionStatusValue = selectedStatus === "drafted" ? "todo" : (COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "todo");
   const selectedSceneTitle = selected && !isIdeasMode ? (selected.title || "Untitled") : "";
-  const titleDraftValue = selected ? (Object.prototype.hasOwnProperty.call(titleDrafts, selected.id) ? titleDrafts[selected.id] : (selected.title || "")) : "";
+  const titleDraftValueFor = card => card ? (Object.prototype.hasOwnProperty.call(titleDrafts, card.id) ? titleDrafts[card.id] : (card.title || "")) : "";
+  const ideaDetailDraftValueFor = card => card ? (Object.prototype.hasOwnProperty.call(ideaDetailDrafts, card.id) ? ideaDetailDrafts[card.id] : companionIdeaDetailsText(card)) : "";
+  const titleDraftValue = selected ? titleDraftValueFor(selected) : "";
   const isSequencePickerOpen = isSequenceMode && sequenceView === "pick";
-  const showCompanionWorkbench = isIdeasMode || (isSequenceMode && sequenceView === "scene");
+  const showCompanionWorkbench = isSequenceMode && sequenceView === "scene";
 
   React.useEffect(() => {
     if (effectiveSequenceFilter) localStorage.setItem("pickme_companion_sequence_focus", effectiveSequenceFilter);
@@ -10869,6 +10926,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   React.useEffect(() => {
     return () => {
       Object.keys(changeSaveTimers.current || {}).forEach(key => window.clearTimeout(changeSaveTimers.current[key]));
+      Object.keys(ideaDetailSaveTimers.current || {}).forEach(key => window.clearTimeout(ideaDetailSaveTimers.current[key]));
     };
   }, []);
 
@@ -10960,40 +11018,74 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     patchSelected({ status });
     if (showToast) showToast("Status updated");
   };
-  const commitTitleDraft = () => {
-    if (!selected || !Object.prototype.hasOwnProperty.call(titleDrafts, selected.id)) return;
-    const clean = String(titleDrafts[selected.id] || "").trim().replace(/\s+/g, " ");
+  const commitTitleDraft = (cardId) => {
+    const id = cardId || (selected && selected.id);
+    if (!id || !Object.prototype.hasOwnProperty.call(titleDrafts, id)) return;
+    const clean = String(titleDrafts[id] || "").trim().replace(/\s+/g, " ");
     if (!clean) {
       setTitleDrafts(prev => {
         const copy = { ...prev };
-        delete copy[selected.id];
+        delete copy[id];
         return copy;
       });
       if (showToast) showToast("Name cannot be blank");
       return;
     }
-    patchSelected({ title:clean });
+    patchCard(id, { title:clean });
     setTitleDrafts(prev => {
       const copy = { ...prev };
-      delete copy[selected.id];
+      delete copy[id];
       return copy;
     });
   };
-  const handleTitleKeyDown = event => {
+  const handleTitleKeyDown = (event, cardId) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      commitTitleDraft();
+      commitTitleDraft(cardId);
       event.currentTarget.blur();
     }
-    if (event.key === "Escape" && selected) {
+    if (event.key === "Escape") {
+      const id = cardId || (selected && selected.id);
+      if (!id) return;
       event.preventDefault();
       setTitleDrafts(prev => {
         const copy = { ...prev };
-        delete copy[selected.id];
+        delete copy[id];
         return copy;
       });
       event.currentTarget.blur();
     }
+  };
+  const clearIdeaDetailTimer = cardId => {
+    if (ideaDetailSaveTimers.current && ideaDetailSaveTimers.current[cardId]) {
+      window.clearTimeout(ideaDetailSaveTimers.current[cardId]);
+      delete ideaDetailSaveTimers.current[cardId];
+    }
+  };
+  const commitIdeaDetailDraft = (cardId, forcedText, quiet) => {
+    const id = cardId || (selected && selected.id);
+    const hasForcedText = forcedText !== undefined;
+    if (!id || (!hasForcedText && !Object.prototype.hasOwnProperty.call(ideaDetailDrafts, id))) return;
+    const text = String(hasForcedText ? forcedText : (ideaDetailDrafts[id] || "")).trim();
+    clearIdeaDetailTimer(id);
+    patchCard(id, {
+      description:text,
+      openQuestions:"",
+      rippleEffects:"",
+      storyThreads:""
+    });
+    setIdeaDetailDrafts(prev => {
+      if (hasForcedText && String(prev[id] || "").trim() !== text) return prev;
+      const copy = { ...prev };
+      delete copy[id];
+      return copy;
+    });
+    if (!quiet && showToast) showToast("Idea details saved");
+  };
+  const queueIdeaDetailDraft = (cardId, value) => {
+    setIdeaDetailDrafts(prev => ({ ...prev, [cardId]:value }));
+    clearIdeaDetailTimer(cardId);
+    ideaDetailSaveTimers.current[cardId] = window.setTimeout(() => commitIdeaDetailDraft(cardId, value, true), 900);
   };
   const archiveSelectedScene = () => {
     if (!selected || isIdeasMode || !selectedIsSequenced) return;
@@ -11046,10 +11138,28 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   };
   const assignIdeaCard = (cardId, sequence) => {
     if (!cardId || !activeSequenceOrder.includes(sequence)) return;
-    patchCard(cardId, card => ({
-      sequence,
-      status: normalizeStatus(card.status) === "cut" || inferIdeaBucket(card) === "cut" ? "cut" : "needs_edits"
-    }));
+    commitTitleDraft(cardId);
+    commitIdeaDetailDraft(cardId, undefined, true);
+    patchCard(cardId, card => {
+      const normalized = normalizeCard(card, 0);
+      const details = companionIdeaDetailsText(normalized).trim();
+      const hasVisibleChanges = safeArray(normalized.changes).some(change => !change.archived && !change.maybe && String(change.text || "").trim());
+      if (details && !hasVisibleChanges) {
+        ensureChange(normalized, "ADJUST", details, {
+          id:"change-" + slugify(normalized.id) + "-idea-details",
+          isRewriteTask:true
+        });
+      }
+      return {
+        sequence,
+        status: normalizeStatus(card.status) === "cut" || inferIdeaBucket(card) === "cut" ? "cut" : "needs_edits",
+        description:details || normalized.description || "",
+        openQuestions:"",
+        rippleEffects:"",
+        storyThreads:"",
+        changes:normalized.changes
+      };
+    });
     setCompanionMode("sequence");
     setSequenceFilter(sequence);
     setActiveId(cardId);
@@ -11216,6 +11326,31 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                     </button>
                     {active && (
                       <div className="companion-unplaced-actions">
+                        <div className="companion-idea-edit-fields">
+                          <label className="companion-idea-edit-field">
+                            <span>Idea name</span>
+                            <input
+                              className="companion-title-input is-idea"
+                              value={titleDraftValueFor(card)}
+                              onChange={e => setTitleDrafts(prev => ({ ...prev, [card.id]:e.target.value }))}
+                              onBlur={() => commitTitleDraft(card.id)}
+                              onKeyDown={event => handleTitleKeyDown(event, card.id)}
+                              aria-label="Idea name"
+                              placeholder="Untitled idea"
+                            />
+                          </label>
+                          <label className="companion-idea-edit-field">
+                            <span>Details</span>
+                            <textarea
+                              className="companion-textarea companion-idea-detail-text"
+                              value={ideaDetailDraftValueFor(card)}
+                              onChange={e => queueIdeaDetailDraft(card.id, e.target.value)}
+                              onBlur={() => commitIdeaDetailDraft(card.id)}
+                              aria-label="Idea details"
+                              placeholder="Add idea details"
+                            />
+                          </label>
+                        </div>
                         <div className="companion-assign-grid" aria-label="Assign unplaced idea to sequence">
                           {activeSequenceOrder.map(seq => (
                             <button key={seq} type="button" className="companion-assign-button" onClick={() => assignIdeaCard(card.id, seq)}>
@@ -11252,8 +11387,8 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   className="companion-title-input is-idea"
                   value={titleDraftValue}
                   onChange={e => setTitleDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
-                  onBlur={commitTitleDraft}
-                  onKeyDown={handleTitleKeyDown}
+                  onBlur={() => commitTitleDraft(selected.id)}
+                  onKeyDown={event => handleTitleKeyDown(event, selected.id)}
                   aria-label="Idea name"
                   placeholder="Untitled idea"
                 />
@@ -11273,8 +11408,8 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                       className="companion-title-input"
                       value={titleDraftValue}
                       onChange={e => setTitleDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
-                      onBlur={commitTitleDraft}
-                      onKeyDown={handleTitleKeyDown}
+                      onBlur={() => commitTitleDraft(selected.id)}
+                      onKeyDown={event => handleTitleKeyDown(event, selected.id)}
                       aria-label="Scene name"
                       placeholder="Untitled scene"
                     />
@@ -12389,7 +12524,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260817a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260817b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
