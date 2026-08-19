@@ -4301,7 +4301,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260817b";
+const APP_VERSION = "20260819a";
 const APP_BUILD = "DESKTOP";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10762,6 +10762,21 @@ function companionIdeaSearchText(card) {
   ].join(" ");
 }
 
+function tokenizeCompanionSearch(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .match(/[a-z0-9]+/g) || [];
+}
+
+function companionSearchMatches(text, query) {
+  const queryTokens = tokenizeCompanionSearch(query);
+  if (!queryTokens.length) return true;
+  const textTokens = new Set(tokenizeCompanionSearch(text));
+  return queryTokens.every(token => textTokens.has(token));
+}
+
 function companionIdeaDetailsText(card) {
   const chunks = [];
   const seen = new Set();
@@ -10869,7 +10884,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const ideaSearchNeedle = ideaSearch.trim().toLowerCase();
   const filteredIdeaCards = ideaCards.filter(card => {
     const bucket = inferIdeaBucket(card);
-    if (ideaSearchNeedle && !companionIdeaSearchText(card).toLowerCase().includes(ideaSearchNeedle)) return false;
+    if (ideaSearchNeedle && !companionSearchMatches(companionIdeaSearchText(card), ideaSearchNeedle)) return false;
     if (!ideaSearchNeedle && ideaBucket !== "all" && bucket !== ideaBucket) return false;
     return true;
   });
@@ -12524,7 +12539,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260817b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260819a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
