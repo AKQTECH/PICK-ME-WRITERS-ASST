@@ -3608,6 +3608,66 @@
             padding: 12px;
         }
 
+        .archive-card-notes {
+            border-top: 1px solid var(--companion-line);
+            margin-top: 12px;
+            padding-top: 8px;
+        }
+
+        .archive-card-notes > summary {
+            color: #E668A7;
+            cursor: pointer;
+            font-size: 0.72rem;
+            font-weight: 900;
+            min-height: 36px;
+            padding: 8px 0;
+            text-transform: uppercase;
+        }
+
+        .archive-card-notes-body,
+        .companion-source-notes {
+            color: var(--companion-text, #1C1410);
+            display: grid;
+            font-size: 0.88rem;
+            gap: 10px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .archive-card-notes-body > div + div,
+        .companion-source-notes > div + div {
+            border-top: 1px solid var(--companion-line);
+            padding-top: 10px;
+        }
+
+        .companion-new-scene-fields {
+            display: grid;
+            gap: 14px;
+            padding-top: 12px;
+        }
+
+        .companion-new-scene-fields .companion-add-button {
+            justify-self: start;
+            min-width: 128px;
+        }
+
+        .companion-new-change-text {
+            min-height: 72px;
+            resize: vertical;
+        }
+
+        .companion-reference-change {
+            align-items: center;
+            display: grid;
+            gap: 10px;
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+
+        .companion-reference-change .companion-inline-button {
+            min-height: 40px;
+        }
+
         @media (max-width: 900px) {
             .companion-focus-bar,
             .companion-workbench,
@@ -4301,8 +4361,8 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "20260819a";
-const APP_BUILD = "DESKTOP";
+const APP_VERSION = "1.2";
+const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
 const PREUPDATE_BACKUP_KEY = "pickme_backup_before_script_rail_v2";
@@ -7962,6 +8022,10 @@ function isCompanionActionCard(card) {
 function isSequencedCompanionActionCard(card, sequencesInput) {
   return !!(isCompanionActionCard(card) && getActiveSequenceOrder(sequencesInput).includes(card.sequence));
 }
+function isCompanionReferenceChange(card, change) {
+  return !!(card && String(card.source || "").includes("CLAUDE_SCENE_LIST_PRELOAD") && change &&
+    !Number(change.updatedAt || 0) && !Number(change.createdAt || 0) && change.source !== "COMPANION_USER");
+}
 function isCompanionAction(change) {
   return !!(change && !change.archived && !change.maybe);
 }
@@ -7971,7 +8035,7 @@ function getCompanionActionRows(stateInput) {
   safeArray(state.scenes).forEach(card => {
     if (!isSequencedCompanionActionCard(card, state.sequences)) return;
     safeArray(card.changes).forEach(change => {
-      if (isCompanionAction(change)) rows.push({ card, change });
+      if (isCompanionAction(change) && !isCompanionReferenceChange(card, change)) rows.push({ card, change });
     });
   });
   return rows;
@@ -8004,7 +8068,8 @@ function getCompanionTaskAudit(stateInput) {
   const state = normalizeState(stateInput);
   const bySequence = {};
   getActiveSequenceOrder(state.sequences).forEach(seq => { bySequence[seq] = { cardCount:0, total:0, open:0, done:0, questions:0 }; });
-  const activeCards = state.scenes.filter(card => isSequencedCompanionActionCard(card, state.sequences));
+  const activeCards = state.scenes.filter(card => isSequencedCompanionActionCard(card, state.sequences) &&
+    safeArray(card.changes).some(change => isCompanionAction(change) && !isCompanionReferenceChange(card, change)));
   activeCards.forEach(card => {
     const seq = card.sequence;
     bySequence[seq].cardCount += 1;
@@ -10859,10 +10924,13 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [ideaDetailDrafts, setIdeaDetailDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
   const [noteDrafts, setNoteDrafts] = React.useState({});
-  const [newChangeText, setNewChangeText] = React.useState("");
+  const [newChangeDrafts, setNewChangeDrafts] = React.useState({});
   const [sequenceNameDraft, setSequenceNameDraft] = React.useState("");
+  const [draftSceneTitle, setDraftSceneTitle] = React.useState("");
+  const [draftChangesText, setDraftChangesText] = React.useState("");
   const ideaDetailSaveTimers = React.useRef({});
   const changeSaveTimers = React.useRef({});
+  const noteSaveTimers = React.useRef({});
 
   const state = normalizeState({ scenes, sequences });
   const activeSequenceOrder = getActiveSequenceOrder(state.sequences);
@@ -10892,12 +10960,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const triageCards = activeIdeaCard && !filteredIdeaCards.some(card => asId(card.id) === asId(activeIdeaCard.id))
     ? [activeIdeaCard, ...filteredIdeaCards]
     : filteredIdeaCards;
-  const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (isSequenceMode && sequenceView === "scene" ? (filtered.find(card => card.id === activeId) || filtered[0] || null) : null);
+  const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (isSequenceMode && sequenceView === "scene" ? (filtered.find(card => card.id === activeId) || null) : null);
   const selectedIsSequenced = !!(selected && activeSequenceOrder.includes(selected.sequence));
-  const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe) : [];
+  const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe && !isCompanionReferenceChange(selected, change)) : [];
+  const referenceChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe && isCompanionReferenceChange(selected, change)) : [];
   const selectedStatus = selectedIsSequenced ? normalizeStatus(selected.status) : "needs_edits";
   const companionStatusValue = selectedStatus === "drafted" ? "todo" : (COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "todo");
   const selectedSceneTitle = selected && !isIdeasMode ? (selected.title || "Untitled") : "";
+  const newChangeText = selected ? (newChangeDrafts[selected.id] || "") : "";
   const titleDraftValueFor = card => card ? (Object.prototype.hasOwnProperty.call(titleDrafts, card.id) ? titleDrafts[card.id] : (card.title || "")) : "";
   const ideaDetailDraftValueFor = card => card ? (Object.prototype.hasOwnProperty.call(ideaDetailDrafts, card.id) ? ideaDetailDrafts[card.id] : companionIdeaDetailsText(card)) : "";
   const titleDraftValue = selected ? titleDraftValueFor(selected) : "";
@@ -10942,6 +11012,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     return () => {
       Object.keys(changeSaveTimers.current || {}).forEach(key => window.clearTimeout(changeSaveTimers.current[key]));
       Object.keys(ideaDetailSaveTimers.current || {}).forEach(key => window.clearTimeout(ideaDetailSaveTimers.current[key]));
+      Object.keys(noteSaveTimers.current || {}).forEach(key => window.clearTimeout(noteSaveTimers.current[key]));
     };
   }, []);
 
@@ -11019,12 +11090,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     if (!selected || isIdeasMode || !selectedIsSequenced) return;
     const text = newChangeText.trim();
     if (!text) return;
+    const sceneId = selected.id;
     patchCard(selected.id, card => {
       const next = normalizeCard(card, 0);
-      ensureChange(next, "ADJUST", text, { id:"change-" + slugify(next.id) + "-" + Date.now().toString(36), isRewriteTask:true });
+      const changeId = "change-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
+      ensureChange(next, "ADJUST", text, { id:changeId, source:"COMPANION_USER", createdAt:Date.now(), isRewriteTask:true });
       return { changes:next.changes };
     });
-    setNewChangeText("");
+    setNewChangeDrafts(prev => ({ ...prev, [sceneId]:"" }));
     if (showToast) showToast("Scene change added");
   };
 
@@ -11162,6 +11235,8 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       if (details && !hasVisibleChanges) {
         ensureChange(normalized, "ADJUST", details, {
           id:"change-" + slugify(normalized.id) + "-idea-details",
+          source:"COMPANION_USER",
+          createdAt:Date.now(),
           isRewriteTask:true
         });
       }
@@ -11196,14 +11271,70 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const noteRowCount = value => textareaRowCount(value, 4, 18);
 
   const noteValue = selected ? (Object.prototype.hasOwnProperty.call(noteDrafts, selected.id) ? noteDrafts[selected.id] : (selected.openQuestions || "")) : "";
+  const queueNotes = value => {
+    if (!selected) return;
+    const id = selected.id;
+    setNoteDrafts(prev => ({ ...prev, [id]:value }));
+    window.clearTimeout(noteSaveTimers.current[id]);
+    noteSaveTimers.current[id] = window.setTimeout(() => {
+      patchCard(id, { openQuestions:value });
+      setNoteDrafts(prev => {
+        if (prev[id] !== value) return prev;
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+      delete noteSaveTimers.current[id];
+    }, 700);
+  };
   const commitNotes = () => {
     if (!selected || isIdeasMode || !selectedIsSequenced || !Object.prototype.hasOwnProperty.call(noteDrafts, selected.id)) return;
+    window.clearTimeout(noteSaveTimers.current[selected.id]);
+    delete noteSaveTimers.current[selected.id];
     patchSelected({ openQuestions:noteDrafts[selected.id] || "" });
     setNoteDrafts(prev => {
       const copy = { ...prev };
       delete copy[selected.id];
       return copy;
     });
+  };
+
+  const saveNewCompanionScene = () => {
+    const sequence = effectiveSequenceFilter;
+    const title = String(draftSceneTitle || "").trim().replace(/\s+/g, " ");
+    const firstChange = String(draftChangesText || "").trim();
+    if (!sequence || !title || !setScenes) return;
+    const id = "companion-scene-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
+    const timestamp = Date.now();
+    const card = normalizeCard({
+      id,
+      title,
+      formerTitles: [],
+      sequence,
+      page: null,
+      pageRange: "",
+      kind: "SCENE",
+      status: "needs_edits",
+      category: "next",
+      description: "",
+      changes: firstChange ? [{ id: "change-" + slugify(id), verb: "ADJUST", text: firstChange, done: false, isRewriteTask: true, archived: false, maybe: false }] : [],
+      openQuestions: "",
+      rippleEffects: "",
+      storyThreads: "",
+      maybe: false,
+      archived: false,
+      source: "COMPANION_USER",
+      order: timestamp,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      lastTouchedAt: timestamp
+    }, 0);
+    setScenes(prev => [...safeArray(prev), card]);
+    setDraftSceneTitle("");
+    setDraftChangesText("");
+    setActiveId(id);
+    setSequenceView("scene");
+    if (showToast) showToast("Scene saved");
   };
 
   return (
@@ -11222,76 +11353,70 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               <button type="button" className="companion-picker-tab is-active" onClick={() => { setSequenceView("pick"); setActiveId(null); }}>Sequence</button>
               <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setSequenceView("pick"); setActiveId(null); }}>Menu</button>
             </div>
-            {sequenceView === "pick" ? (
-              <div className="companion-sequence-picker">
-                <label className="companion-picker-field" htmlFor="companion-sequence-select">
-                  <span className="companion-picker-label">Sequence</span>
-                  <select
-                    id="companion-sequence-select"
-                    className="companion-select"
-                    aria-label="Sequence"
-                    value={effectiveSequenceFilter}
-                    onChange={e => {
-                      setSequenceFilter(e.target.value);
-                      setActiveId(null);
-                      setSequenceView("pick");
-                    }}
-                  >
-                    {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
-                    {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
-                  </select>
-                </label>
-                <label className="companion-picker-field" htmlFor="companion-scene-select">
-                  <span className="companion-picker-label">Scene</span>
-                  <select
-                    id="companion-scene-select"
-                    className="companion-select companion-scene-select"
-                    aria-label="Scene"
-                    value=""
-                    disabled={filtered.length === 0}
-                    onChange={e => {
-                      if (!e.target.value) return;
-                      setActiveId(e.target.value);
-                      setSequenceView("scene");
-                    }}
-                  >
-                    <option value="">{filtered.length === 0 ? "No scenes in this sequence" : "Choose scene"}</option>
-                    {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
-                  </select>
-                </label>
-                <details className="companion-sequence-admin-panel">
-                  <summary>Sequence settings</summary>
-                  <div className="companion-sequence-admin">
-                    <input
-                      className="companion-sequence-name-input"
-                      value={sequenceNameDraft}
-                      onChange={e => setSequenceNameDraft(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter" && sequenceNameDraft.trim()) renameSequence(); }}
-                      disabled={!effectiveSequenceFilter}
-                      aria-label="Sequence name"
-                    />
-                    <button
-                      type="button"
-                      className="companion-sequence-rename-button"
-                      onClick={renameSequence}
-                      disabled={!effectiveSequenceFilter || !sequenceNameDraft.trim() || sequenceNameDraft.trim().replace(/\s+/g, " ") === currentSequenceTitle}
-                    >
-                      Rename
-                    </button>
-                    <button
-                      type="button"
-                      className="companion-sequence-delete-button"
-                      onClick={deleteSequence}
-                      disabled={!effectiveSequenceFilter || activeSequenceOrder.length <= 1}
-                      title="Delete sequence"
-                      aria-label="Delete sequence"
-                    >
-                      <TrashIcon size={16} />
-                    </button>
-                  </div>
-                </details>
-              </div>
-            ) : null}
+            {sequenceView === "pick" && (
+            <div className="companion-sequence-picker">
+              <label className="companion-picker-field" htmlFor="companion-sequence-select">
+                <span className="companion-picker-label">Sequence</span>
+                <select
+                  id="companion-sequence-select"
+                  className="companion-select"
+                  aria-label="Sequence"
+                  value={effectiveSequenceFilter}
+                  onChange={e => { setSequenceFilter(e.target.value); setActiveId(null); }}
+                >
+                  {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
+                  {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
+                </select>
+              </label>
+              <label className="companion-picker-field" htmlFor="companion-scene-select">
+                <span className="companion-picker-label">Scene</span>
+                <select
+                  id="companion-scene-select"
+                  className="companion-select companion-scene-select"
+                  value=""
+                  disabled={filtered.length === 0}
+                  onChange={e => { if (e.target.value) { setActiveId(e.target.value); setSequenceView("scene"); } }}
+                  aria-label="Scene"
+                >
+                  <option value="">{filtered.length ? "Choose scene" : "No scenes in this sequence"}</option>
+                  {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
+                </select>
+              </label>
+              <details className="companion-sequence-admin-panel companion-new-scene-panel">
+                <summary>+ New scene</summary>
+                <div className="companion-new-scene-fields">
+                  <label className="companion-picker-field" htmlFor="companion-new-scene-title">
+                    <span className="companion-picker-label">Scene name</span>
+                    <input id="companion-new-scene-title" className="companion-title-input" value={draftSceneTitle}
+                      onChange={e => setDraftSceneTitle(e.target.value)} placeholder="Scene name" aria-label="New scene name" />
+                  </label>
+                  <label className="companion-picker-field" htmlFor="companion-new-scene-changes">
+                    <span className="companion-picker-label">First scene change (optional)</span>
+                    <textarea id="companion-new-scene-changes" className="companion-textarea companion-task-text"
+                      value={draftChangesText} onChange={e => setDraftChangesText(e.target.value)}
+                      placeholder="What needs to change?" rows={3} aria-label="First scene change" />
+                  </label>
+                  <button type="button" className="companion-add-button" disabled={!effectiveSequenceFilter || !draftSceneTitle.trim()}
+                    onClick={saveNewCompanionScene}>Save scene</button>
+                </div>
+              </details>
+              <details className="companion-sequence-admin-panel">
+                <summary>Sequence settings</summary>
+                <div className="companion-sequence-admin">
+                  <input className="companion-sequence-name-input" value={sequenceNameDraft}
+                    onChange={e => setSequenceNameDraft(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && sequenceNameDraft.trim()) renameSequence(); }}
+                    disabled={!effectiveSequenceFilter} aria-label="Sequence name" />
+                  <button type="button" className="companion-sequence-rename-button" onClick={renameSequence}
+                    disabled={!effectiveSequenceFilter || !sequenceNameDraft.trim() || sequenceNameDraft.trim().replace(/\s+/g, " ") === currentSequenceTitle}>Rename</button>
+                  <button type="button" className="companion-sequence-delete-button" onClick={deleteSequence}
+                    disabled={!effectiveSequenceFilter || activeSequenceOrder.length <= 1} title="Delete sequence" aria-label="Delete sequence">
+                    <TrashIcon size={16} />
+                  </button>
+                </div>
+              </details>
+            </div>
+            )}
           </div>
         )}
 
@@ -11470,17 +11595,36 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                     </div>
                   ))}
                   <div className="companion-add-row">
-                    <input
-                      className="companion-task-input"
+                    <textarea
+                      className="companion-textarea companion-new-change-text"
                       value={newChangeText}
-                      onChange={e => setNewChangeText(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") addSceneChange(); }}
+                      onChange={e => setNewChangeDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
                       placeholder="Add scene change"
+                      aria-label="New scene change"
+                      rows={3}
                     />
                     <button type="button" className="companion-add-button" disabled={!newChangeText.trim()} onClick={addSceneChange}>Add</button>
                   </div>
                 </div>
               </details>
+
+              {(String(selected.description || "").trim() || referenceChanges.length > 0 || safeArray(selected.moments).some(moment => !moment.archived && String(moment.label || "").trim())) && (
+                <details className="companion-section">
+                  <summary className="companion-section-toggle"><span>Source notes</span><span>+</span></summary>
+                  <div className="companion-section-body companion-source-notes">
+                    {String(selected.description || "").trim() && <div>{selected.description}</div>}
+                    {referenceChanges.map(change =>
+                      <div key={change.id} className="companion-reference-change">
+                        <span>{change.text}</span>
+                        <button type="button" className="companion-inline-button" onClick={() => patchChange(change.id, { source:"COMPANION_USER" })}>Track</button>
+                      </div>
+                    )}
+                    {safeArray(selected.moments).filter(moment => !moment.archived && String(moment.label || "").trim()).map(moment =>
+                      <div key={moment.id}>{moment.label}</div>
+                    )}
+                  </div>
+                </details>
+              )}
 
               <details className="companion-section" open>
                 <summary className="companion-section-toggle">
@@ -11491,7 +11635,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   <textarea
                     className="companion-textarea companion-note-text"
                     value={noteValue}
-                    onChange={e => setNoteDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
+                    onChange={e => queueNotes(e.target.value)}
                     onBlur={commitNotes}
                     rows={noteRowCount(noteValue)}
                   />
@@ -12028,6 +12172,21 @@ function ArchiveTab({ scenes, setScenes, sequences, showToast }) {
         <div className="archive-kicker">{card.kind || "CARD"}{card.sequence ? " - " + getSequenceTitle(sequences, card.sequence) : ""}</div>
         <div className="archive-title">{card.title || "Untitled"}</div>
         <div className="archive-meta">{displayStatusLabel(card.status)}{card.archivedAt ? " - archived " + formatDateShort(card.archivedAt) : ""}</div>
+        {(String(card.description || "").trim() || String(card.openQuestions || "").trim() || safeArray(card.changes).length > 0 || safeArray(card.moments).length > 0) && (
+          <details className="archive-card-notes">
+            <summary>Notes and changes</summary>
+            <div className="archive-card-notes-body">
+              {String(card.description || "").trim() && <div>{card.description}</div>}
+              {safeArray(card.changes).filter(change => String(change.text || "").trim()).map(change =>
+                <div key={change.id}>{change.done ? "✓ " : "○ "}{change.text}</div>
+              )}
+              {String(card.openQuestions || "").trim() && <div>{card.openQuestions}</div>}
+              {safeArray(card.moments).filter(moment => String(moment.label || "").trim()).map(moment =>
+                <div key={moment.id}>{moment.label}</div>
+              )}
+            </div>
+          </details>
+        )}
       </div>
       <div className="archive-actions">
         {archived ? (
@@ -12539,7 +12698,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260819a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260923b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
