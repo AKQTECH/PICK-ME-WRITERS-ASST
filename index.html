@@ -2648,8 +2648,8 @@
         .companion-notebook {
             --companion-accent: #8B0040;
             --companion-soft: #F7E3EE;
-            --companion-muted: #6F6864;
-            --companion-text: #1C1410;
+            --companion-muted: #000000;
+            --companion-text: #000000;
             --companion-line: #D8D0D4;
             --companion-active: #F7C7DE;
             --companion-active-text: #E668A7;
@@ -3232,6 +3232,11 @@
             font-size: 1.05rem;
         }
 
+        .companion-title-row textarea.companion-title-input {
+            overflow-wrap: anywhere;
+            resize: vertical;
+        }
+
         .companion-scene-archive-button {
             margin-top: 3px;
         }
@@ -3302,7 +3307,7 @@
         }
 
         .companion-unplaced-type {
-            color: #ea258d;
+            color: #000000;
             font-size: 0.62rem;
             font-weight: 900;
             letter-spacing: 0.06em;
@@ -3310,6 +3315,7 @@
         }
 
         .companion-unplaced-title {
+            color: #000000;
             font-size: 0.9rem;
             font-weight: 900;
             line-height: 1.18;
@@ -4166,7 +4172,16 @@
         }
 
         body.pwa-build .companion-unplaced-card-main {
+            color: #000000;
             padding: 14px;
+            -webkit-text-fill-color: #000000;
+        }
+
+        body.pwa-build .companion-assign-button,
+        body.pwa-build .companion-add-button,
+        body.pwa-build .companion-inline-button {
+            color: #000000;
+            -webkit-text-fill-color: #000000;
         }
 
         body.pwa-build .companion-empty-note {
@@ -4361,7 +4376,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2";
+const APP_VERSION = "1.2.1";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10928,6 +10943,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [sequenceNameDraft, setSequenceNameDraft] = React.useState("");
   const [draftSceneTitle, setDraftSceneTitle] = React.useState("");
   const [draftChangesText, setDraftChangesText] = React.useState("");
+  const newScenePanelRef = React.useRef(null);
   const ideaDetailSaveTimers = React.useRef({});
   const changeSaveTimers = React.useRef({});
   const noteSaveTimers = React.useRef({});
@@ -11304,6 +11320,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     const title = String(draftSceneTitle || "").trim().replace(/\s+/g, " ");
     const firstChange = String(draftChangesText || "").trim();
     if (!sequence || !title || !setScenes) return;
+    if (newScenePanelRef.current) newScenePanelRef.current.open = false;
     const id = "companion-scene-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
     const timestamp = Date.now();
     const card = normalizeCard({
@@ -11314,7 +11331,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       page: null,
       pageRange: "",
       kind: "SCENE",
-      status: "needs_edits",
+      status: firstChange ? "needs_edits" : "todo",
       category: "next",
       description: "",
       changes: firstChange ? [{ id: "change-" + slugify(id), verb: "ADJUST", text: firstChange, done: false, isRewriteTask: true, archived: false, maybe: false }] : [],
@@ -11336,6 +11353,27 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     setSequenceView("scene");
     if (showToast) showToast("Scene saved");
   };
+
+  const renderNewScenePanel = () => (
+    <details ref={newScenePanelRef} className="companion-sequence-admin-panel companion-new-scene-panel">
+      <summary>+ New scene</summary>
+      <div className="companion-new-scene-fields">
+        <label className="companion-picker-field" htmlFor="companion-new-scene-title">
+          <span className="companion-picker-label">Scene name</span>
+          <input id="companion-new-scene-title" className="companion-title-input" value={draftSceneTitle}
+            onChange={e => setDraftSceneTitle(e.target.value)} placeholder="Scene name" aria-label="New scene name" />
+        </label>
+        <label className="companion-picker-field" htmlFor="companion-new-scene-changes">
+          <span className="companion-picker-label">First scene change (optional)</span>
+          <textarea id="companion-new-scene-changes" className="companion-textarea companion-task-text"
+            value={draftChangesText} onChange={e => setDraftChangesText(e.target.value)}
+            placeholder="What needs to change?" rows={3} aria-label="First scene change" />
+        </label>
+        <button type="button" className="companion-add-button" disabled={!effectiveSequenceFilter || !draftSceneTitle.trim()}
+          onClick={saveNewCompanionScene}>Save scene</button>
+      </div>
+    </details>
+  );
 
   return (
     <div className="companion-notebook">
@@ -11382,24 +11420,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
                 </select>
               </label>
-              <details className="companion-sequence-admin-panel companion-new-scene-panel">
-                <summary>+ New scene</summary>
-                <div className="companion-new-scene-fields">
-                  <label className="companion-picker-field" htmlFor="companion-new-scene-title">
-                    <span className="companion-picker-label">Scene name</span>
-                    <input id="companion-new-scene-title" className="companion-title-input" value={draftSceneTitle}
-                      onChange={e => setDraftSceneTitle(e.target.value)} placeholder="Scene name" aria-label="New scene name" />
-                  </label>
-                  <label className="companion-picker-field" htmlFor="companion-new-scene-changes">
-                    <span className="companion-picker-label">First scene change (optional)</span>
-                    <textarea id="companion-new-scene-changes" className="companion-textarea companion-task-text"
-                      value={draftChangesText} onChange={e => setDraftChangesText(e.target.value)}
-                      placeholder="What needs to change?" rows={3} aria-label="First scene change" />
-                  </label>
-                  <button type="button" className="companion-add-button" disabled={!effectiveSequenceFilter || !draftSceneTitle.trim()}
-                    onClick={saveNewCompanionScene}>Save scene</button>
-                </div>
-              </details>
+              {renderNewScenePanel()}
               <details className="companion-sequence-admin-panel">
                 <summary>Sequence settings</summary>
                 <div className="companion-sequence-admin">
@@ -11417,6 +11438,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               </details>
             </div>
             )}
+            {sequenceView === "scene" && renderNewScenePanel()}
           </div>
         )}
 
@@ -11544,7 +11566,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                 <div className="companion-scene-title-block">
                   <div className="companion-scene-meta">{currentSequenceTitle}</div>
                   <div className="companion-title-row">
-                    <input
+                    <textarea
                       className="companion-title-input"
                       value={titleDraftValue}
                       onChange={e => setTitleDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
@@ -11552,6 +11574,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                       onKeyDown={event => handleTitleKeyDown(event, selected.id)}
                       aria-label="Scene name"
                       placeholder="Untitled scene"
+                      rows={textareaRowCount(titleDraftValue, 1, 8)}
                     />
                     <button type="button" className="companion-archive-button companion-scene-archive-button" onClick={archiveSelectedScene} title="Archive scene" aria-label="Archive scene">
                       <ArchiveTrayIcon size={18} />
@@ -12698,7 +12721,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260923b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260923c').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
