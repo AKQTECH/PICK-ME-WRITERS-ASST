@@ -3187,6 +3187,35 @@
             margin-bottom: 8px;
         }
 
+        .companion-task-controls {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .companion-reorder-button {
+            align-items: center;
+            background: transparent;
+            border: 0;
+            color: #E668A7;
+            cursor: pointer;
+            display: inline-flex;
+            font-family: inherit;
+            font-size: 1.15rem;
+            font-weight: 800;
+            height: 26px;
+            justify-content: center;
+            line-height: 1;
+            padding: 0;
+            width: 32px;
+        }
+
+        .companion-reorder-button:disabled {
+            cursor: default;
+            opacity: 0.25;
+        }
+
         .companion-task-row input[type="checkbox"] {
             accent-color: #8B0040;
             height: 16px;
@@ -3196,17 +3225,23 @@
 
         .companion-task-text,
         .companion-note-text {
+            box-sizing: border-box;
             min-height: 56px;
             overflow: auto;
             resize: vertical;
+        }
+
+        .companion-task-text {
+            transition: none;
         }
 
         .companion-note-text {
             min-height: 104px;
         }
 
-        .companion-task-row .companion-archive-button {
-            margin-top: 5px;
+        .companion-task-controls .companion-archive-button {
+            height: 30px;
+            width: 30px;
         }
 
         .companion-title-row {
@@ -3630,8 +3665,7 @@
             text-transform: uppercase;
         }
 
-        .archive-card-notes-body,
-        .companion-source-notes {
+        .archive-card-notes-body {
             color: var(--companion-text, #1C1410);
             display: grid;
             font-size: 0.88rem;
@@ -3641,8 +3675,7 @@
             white-space: pre-wrap;
         }
 
-        .archive-card-notes-body > div + div,
-        .companion-source-notes > div + div {
+        .archive-card-notes-body > div + div {
             border-top: 1px solid var(--companion-line);
             padding-top: 10px;
         }
@@ -3661,17 +3694,6 @@
         .companion-new-change-text {
             min-height: 72px;
             resize: vertical;
-        }
-
-        .companion-reference-change {
-            align-items: center;
-            display: grid;
-            gap: 10px;
-            grid-template-columns: minmax(0, 1fr) auto;
-        }
-
-        .companion-reference-change .companion-inline-button {
-            min-height: 40px;
         }
 
         @media (max-width: 900px) {
@@ -4103,9 +4125,8 @@
 
         body.pwa-build .companion-task-row {
             gap: 9px;
-            grid-template-columns: 30px minmax(0, 1fr);
+            grid-template-columns: 30px minmax(0, 1fr) 34px;
             margin-bottom: 16px;
-            position: relative;
         }
 
         body.pwa-build .companion-task-row input[type="checkbox"] {
@@ -4118,16 +4139,21 @@
             border-radius: 7px;
             line-height: 1.45;
             min-height: 96px;
-            padding: 14px 44px 14px 14px;
+            padding: 14px;
         }
 
-        body.pwa-build .companion-task-row .companion-archive-button {
-            height: 38px;
-            position: absolute;
-            right: 4px;
-            top: 7px;
-            width: 38px;
-            z-index: 1;
+        body.pwa-build .companion-task-controls {
+            gap: 4px;
+        }
+
+        body.pwa-build .companion-reorder-button,
+        body.pwa-build .companion-task-controls .companion-archive-button {
+            height: 32px;
+            width: 32px;
+        }
+
+        body.pwa-build .companion-reorder-button {
+            -webkit-text-fill-color: #E668A7;
         }
 
         body.pwa-build .companion-unplaced-action-row .companion-archive-button {
@@ -4376,7 +4402,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.2.2";
 const APP_BUILD = "PWA";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
@@ -10946,6 +10972,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const newScenePanelRef = React.useRef(null);
   const ideaDetailSaveTimers = React.useRef({});
   const changeSaveTimers = React.useRef({});
+  const changeResizeStarts = React.useRef({});
   const noteSaveTimers = React.useRef({});
 
   const state = normalizeState({ scenes, sequences });
@@ -10978,8 +11005,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     : filteredIdeaCards;
   const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (isSequenceMode && sequenceView === "scene" ? (filtered.find(card => card.id === activeId) || null) : null);
   const selectedIsSequenced = !!(selected && activeSequenceOrder.includes(selected.sequence));
-  const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe && !isCompanionReferenceChange(selected, change)) : [];
-  const referenceChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes).filter(change => !change.archived && !change.maybe && isCompanionReferenceChange(selected, change)) : [];
+  const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes)
+    .filter(change => !change.archived && !change.maybe && !isCompanionReferenceChange(selected, change))
+    .sort((left, right) => {
+      const leftOrder = Number(left.companionOrder);
+      const rightOrder = Number(right.companionOrder);
+      return (Number.isFinite(leftOrder) ? leftOrder : Number.MAX_SAFE_INTEGER) -
+        (Number.isFinite(rightOrder) ? rightOrder : Number.MAX_SAFE_INTEGER);
+    }) : [];
   const selectedStatus = selectedIsSequenced ? normalizeStatus(selected.status) : "needs_edits";
   const companionStatusValue = selectedStatus === "drafted" ? "todo" : (COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "todo");
   const selectedSceneTitle = selected && !isIdeasMode ? (selected.title || "Untitled") : "";
@@ -11100,6 +11133,32 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       return copy;
     });
     if (showToast) showToast("Scene change archived");
+  };
+
+  const moveChange = (changeId, direction) => {
+    if (!selected || !selectedIsSequenced) return;
+    const from = visibleChanges.findIndex(change => asId(change.id) === asId(changeId));
+    const to = from + direction;
+    if (from < 0 || to < 0 || to >= visibleChanges.length) return;
+    const orderedIds = visibleChanges.map(change => asId(change.id));
+    [orderedIds[from], orderedIds[to]] = [orderedIds[to], orderedIds[from]];
+    const positions = new Map(orderedIds.map((id, index) => [id, index]));
+    patchCard(selected.id, card => ({
+      changes:safeArray(card.changes).map(change => positions.has(asId(change.id))
+        ? touchRecord(change, { companionOrder:positions.get(asId(change.id)) })
+        : change)
+    }));
+  };
+
+  const rememberChangeHeight = (changeId, element) => {
+    const initial = changeResizeStarts.current[changeId];
+    delete changeResizeStarts.current[changeId];
+    if (!initial || !element) return;
+    const inlineHeight = Number.parseFloat(element.style.height);
+    const height = Math.round(Number.isFinite(inlineHeight) ? inlineHeight : element.getBoundingClientRect().height);
+    if (element.style.height !== initial.inlineHeight && Math.abs(height - initial.height) >= 3) {
+      patchChange(changeId, { editorHeight:Math.min(1600, Math.max(56, height)) });
+    }
   };
 
   const addSceneChange = () => {
@@ -11391,7 +11450,6 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               <button type="button" className="companion-picker-tab is-active" onClick={() => { setSequenceView("pick"); setActiveId(null); }}>Sequence</button>
               <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setSequenceView("pick"); setActiveId(null); }}>Menu</button>
             </div>
-            {sequenceView === "pick" && (
             <div className="companion-sequence-picker">
               <label className="companion-picker-field" htmlFor="companion-sequence-select">
                 <span className="companion-picker-label">Sequence</span>
@@ -11400,12 +11458,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   className="companion-select"
                   aria-label="Sequence"
                   value={effectiveSequenceFilter}
-                  onChange={e => { setSequenceFilter(e.target.value); setActiveId(null); }}
+                  onChange={e => { setSequenceFilter(e.target.value); setActiveId(null); setSequenceView("pick"); }}
                 >
                   {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
                   {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
                 </select>
               </label>
+              {sequenceView === "pick" && (
+              <>
               <label className="companion-picker-field" htmlFor="companion-scene-select">
                 <span className="companion-picker-label">Scene</span>
                 <select
@@ -11436,9 +11496,10 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   </button>
                 </div>
               </details>
+              </>
+              )}
+              {sequenceView === "scene" && renderNewScenePanel()}
             </div>
-            )}
-            {sequenceView === "scene" && renderNewScenePanel()}
           </div>
         )}
 
@@ -11602,19 +11663,28 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                 </summary>
                 <div className="companion-section-body">
                   {visibleChanges.length === 0 && <div className="companion-empty-note">No scene changes yet.</div>}
-                  {visibleChanges.map(change => (
+                  {visibleChanges.map((change, index) => (
                     <div key={change.id} className="companion-task-row">
                       <input type="checkbox" checked={!!change.done} onChange={e => toggleChangeDone(change.id, e.target.checked)} aria-label="Mark scene change done" />
                       <textarea
                         className="companion-textarea companion-task-text"
                         value={changeDraftValue(change)}
                         onChange={e => queueChangeDraft(change.id, e.target.value)}
-                        onBlur={() => commitChangeDraft(change.id)}
+                        onBlur={e => { rememberChangeHeight(change.id, e.currentTarget); commitChangeDraft(change.id); }}
+                        onPointerDown={e => { changeResizeStarts.current[change.id] = { height:e.currentTarget.getBoundingClientRect().height, inlineHeight:e.currentTarget.style.height }; }}
+                        onPointerUp={e => rememberChangeHeight(change.id, e.currentTarget)}
                         rows={changeRowCount(changeDraftValue(change))}
+                        style={Number.isFinite(Number(change.editorHeight)) && Number(change.editorHeight) >= 56
+                          ? { height:Math.min(1600, Number(change.editorHeight)) + "px" }
+                          : undefined}
                       />
-                      <button type="button" className="companion-archive-button" onClick={() => archiveChange(change.id)} title="Archive scene change" aria-label="Archive scene change">
-                        <ArchiveTrayIcon size={18} />
-                      </button>
+                      <div className="companion-task-controls">
+                        <button type="button" className="companion-reorder-button" onClick={() => moveChange(change.id, -1)} disabled={index === 0} title="Move scene change up" aria-label="Move scene change up">{"\u2191"}</button>
+                        <button type="button" className="companion-reorder-button" onClick={() => moveChange(change.id, 1)} disabled={index === visibleChanges.length - 1} title="Move scene change down" aria-label="Move scene change down">{"\u2193"}</button>
+                        <button type="button" className="companion-archive-button" onClick={() => archiveChange(change.id)} title="Archive scene change" aria-label="Archive scene change">
+                          <ArchiveTrayIcon size={18} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                   <div className="companion-add-row">
@@ -11630,24 +11700,6 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   </div>
                 </div>
               </details>
-
-              {(String(selected.description || "").trim() || referenceChanges.length > 0 || safeArray(selected.moments).some(moment => !moment.archived && String(moment.label || "").trim())) && (
-                <details className="companion-section">
-                  <summary className="companion-section-toggle"><span>Source notes</span><span>+</span></summary>
-                  <div className="companion-section-body companion-source-notes">
-                    {String(selected.description || "").trim() && <div>{selected.description}</div>}
-                    {referenceChanges.map(change =>
-                      <div key={change.id} className="companion-reference-change">
-                        <span>{change.text}</span>
-                        <button type="button" className="companion-inline-button" onClick={() => patchChange(change.id, { source:"COMPANION_USER" })}>Track</button>
-                      </div>
-                    )}
-                    {safeArray(selected.moments).filter(moment => !moment.archived && String(moment.label || "").trim()).map(moment =>
-                      <div key={moment.id}>{moment.label}</div>
-                    )}
-                  </div>
-                </details>
-              )}
 
               <details className="companion-section" open>
                 <summary className="companion-section-toggle">
@@ -12721,7 +12773,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260923c').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260923d').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
