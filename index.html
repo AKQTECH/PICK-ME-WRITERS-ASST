@@ -2999,6 +2999,124 @@
             grid-template-columns: minmax(0, 1fr);
         }
 
+        .companion-table-open {
+            background: #FFFFFF;
+            border: 1px solid #F1BBD6;
+            border-radius: 6px;
+            color: #E668A7;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.76rem;
+            font-weight: 900;
+            min-height: 44px;
+            padding: 10px 14px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .companion-table-open:hover,
+        .companion-table-scene:hover { background: #FFF3F9; }
+
+        .companion-table-panel {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 6px;
+            min-width: 0;
+            padding: 18px 20px;
+        }
+
+        .companion-table-heading {
+            color: #E668A7;
+            font-size: 1rem;
+            font-weight: 900;
+            margin: 0 0 16px;
+            text-transform: uppercase;
+        }
+
+        .companion-table-tools {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: minmax(180px, 2fr) repeat(2, minmax(120px, 1fr)) minmax(160px, 1fr) 44px;
+            margin-bottom: 14px;
+        }
+
+        .companion-table-tools input,
+        .companion-table-tools select {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 6px;
+            color: #000000;
+            font-family: inherit;
+            font-size: 0.85rem;
+            min-height: 44px;
+            min-width: 0;
+            padding: 8px 10px;
+            width: 100%;
+        }
+
+        .companion-table-direction {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 6px;
+            color: #E668A7;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1.2rem;
+            min-height: 44px;
+        }
+
+        .companion-table-scroll { overflow-x: auto; }
+
+        .companion-scene-table {
+            border-collapse: collapse;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .companion-scene-table th {
+            border-bottom: 1px solid var(--companion-line);
+            color: #E668A7;
+            font-size: 0.7rem;
+            font-weight: 900;
+            padding: 10px 12px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .companion-scene-table th:first-child { width: 48%; }
+        .companion-scene-table th:nth-child(2) { width: 32%; }
+        .companion-scene-table th:nth-child(3) { width: 20%; }
+
+        .companion-scene-table td {
+            border-bottom: 1px solid #EEE5E9;
+            color: #000000;
+            font-size: 0.82rem;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+            padding: 10px 12px;
+            vertical-align: middle;
+        }
+
+        .companion-scene-table tr:last-child td { border-bottom: 0; }
+
+        .companion-table-scene {
+            background: transparent;
+            border: 0;
+            color: #000000;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: 800;
+            padding: 2px 0;
+            text-align: left;
+            width: 100%;
+        }
+
+        body.pwa-build .companion-table-scene {
+            color: #000000;
+            -webkit-text-fill-color: #000000;
+        }
+
         .companion-panel {
             background: var(--companion-surface);
             border: 1px solid var(--companion-line);
@@ -3187,6 +3305,12 @@
             margin-bottom: 8px;
         }
 
+        .companion-task-row.is-drop-target {
+            border-radius: 4px;
+            outline: 2px solid #E668A7;
+            outline-offset: 2px;
+        }
+
         .companion-task-controls {
             align-items: center;
             display: flex;
@@ -3200,7 +3324,7 @@
             border: 0;
             color: #E668A7;
             cursor: pointer;
-            display: inline-flex;
+            display: none;
             font-family: inherit;
             font-size: 1.15rem;
             font-weight: 800;
@@ -3214,6 +3338,28 @@
         .companion-reorder-button:disabled {
             cursor: default;
             opacity: 0.25;
+        }
+
+        .companion-drag-handle {
+            align-items: center;
+            background: transparent;
+            border: 0;
+            color: #E668A7;
+            cursor: grab;
+            display: inline-flex;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 900;
+            height: 28px;
+            justify-content: center;
+            letter-spacing: 0;
+            line-height: 1;
+            padding: 0;
+            width: 32px;
+        }
+
+        .companion-drag-handle:active {
+            cursor: grabbing;
         }
 
         .companion-task-row input[type="checkbox"] {
@@ -4096,6 +4242,31 @@
             padding: 20px 14px;
         }
 
+        body.pwa-build .companion-table-panel {
+            border-radius: 8px;
+            padding: 16px 14px;
+        }
+
+        @media (max-width: 600px) {
+            .companion-table-tools { grid-template-columns: minmax(0, 1fr) 44px; }
+            .companion-table-search,
+            .companion-table-sequence,
+            .companion-table-status { grid-column: 1 / -1; }
+            .companion-table-sort { grid-column: 1; }
+            .companion-scene-table thead { display: none; }
+            .companion-scene-table,
+            .companion-scene-table tbody,
+            .companion-scene-table tr,
+            .companion-scene-table td { display: block; width: 100%; }
+            .companion-scene-table tr { border-bottom: 1px solid #EEE5E9; padding: 12px 2px; }
+            .companion-scene-table tr:last-child { border-bottom: 0; }
+            .companion-scene-table td { border: 0; padding: 2px 4px; }
+            .companion-scene-table td:first-child { font-size: 0.95rem; }
+            .companion-scene-table td:nth-child(2) { color: #E668A7; font-weight: 800; }
+            .companion-scene-table td:nth-child(3) { font-size: 0.72rem; text-transform: uppercase; }
+            .companion-table-scene { min-height: 36px; }
+        }
+
         body.pwa-build .companion-scene-header {
             gap: 18px;
             padding-bottom: 8px;
@@ -4148,8 +4319,13 @@
 
         body.pwa-build .companion-reorder-button,
         body.pwa-build .companion-task-controls .companion-archive-button {
+            display: inline-flex;
             height: 32px;
             width: 32px;
+        }
+
+        body.pwa-build .companion-drag-handle {
+            display: none;
         }
 
         body.pwa-build .companion-reorder-button {
@@ -4402,8 +4578,9 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.2";
+const APP_VERSION = "1.2.3";
 const APP_BUILD = "PWA";
+const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
 const DEVICE_ID_KEY = "pickme_device_id";
 const PREUPDATE_BACKUP_KEY = "pickme_backup_before_script_rail_v2";
@@ -7706,7 +7883,13 @@ function mergeStates(localInput, remoteInput) {
   merged.categoryNames = catMerge.values;
   merged.sectionUpdatedAt.categoryNames = catMerge.times;
   merged.sceneNotes = mergeArraysById(local.sceneNotes, remote.sceneNotes, (s, i) => ({ ...(s || {}), id: asId(s && s.id) || ("scene-note-sequence-" + i), updatedAt: Number(s && s.updatedAt || 0), scenes: safeArray(s && s.scenes) }));
-  if (Number(remote.sectionUpdatedAt.notionUrl || 0) > Number(local.sectionUpdatedAt.notionUrl || 0)) merged.notionUrl = remote.notionUrl;
+  const localNotionTime = Number(local.sectionUpdatedAt.notionUrl || 0);
+  const remoteNotionTime = Number(remote.sectionUpdatedAt.notionUrl || 0);
+  if (remoteNotionTime > localNotionTime) merged.notionUrl = remote.notionUrl;
+  else if (localNotionTime > remoteNotionTime) merged.notionUrl = local.notionUrl;
+  else if (local.notionUrl === DEFAULT_NOTION_URL && remote.notionUrl) merged.notionUrl = remote.notionUrl;
+  else merged.notionUrl = local.notionUrl || remote.notionUrl;
+  merged.sectionUpdatedAt.notionUrl = Math.max(localNotionTime, remoteNotionTime);
   if (Number(remote.sectionUpdatedAt.now || remote.now.updatedAt || 0) > Number(local.sectionUpdatedAt.now || local.now.updatedAt || 0)) merged.now = remote.now;
   merged.lastModified = Math.max(local.lastModified || 0, remote.lastModified || 0, nowStamp());
   merged.schemaVersion = SCHEMA_VERSION;
@@ -7720,6 +7903,14 @@ function loadRawSavedState() {
 }
 function loadCanonicalStateFromStorage() {
   return normalizeState(loadRawSavedState() || createDefaultState());
+}
+function preserveUnversionedNotionUrl(state, fallbackUrl) {
+  const normalized = normalizeState(state);
+  if (!Number(normalized.sectionUpdatedAt.notionUrl || 0)) {
+    if (!normalized.notionUrl && fallbackUrl) normalized.notionUrl = fallbackUrl;
+    if (normalized.notionUrl) normalized.sectionUpdatedAt.notionUrl = nowStamp();
+  }
+  return normalized;
 }
 function touchChangedCollection(nextArray, previousArray, prefix) {
   const prevMap = new Map(safeArray(previousArray).map(r => [asId(r.id), r]));
@@ -8194,6 +8385,7 @@ async function syncWithDropbox(localState, attempt) {
       try { remote = JSON.parse(download.text); } catch(e) { console.warn("Dropbox data could not be read:", e); }
     }
     let merged = remote ? mergeStates(current, remote) : current;
+    merged = preserveUnversionedNotionUrl(merged, DEFAULT_NOTION_URL);
     merged = saveCanonicalState(merged);
     window.dispatchEvent(new CustomEvent("pickme_state_updated", { detail: merged }));
     try {
@@ -10076,7 +10268,8 @@ function SettingsTab({
 
   const currentState = () => buildPersistedState({ songs, scenes, notes, sequences, sceneNotes, categoryNames, notionUrl, now:nowState, conversionReport });
   const applyState = (state) => {
-    const normalized = saveCanonicalState(state);
+    const current = loadCanonicalStateFromStorage();
+    const normalized = saveCanonicalState(preserveUnversionedNotionUrl(state, current.notionUrl || notionUrl || DEFAULT_NOTION_URL));
     ReactDOM.unstable_batchedUpdates(() => {
       setSongs(activeRecords(normalized.songs));
       setScenes(normalized.scenes);
@@ -10961,6 +11154,11 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     return normalizeIdeaBucket(stored) || "all";
   });
   const [ideaSearch, setIdeaSearch] = React.useState("");
+  const [tableSearch, setTableSearch] = React.useState("");
+  const [tableSequence, setTableSequence] = React.useState("all");
+  const [tableStatus, setTableStatus] = React.useState("all");
+  const [tableSort, setTableSort] = React.useState("sequence");
+  const [tableSortDirection, setTableSortDirection] = React.useState("asc");
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [ideaDetailDrafts, setIdeaDetailDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
@@ -10974,6 +11172,8 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const changeSaveTimers = React.useRef({});
   const changeResizeStarts = React.useRef({});
   const noteSaveTimers = React.useRef({});
+  const draggedChangeId = React.useRef(null);
+  const [dropTargetId, setDropTargetId] = React.useState(null);
 
   const state = normalizeState({ scenes, sequences });
   const activeSequenceOrder = getActiveSequenceOrder(state.sequences);
@@ -10992,6 +11192,19 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const isSequenceMode = companionMode === "sequence";
   const isIdeasMode = companionMode === "ideas";
   const filtered = sequencedCards.filter(card => card.sequence === effectiveSequenceFilter);
+  const tableStatusOrder = { todo:0, drafted:0, needs_edits:1, cut:2, done:3 };
+  const tableCards = sequencedCards.filter(card =>
+    (tableSequence === "all" || card.sequence === tableSequence) &&
+    (tableStatus === "all" || (tableStatus === "todo" ? ["todo", "drafted"].includes(normalizeStatus(card.status)) : normalizeStatus(card.status) === tableStatus)) &&
+    companionSearchMatches(card.title, tableSearch)
+  ).sort((left, right) => {
+    let comparison = 0;
+    if (tableSort === "scene") comparison = String(left.title || "").localeCompare(String(right.title || ""), undefined, { numeric:true });
+    else if (tableSort === "status") comparison = (tableStatusOrder[normalizeStatus(left.status)] ?? 9) - (tableStatusOrder[normalizeStatus(right.status)] ?? 9);
+    else if (tableSort === "updated") comparison = Number(left.updatedAt || left.lastTouchedAt || 0) - Number(right.updatedAt || right.lastTouchedAt || 0);
+    else comparison = activeSequenceOrder.indexOf(left.sequence) - activeSequenceOrder.indexOf(right.sequence);
+    return (comparison || String(left.title || "").localeCompare(String(right.title || ""), undefined, { numeric:true })) * (tableSortDirection === "asc" ? 1 : -1);
+  });
   const ideaSearchNeedle = ideaSearch.trim().toLowerCase();
   const filteredIdeaCards = ideaCards.filter(card => {
     const bucket = inferIdeaBucket(card);
@@ -11135,19 +11348,22 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     if (showToast) showToast("Scene change archived");
   };
 
-  const moveChange = (changeId, direction) => {
+  const reorderChange = (changeId, to) => {
     if (!selected || !selectedIsSequenced) return;
     const from = visibleChanges.findIndex(change => asId(change.id) === asId(changeId));
-    const to = from + direction;
     if (from < 0 || to < 0 || to >= visibleChanges.length) return;
     const orderedIds = visibleChanges.map(change => asId(change.id));
-    [orderedIds[from], orderedIds[to]] = [orderedIds[to], orderedIds[from]];
+    orderedIds.splice(to, 0, orderedIds.splice(from, 1)[0]);
     const positions = new Map(orderedIds.map((id, index) => [id, index]));
     patchCard(selected.id, card => ({
       changes:safeArray(card.changes).map(change => positions.has(asId(change.id))
         ? touchRecord(change, { companionOrder:positions.get(asId(change.id)) })
         : change)
     }));
+  };
+  const moveChange = (changeId, direction) => {
+    const from = visibleChanges.findIndex(change => asId(change.id) === asId(changeId));
+    reorderChange(changeId, from + direction);
   };
 
   const rememberChangeHeight = (changeId, element) => {
@@ -11450,7 +11666,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               <button type="button" className="companion-picker-tab is-active" onClick={() => { setSequenceView("pick"); setActiveId(null); }}>Sequence</button>
               <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setSequenceView("pick"); setActiveId(null); }}>Menu</button>
             </div>
-            <div className="companion-sequence-picker">
+            {sequenceView !== "table" && <div className="companion-sequence-picker">
               <label className="companion-picker-field" htmlFor="companion-sequence-select">
                 <span className="companion-picker-label">Sequence</span>
                 <select
@@ -11480,6 +11696,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
                 </select>
               </label>
+              <button type="button" className="companion-table-open" onClick={() => { setSequenceView("table"); setActiveId(null); }}>All scenes</button>
               {renderNewScenePanel()}
               <details className="companion-sequence-admin-panel">
                 <summary>Sequence settings</summary>
@@ -11499,7 +11716,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               </>
               )}
               {sequenceView === "scene" && renderNewScenePanel()}
-            </div>
+            </div>}
           </div>
         )}
 
@@ -11597,6 +11814,44 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
 
       </div>
 
+      {isSequenceMode && sequenceView === "table" && (
+        <section className="companion-table-panel" aria-label="All scenes">
+          <h2 className="companion-table-heading">All scenes</h2>
+          <div className="companion-table-tools">
+            <input className="companion-table-search" type="search" value={tableSearch} onChange={e => setTableSearch(e.target.value)} placeholder="Search scene names" aria-label="Search scene names" />
+            <select className="companion-table-sequence" value={tableSequence} onChange={e => setTableSequence(e.target.value)} aria-label="Filter by sequence">
+              <option value="all">All sequences</option>
+              {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
+            </select>
+            <select className="companion-table-status" value={tableStatus} onChange={e => setTableStatus(e.target.value)} aria-label="Filter by status">
+              <option value="all">All statuses</option>
+              {["todo", "needs_edits", "cut", "done"].map(status => <option key={status} value={status}>{displayStatusLabel(status)}</option>)}
+            </select>
+            <select className="companion-table-sort" value={tableSort} onChange={e => { setTableSort(e.target.value); setTableSortDirection(e.target.value === "updated" ? "desc" : "asc"); }} aria-label="Sort scenes by">
+              <option value="sequence">Sort: sequence</option>
+              <option value="scene">Sort: scene name</option>
+              <option value="status">Sort: status</option>
+              <option value="updated">Sort: recently edited</option>
+            </select>
+            <button type="button" className="companion-table-direction" onClick={() => setTableSortDirection(value => value === "asc" ? "desc" : "asc")} title="Reverse sort order" aria-label="Reverse sort order">{tableSortDirection === "asc" ? "\u2191" : "\u2193"}</button>
+          </div>
+          {tableCards.length ? (
+            <div className="companion-table-scroll">
+              <table className="companion-scene-table">
+                <thead><tr><th scope="col">Scene</th><th scope="col">Sequence</th><th scope="col">Status</th></tr></thead>
+                <tbody>
+                  {tableCards.map(card => <tr key={card.id}>
+                    <td><button type="button" className="companion-table-scene" onClick={() => { setSequenceFilter(card.sequence); setActiveId(card.id); setSequenceView("scene"); }} aria-label={"Open scene " + (card.title || "Untitled")}>{card.title || "Untitled"}</button></td>
+                    <td>{getSequenceTitle(state.sequences, card.sequence)}</td>
+                    <td>{displayStatusLabel(card.status)}</td>
+                  </tr>)}
+                </tbody>
+              </table>
+            </div>
+          ) : <div className="companion-empty-note">No scenes match this view.</div>}
+        </section>
+      )}
+
       {showCompanionWorkbench && (
       <div className="companion-workbench is-focused">
         <div className="companion-panel companion-log-panel">
@@ -11664,7 +11919,22 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                 <div className="companion-section-body">
                   {visibleChanges.length === 0 && <div className="companion-empty-note">No scene changes yet.</div>}
                   {visibleChanges.map((change, index) => (
-                    <div key={change.id} className="companion-task-row">
+                    <div
+                      key={change.id}
+                      className={"companion-task-row" + (dropTargetId === asId(change.id) ? " is-drop-target" : "")}
+                      onDragOver={e => {
+                        if (!draggedChangeId.current || draggedChangeId.current === asId(change.id)) return;
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                        if (dropTargetId !== asId(change.id)) setDropTargetId(asId(change.id));
+                      }}
+                      onDrop={e => {
+                        e.preventDefault();
+                        if (draggedChangeId.current && draggedChangeId.current !== asId(change.id)) reorderChange(draggedChangeId.current, index);
+                        draggedChangeId.current = null;
+                        setDropTargetId(null);
+                      }}
+                    >
                       <input type="checkbox" checked={!!change.done} onChange={e => toggleChangeDone(change.id, e.target.checked)} aria-label="Mark scene change done" />
                       <textarea
                         className="companion-textarea companion-task-text"
@@ -11679,6 +11949,19 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                           : undefined}
                       />
                       <div className="companion-task-controls">
+                        <button
+                          type="button"
+                          className="companion-drag-handle"
+                          draggable="true"
+                          onDragStart={e => {
+                            draggedChangeId.current = asId(change.id);
+                            e.dataTransfer.effectAllowed = "move";
+                            e.dataTransfer.setData("text/plain", asId(change.id));
+                          }}
+                          onDragEnd={() => { draggedChangeId.current = null; setDropTargetId(null); }}
+                          title="Drag to reorder scene change"
+                          aria-label="Drag to reorder scene change"
+                        >{"\u22EE\u22EE"}</button>
                         <button type="button" className="companion-reorder-button" onClick={() => moveChange(change.id, -1)} disabled={index === 0} title="Move scene change up" aria-label="Move scene change up">{"\u2191"}</button>
                         <button type="button" className="companion-reorder-button" onClick={() => moveChange(change.id, 1)} disabled={index === visibleChanges.length - 1} title="Move scene change down" aria-label="Move scene change down">{"\u2193"}</button>
                         <button type="button" className="companion-archive-button" onClick={() => archiveChange(change.id)} title="Archive scene change" aria-label="Archive scene change">
@@ -12474,7 +12757,7 @@ function App() {
   if (saved) { try { const parsed=JSON.parse(saved); if(Array.isArray(parsed)&&parsed.length>0) return parsed; } catch(e){} }
   return initializeSceneNotes(notes);
 });
-  const [notionUrl, setNotionUrl] = useState(() => loadCanonicalStateFromStorage().notionUrl || "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1");
+  const [notionUrl, setNotionUrl] = useState(() => loadCanonicalStateFromStorage().notionUrl || DEFAULT_NOTION_URL);
   const [sequences, setSequences] = useState(() => {
     const v1 = localStorage.getItem(PICKME_STATE_KEY);
     if (v1) { try { const p=JSON.parse(v1); if(p.sequences) return p.sequences; } catch(e){} }
@@ -12532,7 +12815,7 @@ function App() {
         setSequences(d.sequences);
         setSceneNotes(d.sceneNotes);
         setCategoryNames(d.categoryNames || {});
-        setNotionUrl(d.notionUrl || notionUrl);
+        setNotionUrl(d.notionUrl);
         setNowState(d.now);
         setConversionReport(d.conversionReport);
         setLastSynced(localStorage.getItem(LAST_SYNCED_KEY) || "");
@@ -12773,7 +13056,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260923d').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260924a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
