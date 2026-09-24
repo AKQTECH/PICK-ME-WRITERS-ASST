@@ -3427,6 +3427,37 @@
             gap: 8px;
         }
 
+        .companion-new-idea-panel > summary {
+            background: #FFFFFF;
+            border: 1px solid #F1BBD6;
+            border-radius: 6px;
+            color: #E668A7;
+            cursor: pointer;
+            font-size: 0.76rem;
+            font-weight: 900;
+            list-style: none;
+            min-height: 44px;
+            padding: 12px 14px;
+            text-transform: uppercase;
+        }
+
+        .companion-new-idea-panel > summary::-webkit-details-marker { display: none; }
+
+        .companion-new-idea-fields {
+            display: grid;
+            gap: 12px;
+            padding: 14px 0 8px;
+        }
+
+        .companion-new-idea-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .companion-new-idea-actions .companion-add-button,
+        .companion-new-idea-actions .companion-table-open { min-width: 110px; }
+
         .companion-triage-tabs {
             display: grid;
             gap: 6px;
@@ -4578,7 +4609,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.3";
+const APP_VERSION = "1.2.4";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11167,7 +11198,11 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [sequenceNameDraft, setSequenceNameDraft] = React.useState("");
   const [draftSceneTitle, setDraftSceneTitle] = React.useState("");
   const [draftChangesText, setDraftChangesText] = React.useState("");
+  const [draftIdeaTitle, setDraftIdeaTitle] = React.useState("");
+  const [draftIdeaDetails, setDraftIdeaDetails] = React.useState("");
+  const [draftIdeaCategory, setDraftIdeaCategory] = React.useState("maybe");
   const newScenePanelRef = React.useRef(null);
+  const newIdeaPanelRef = React.useRef(null);
   const ideaDetailSaveTimers = React.useRef({});
   const changeSaveTimers = React.useRef({});
   const changeResizeStarts = React.useRef({});
@@ -11553,6 +11588,51 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     setActiveId(null);
     if (showToast) showToast("Idea archived");
   };
+  const clearNewIdeaDraft = () => {
+    setDraftIdeaTitle("");
+    setDraftIdeaDetails("");
+    setDraftIdeaCategory("maybe");
+    if (newIdeaPanelRef.current) newIdeaPanelRef.current.open = false;
+  };
+  const saveNewIdea = () => {
+    const title = draftIdeaTitle.trim().replace(/\s+/g, " ");
+    if (!title || !setScenes) return;
+    const category = ["maybe", "new", "need", "cut"].includes(draftIdeaCategory) ? draftIdeaCategory : "maybe";
+    const timestamp = Date.now();
+    const id = "companion-idea-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : timestamp.toString(36) + "-" + Math.random().toString(36).slice(2, 8));
+    const card = normalizeCard({
+      id,
+      title,
+      description:draftIdeaDetails.trim(),
+      category,
+      kind:"SCENE",
+      status:category === "cut" ? "cut" : "todo",
+      sequence:null,
+      page:null,
+      changes:[],
+      maybe:false,
+      archived:false,
+      source:"COMPANION_USER",
+      order:timestamp,
+      createdAt:timestamp,
+      updatedAt:timestamp,
+      lastTouchedAt:timestamp
+    }, 0);
+    setScenes(prev => [...safeArray(prev), card]);
+    setIdeaBucket(category);
+    setIdeaSearch("");
+    setActiveId(id);
+    clearNewIdeaDraft();
+    if (showToast) showToast("Idea saved");
+  };
+  const changeIdeaCategory = (cardId, category) => {
+    if (!["maybe", "new", "need", "cut"].includes(category)) return;
+    patchCard(cardId, card => ({
+      category,
+      status:category === "cut" ? "cut" : normalizeStatus(card.status) === "cut" ? "todo" : card.status
+    }));
+    setIdeaBucket(category);
+  };
   const textareaRowCount = (value, minRows, maxRows) => {
     const text = String(value || "");
     const rows = text.split("\n").reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / 22)), 0);
@@ -11726,6 +11806,33 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               <button type="button" className="companion-picker-tab is-active">Ideas</button>
               <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setActiveId(null); }}>Menu</button>
             </div>
+            <details ref={newIdeaPanelRef} className="companion-new-idea-panel">
+              <summary onClick={() => { if (!newIdeaPanelRef.current?.open) setDraftIdeaCategory(ideaBucket === "all" ? "maybe" : ideaBucket); }}>+ New idea</summary>
+              <div className="companion-new-idea-fields">
+                <label className="companion-picker-field">
+                  <span className="companion-picker-label">Idea name</span>
+                  <input className="companion-title-input is-idea" value={draftIdeaTitle}
+                    onChange={e => setDraftIdeaTitle(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); saveNewIdea(); } }}
+                    placeholder="Idea name" aria-label="New idea name" />
+                </label>
+                <label className="companion-picker-field">
+                  <span className="companion-picker-label">Category</span>
+                  <select className="companion-select" value={draftIdeaCategory} onChange={e => setDraftIdeaCategory(e.target.value)} aria-label="New idea category">
+                    {IDEA_INBOX_BUCKETS.filter(bucket => bucket.id !== "all").map(bucket => <option key={bucket.id} value={bucket.id}>{bucket.label}</option>)}
+                  </select>
+                </label>
+                <label className="companion-picker-field">
+                  <span className="companion-picker-label">Details</span>
+                  <textarea className="companion-textarea companion-idea-detail-text" value={draftIdeaDetails}
+                    onChange={e => setDraftIdeaDetails(e.target.value)} placeholder="Add idea details" aria-label="New idea details" rows={4} />
+                </label>
+                <div className="companion-new-idea-actions">
+                  <button type="button" className="companion-add-button" disabled={!draftIdeaTitle.trim()} onClick={saveNewIdea}>Save idea</button>
+                  <button type="button" className="companion-table-open" onClick={clearNewIdeaDraft}>Cancel</button>
+                </div>
+              </div>
+            </details>
             <input
               id="companion-idea-search"
               className="companion-search"
@@ -11778,6 +11885,13 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                               aria-label="Idea name"
                               placeholder="Untitled idea"
                             />
+                          </label>
+                          <label className="companion-idea-edit-field">
+                            <span>Category</span>
+                            <select className="companion-select" value={bucketId} onChange={e => changeIdeaCategory(card.id, e.target.value)} aria-label="Idea category">
+                              {bucketId === "all" && <option value="all" disabled>UNCATEGORIZED</option>}
+                              {IDEA_INBOX_BUCKETS.filter(bucket => bucket.id !== "all").map(bucket => <option key={bucket.id} value={bucket.id}>{bucket.label}</option>)}
+                            </select>
                           </label>
                           <label className="companion-idea-edit-field">
                             <span>Details</span>
@@ -13056,7 +13170,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260924a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260924b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
