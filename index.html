@@ -4743,7 +4743,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.9";
+const APP_VERSION = "1.2.10";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -7584,11 +7584,14 @@ function getSceneCardsForSavedState(savedState) {
 }
 // ─── END SCRIPT COMPANION PRELOAD ─────────────────────────────────────
 
+let temporaryDeviceId = null;
 function getDeviceId() {
-  let id = localStorage.getItem(DEVICE_ID_KEY);
+  let id = localStorage.getItem(DEVICE_ID_KEY) || temporaryDeviceId;
   if (!id) {
     id = "device-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
-    localStorage.setItem(DEVICE_ID_KEY, id);
+    temporaryDeviceId = id;
+    try { localStorage.setItem(DEVICE_ID_KEY, id); }
+    catch (error) { if (error.name !== "QuotaExceededError") throw error; }
   }
   return id;
 }
@@ -8068,7 +8071,54 @@ function mergeStates(localInput, remoteInput) {
   merged.appVersion = APP_VERSION;
   return normalizeState(merged);
 }
+const PICKME_SNAPSHOT_DB = "pickme_writers_assistant_snapshots";
+let inMemorySavedState = null;
+let snapshotWriteQueue = Promise.resolve();
+
+function openSnapshotDb() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) { reject(new Error("IndexedDB unavailable")); return; }
+    const request = indexedDB.open(PICKME_SNAPSHOT_DB, 1);
+    request.onupgradeneeded = () => request.result.createObjectStore("state");
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+    request.onblocked = () => reject(new Error("IndexedDB blocked"));
+  });
+}
+
+async function readSnapshot() {
+  const db = await openSnapshotDb();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction("state", "readonly");
+    const request = transaction.objectStore("state").get("canonical");
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+    transaction.oncomplete = () => db.close();
+    transaction.onerror = () => db.close();
+  });
+}
+
+async function writeSnapshot(state) {
+  const db = await openSnapshotDb();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction("state", "readwrite");
+    transaction.objectStore("state").put(state, "canonical");
+    transaction.oncomplete = () => { db.close(); resolve(); };
+    transaction.onerror = () => { db.close(); reject(transaction.error); };
+    transaction.onabort = () => { db.close(); reject(transaction.error); };
+  });
+}
+
+function queueSnapshot(state, required) {
+  snapshotWriteQueue = snapshotWriteQueue.catch(() => {}).then(() => writeSnapshot(state));
+  snapshotWriteQueue.catch(error => {
+    console.error("Browser snapshot could not be saved:", error);
+    if (required) window.dispatchEvent(new CustomEvent("pickme_storage_error"));
+  });
+}
+
 function loadRawSavedState() {
+  if (inMemorySavedState) return inMemorySavedState;
   const raw = localStorage.getItem(PICKME_STATE_KEY) || localStorage.getItem("pickMeData");
   if (!raw) return null;
   try { return JSON.parse(raw); } catch(e) { console.warn("Saved data could not be read:", e); return null; }
@@ -8111,7 +8161,16 @@ function buildPersistedState(parts) {
 }
 function saveCanonicalState(state) {
   const normalized = normalizeState(state);
-  localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(normalized));
+  let snapshotRequired = false;
+  try {
+    localStorage.setItem(PICKME_STATE_KEY, JSON.stringify(normalized));
+    inMemorySavedState = null;
+  } catch (error) {
+    if (error.name !== "QuotaExceededError") throw error;
+    inMemorySavedState = normalized;
+    snapshotRequired = true;
+  }
+  queueSnapshot(normalized, snapshotRequired);
   return normalized;
 }
 function downloadJsonFile(data, filename) {
@@ -12971,6 +13030,12 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
 
 
 function App() {
+  const [storageError, setStorageError] = useState(false);
+  React.useEffect(() => {
+    const warn = () => setStorageError(true);
+    window.addEventListener("pickme_storage_error", warn);
+    return () => window.removeEventListener("pickme_storage_error", warn);
+  }, []);
   const [activeTab, setActiveTab] = useState(() => {
     const savedTab = localStorage.getItem("pickme_active_tab");
     return savedTab && savedTab !== "script" && savedTab !== "scene-list" ? savedTab : "companion";
@@ -12996,13 +13061,13 @@ function App() {
   React.useEffect(() => { localStorage.setItem("pickme_active_tab", activeTab); }, [activeTab]);
 
   const [songs, setSongs] = useState(() => {
-    const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.songs?.length>0) return p.songs; } catch(e){} }
+    const p = loadRawSavedState();
+    if (p && p.songs?.length > 0) return p.songs;
     return INITIAL_SONGS;
   });
   const [scenes, setScenes] = useState(() => {
-    const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.scenes) return getSceneCardsForSavedState(p); } catch(e){} }
+    const p = loadRawSavedState();
+    if (p && p.scenes) return getSceneCardsForSavedState(p);
     return getInitialSceneCards();
   });
   const PICK_ME_DEFAULT_NOTES = [
@@ -13026,21 +13091,21 @@ function App() {
     return PICK_ME_DEFAULT_NOTES;
   });
   const [sceneNotes, setSceneNotes] = useState(() => {
-  const v1 = localStorage.getItem(PICKME_STATE_KEY);
-  if (v1) { try { const p=JSON.parse(v1); if(Array.isArray(p.sceneNotes)) return p.sceneNotes; } catch(e){} }
+  const p = loadRawSavedState();
+  if (p && Array.isArray(p.sceneNotes)) return p.sceneNotes;
   const saved = localStorage.getItem("pickMeSceneNotes");
   if (saved) { try { const parsed=JSON.parse(saved); if(Array.isArray(parsed)&&parsed.length>0) return parsed; } catch(e){} }
   return initializeSceneNotes(notes);
 });
   const [notionUrl, setNotionUrl] = useState(() => loadCanonicalStateFromStorage().notionUrl || DEFAULT_NOTION_URL);
   const [sequences, setSequences] = useState(() => {
-    const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.sequences) return p.sequences; } catch(e){} }
+    const p = loadRawSavedState();
+    if (p && p.sequences) return p.sequences;
     return {};
   });
   const [categoryNames, setCategoryNames] = useState(() => {
-    const v1 = localStorage.getItem(PICKME_STATE_KEY);
-    if (v1) { try { const p=JSON.parse(v1); if(p.categoryNames) return p.categoryNames; } catch(e){} }
+    const p = loadRawSavedState();
+    if (p && p.categoryNames) return p.categoryNames;
     return { next:"Next", later:"Later", completed:"Completed", cut:"Cut", maybe:"Maybe" };
   });
   // ── Consolidated save: single source of truth, auto-push ──
@@ -13240,6 +13305,14 @@ function App() {
         </select>
       </div>
 
+      {storageError && (
+        <div role="alert" style={{background:"#fff",border:"1px solid #111",padding:"12px 16px",marginBottom:"16px",color:"#111"}}>
+          This browser could not save your latest changes. Keep this page open and download a backup now.
+          <button type="button" className="btn btn-secondary" style={{marginLeft:"12px"}}
+            onClick={() => downloadJsonFile(loadCanonicalStateFromStorage(), exportFilename())}>Download backup</button>
+        </div>
+      )}
+
       {showGlobalSequenceProgress && showSequenceBar && (
         <div className="progress-bar-container">
           {Object.keys(sequences).length > 0 ? (
@@ -13327,11 +13400,18 @@ function App() {
   );
 }
 
-ReactDOM.render(<App />, document.getElementById("root"));
+readSnapshot().then(snapshot => {
+  const local = loadRawSavedState();
+  if (snapshot && Number(snapshot.lastModified || 0) > Number(local && local.lastModified || 0)) {
+    inMemorySavedState = snapshot;
+  }
+}).catch(error => console.warn("Browser snapshot unavailable:", error)).finally(() => {
+  ReactDOM.render(<App />, document.getElementById("root"));
+});
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260925a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260925b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
