@@ -3161,7 +3161,7 @@
         .companion-table-tools {
             display: grid;
             gap: 10px;
-            grid-template-columns: minmax(180px, 2fr) repeat(2, minmax(120px, 1fr)) minmax(160px, 1fr) 44px;
+            grid-template-columns: minmax(180px, 2fr) repeat(2, minmax(120px, 1fr)) minmax(210px, 1.3fr) 44px;
             margin-bottom: 14px;
         }
 
@@ -4743,7 +4743,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.8";
+const APP_VERSION = "1.2.9";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11335,7 +11335,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [tableSearch, setTableSearch] = React.useState("");
   const [tableSequence, setTableSequence] = React.useState("all");
   const [tableStatus, setTableStatus] = React.useState("all");
-  const [tableSort, setTableSort] = React.useState("sequence");
+  const [tableSort, setTableSort] = React.useState("sequence_status");
   const [tableSortDirection, setTableSortDirection] = React.useState("asc");
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [ideaDetailDrafts, setIdeaDetailDrafts] = React.useState({});
@@ -11374,20 +11374,27 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const isSequenceMode = companionMode === "sequence";
   const isIdeasMode = companionMode === "ideas";
   const filtered = sequencedCards.filter(card => card.sequence === effectiveSequenceFilter);
-  const tableStatusOrder = { todo:0, drafted:0, needs_edits:1, cut:2, done:3 };
+  const tableStatusOrder = { done:0, needs_edits:1, todo:2, drafted:2, cut:3 };
   const sceneOrderIndex = new Map(sequencedCards.map((card, index) => [asId(card.id), index]));
   const tableCards = sequencedCards.filter(card =>
     (tableSequence === "all" || card.sequence === tableSequence) &&
     (tableStatus === "all" || (tableStatus === "todo" ? ["todo", "drafted"].includes(normalizeStatus(card.status)) : normalizeStatus(card.status) === tableStatus)) &&
     companionSearchMatches(card.title, tableSearch)
   ).sort((left, right) => {
+    const direction = tableSortDirection === "asc" ? 1 : -1;
+    const titleComparison = String(left.title || "").localeCompare(String(right.title || ""), undefined, { numeric:true });
+    const sceneComparison = sceneOrderIndex.get(asId(left.id)) - sceneOrderIndex.get(asId(right.id));
+    if (tableSort === "sequence" || tableSort === "sequence_status") {
+      const sequenceComparison = activeSequenceOrder.indexOf(left.sequence) - activeSequenceOrder.indexOf(right.sequence);
+      if (sequenceComparison) return sequenceComparison;
+      const statusComparison = (tableStatusOrder[normalizeStatus(left.status)] ?? 9) - (tableStatusOrder[normalizeStatus(right.status)] ?? 9);
+      return ((tableSort === "sequence_status" ? statusComparison : 0) || sceneComparison || titleComparison) * direction;
+    }
     let comparison = 0;
-    if (tableSort === "scene") comparison = String(left.title || "").localeCompare(String(right.title || ""), undefined, { numeric:true });
+    if (tableSort === "scene") comparison = titleComparison;
     else if (tableSort === "status") comparison = (tableStatusOrder[normalizeStatus(left.status)] ?? 9) - (tableStatusOrder[normalizeStatus(right.status)] ?? 9);
     else if (tableSort === "updated") comparison = Number(left.updatedAt || left.lastTouchedAt || 0) - Number(right.updatedAt || right.lastTouchedAt || 0);
-    else comparison = (activeSequenceOrder.indexOf(left.sequence) - activeSequenceOrder.indexOf(right.sequence)) ||
-      (sceneOrderIndex.get(asId(left.id)) - sceneOrderIndex.get(asId(right.id)));
-    return (comparison || String(left.title || "").localeCompare(String(right.title || ""), undefined, { numeric:true })) * (tableSortDirection === "asc" ? 1 : -1);
+    return (comparison || titleComparison) * direction;
   });
   const filteredIdeaCards = ideaCards.filter(card => companionSearchMatches(companionIdeaSearchText(card), ideaSearch));
   const activeIdeaCard = activeId ? ideaCards.find(card => asId(card.id) === asId(activeId)) : null;
@@ -12072,12 +12079,15 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               {["todo", "needs_edits", "cut", "done"].map(status => <option key={status} value={status}>{companionSceneStatusLabel(status)}</option>)}
             </select>
             <select className="companion-table-sort" value={tableSort} onChange={e => { setTableSort(e.target.value); setTableSortDirection(e.target.value === "updated" ? "desc" : "asc"); }} aria-label="Sort scenes by">
-              <option value="sequence">Sort: sequence</option>
+              <option value="sequence_status">Seq: complete first</option>
+              <option value="sequence">Seq: scene order</option>
               <option value="scene">Sort: scene name</option>
-              <option value="status">Sort: status</option>
+              <option value="status">Sort: status across sequences</option>
               <option value="updated">Sort: recently edited</option>
             </select>
-            <button type="button" className="companion-table-direction" onClick={() => setTableSortDirection(value => value === "asc" ? "desc" : "asc")} title="Reverse sort order" aria-label="Reverse sort order">{tableSortDirection === "asc" ? "\u2191" : "\u2193"}</button>
+            <button type="button" className="companion-table-direction" onClick={() => setTableSortDirection(value => value === "asc" ? "desc" : "asc")}
+              title={tableSort.startsWith("sequence") ? "Reverse within each sequence" : "Reverse sort order"}
+              aria-label={tableSort.startsWith("sequence") ? "Reverse within each sequence" : "Reverse sort order"}>{tableSortDirection === "asc" ? "\u2191" : "\u2193"}</button>
           </div>
           {tableCards.length ? (
             <div className="companion-table-scroll">
@@ -13321,7 +13331,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260924f').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260925a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
