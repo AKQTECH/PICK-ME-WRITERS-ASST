@@ -2684,14 +2684,14 @@
         .companion-main-menu {
             display: grid;
             gap: 14px;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
         .companion-picker-tab {
             background: #FFFFFF;
             border: 1px solid var(--companion-line);
             border-radius: 7px;
-            color: var(--companion-active-text);
+            color: #000000;
             cursor: pointer;
             font-family: inherit;
             font-size: 0.78rem;
@@ -2706,7 +2706,7 @@
             background: var(--companion-active);
             border: 1px solid var(--companion-active);
             border-radius: 7px;
-            color: var(--companion-active-text);
+            color: #000000;
             cursor: pointer;
             font-family: inherit;
             font-size: 0.92rem;
@@ -2721,13 +2721,13 @@
         .companion-picker-tab:hover {
             background: var(--companion-hover);
             border-color: var(--companion-hover);
-            color: var(--companion-active-text);
+            color: #000000;
         }
 
         .companion-picker-tab.is-active {
             background: var(--companion-active);
             border-color: var(--companion-active);
-            color: var(--companion-active-text);
+            color: #000000;
         }
 
         .companion-picker-tab:focus-visible,
@@ -2905,6 +2905,96 @@
             background-size: 18px 18px;
             min-height: 44px;
             padding: 10px 40px 10px 12px;
+        }
+
+        .companion-sequence-picker .companion-select {
+            color: #000000;
+            font-size: 1.08rem;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .companion-switcher,
+        .companion-bottom-tools {
+            border-top: 1px solid var(--companion-line);
+            padding-top: 12px;
+        }
+
+        .companion-switcher > summary,
+        .companion-scene-order-panel > summary {
+            color: #E668A7;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 900;
+            list-style: none;
+            padding: 8px 2px;
+            text-transform: uppercase;
+        }
+
+        .companion-switcher > summary::-webkit-details-marker,
+        .companion-scene-order-panel > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .companion-switcher .companion-sequence-picker {
+            margin-top: 12px;
+        }
+
+        .companion-bottom-tools {
+            display: grid;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .companion-scene-order-list {
+            display: grid;
+            gap: 6px;
+            margin: 10px 0 18px;
+        }
+
+        .companion-scene-order-row {
+            align-items: center;
+            border: 1px solid var(--companion-line);
+            border-radius: 4px;
+            display: grid;
+            gap: 8px;
+            grid-template-columns: minmax(0, 1fr) auto;
+            padding: 6px 10px;
+        }
+
+        .companion-scene-order-title {
+            background: none;
+            border: 0;
+            color: #000000;
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.88rem;
+            font-weight: 800;
+            min-height: 44px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .companion-scene-order-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .companion-scene-order-actions .companion-reorder-button,
+        .companion-scene-order-actions .companion-drag-handle,
+        body.pwa-build .companion-scene-order-actions .companion-reorder-button {
+            color: #000000;
+            -webkit-text-fill-color: #000000;
+        }
+
+        body.pwa-build .companion-scene-order-actions .companion-reorder-button {
+            height: 44px;
+            width: 44px;
+        }
+
+        body.pwa-build .companion-notebook .companion-scene-order-title {
+            color: #000000;
+            -webkit-text-fill-color: #000000;
         }
 
         .companion-search,
@@ -4143,7 +4233,16 @@
         body.pwa-build .companion-picker-tabs,
         body.pwa-build .companion-main-menu {
             gap: 12px;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        body.pwa-build .companion-main-menu {
+            grid-template-columns: 1fr;
+        }
+
+        body.pwa-build .companion-notebook .companion-menu-choice,
+        body.pwa-build .companion-notebook .companion-picker-tab {
+            color: #000000;
+            -webkit-text-fill-color: #000000;
         }
 
         body.pwa-build .companion-picker-tab {
@@ -4609,7 +4708,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.5";
+const APP_VERSION = "1.2.7";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -4624,7 +4723,7 @@ const SEQUENCE_TITLES = {
   s1:"MEET AUTUMN",
   s2:"MEET ETHAN / THE DEAL",
   s3:"THE INTERVENTION",
-  s4:"THE MEET CUTE -> YES",
+  s4:"THE MEET CUTE → YES",
   s5:"GAME TIME",
   s6:"THE SQUEEZE",
   s7:"THE UNRAVELING",
@@ -4637,7 +4736,7 @@ const SEQUENCE_TITLES_KEY = "_sequenceTitles";
 const DELETED_SEQUENCES_KEY = "_deletedSequences";
 const KIND_VALUES = ["SCENE","THREAD","TWEAK","DECISION"];
 const STATUS_VALUES = ["todo","drafted","done","needs_edits","cut"];
-const COMPANION_STATUS_VALUES = ["todo","needs_edits","cut"];
+const COMPANION_STATUS_VALUES = ["todo","needs_edits","done"];
 const IDEA_INBOX_BUCKETS = [
   { id:"all", label:"ALL" },
   { id:"maybe", label:"MAYBE" },
@@ -4668,7 +4767,7 @@ function getActiveSequenceOrder(source) {
 function getSequenceTitle(source, seq) {
   const customTitles = safeObject(source && source[SEQUENCE_TITLES_KEY]);
   const custom = String(customTitles[seq] || "").trim();
-  return custom || SEQUENCE_TITLES[seq] || seq;
+  return (custom || SEQUENCE_TITLES[seq] || seq).replace(/\s*->\s*/g, " → ");
 }
 function getSequencePagesDone(source) {
   return getActiveSequenceOrder(source).reduce((sum, seq) => sum + getStoredNumber(source, seq, 0), 0);
@@ -7502,7 +7601,7 @@ function mergeAbsentFields(winner, other) {
   Object.keys(other || {}).forEach(key => {
     const w = winner ? winner[key] : undefined;
     const o = other[key];
-    const winnerMissing = w === undefined || w === null || w === "";
+    const winnerMissing = w === undefined || w === null;
     const otherPresent = !(o === undefined || o === null || o === "");
     if (winnerMissing && otherPresent) merged[key] = o;
   });
@@ -11054,6 +11153,11 @@ function seqRank(seq) {
 function sortSceneCards(list) {
   return [...safeArray(list)].sort((a, b) =>
     (seqRank(a.sequence) - seqRank(b.sequence)) ||
+    ((Number.isFinite(Number(a.companionSceneOrder)) && a.companionSceneOrder !== null && a.companionSceneOrder !== undefined) ||
+      (Number.isFinite(Number(b.companionSceneOrder)) && b.companionSceneOrder !== null && b.companionSceneOrder !== undefined)
+      ? (Number.isFinite(Number(a.companionSceneOrder)) && a.companionSceneOrder !== null && a.companionSceneOrder !== undefined ? Number(a.companionSceneOrder) : Number.MAX_SAFE_INTEGER) -
+        (Number.isFinite(Number(b.companionSceneOrder)) && b.companionSceneOrder !== null && b.companionSceneOrder !== undefined ? Number(b.companionSceneOrder) : Number.MAX_SAFE_INTEGER)
+      : 0) ||
     ((a.page || 9999) - (b.page || 9999)) ||
     ((a.order || 0) - (b.order || 0)) ||
     String(a.title || "").localeCompare(String(b.title || ""))
@@ -11090,7 +11194,6 @@ function companionIdeaSearchText(card) {
   const snippet = companionSnippet(card);
   const visibleSnippet = snippet === "No notes yet." ? "" : snippet;
   return [
-    ideaBucketLabel(inferIdeaBucket(card)),
     card && card.title,
     card && card.description,
     card && card.openQuestions,
@@ -11186,10 +11289,6 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [activeId, setActiveId] = React.useState(null);
   const [companionMode, setCompanionMode] = React.useState("menu");
   const [sequenceView, setSequenceView] = React.useState("pick");
-  const [ideaBucket, setIdeaBucket] = React.useState(() => {
-    const stored = localStorage.getItem("pickme_companion_idea_bucket") || localStorage.getItem("pickme_companion_unplaced_bucket") || "all";
-    return normalizeIdeaBucket(stored) || "all";
-  });
   const [ideaSearch, setIdeaSearch] = React.useState("");
   const [tableSearch, setTableSearch] = React.useState("");
   const [tableSequence, setTableSequence] = React.useState("all");
@@ -11203,17 +11302,17 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [newChangeDrafts, setNewChangeDrafts] = React.useState({});
   const [sequenceNameDraft, setSequenceNameDraft] = React.useState("");
   const [draftSceneTitle, setDraftSceneTitle] = React.useState("");
-  const [draftChangesText, setDraftChangesText] = React.useState("");
   const [draftIdeaTitle, setDraftIdeaTitle] = React.useState("");
   const [draftIdeaDetails, setDraftIdeaDetails] = React.useState("");
-  const [draftIdeaCategory, setDraftIdeaCategory] = React.useState("maybe");
   const newScenePanelRef = React.useRef(null);
+  const sceneSwitcherRef = React.useRef(null);
   const newIdeaPanelRef = React.useRef(null);
   const ideaDetailSaveTimers = React.useRef({});
   const changeSaveTimers = React.useRef({});
   const changeResizeStarts = React.useRef({});
   const noteSaveTimers = React.useRef({});
   const draggedChangeId = React.useRef(null);
+  const draggedSceneId = React.useRef(null);
   const [dropTargetId, setDropTargetId] = React.useState(null);
 
   const state = normalizeState({ scenes, sequences });
@@ -11234,6 +11333,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const isIdeasMode = companionMode === "ideas";
   const filtered = sequencedCards.filter(card => card.sequence === effectiveSequenceFilter);
   const tableStatusOrder = { todo:0, drafted:0, needs_edits:1, cut:2, done:3 };
+  const sceneOrderIndex = new Map(sequencedCards.map((card, index) => [asId(card.id), index]));
   const tableCards = sequencedCards.filter(card =>
     (tableSequence === "all" || card.sequence === tableSequence) &&
     (tableStatus === "all" || (tableStatus === "todo" ? ["todo", "drafted"].includes(normalizeStatus(card.status)) : normalizeStatus(card.status) === tableStatus)) &&
@@ -11243,16 +11343,11 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     if (tableSort === "scene") comparison = String(left.title || "").localeCompare(String(right.title || ""), undefined, { numeric:true });
     else if (tableSort === "status") comparison = (tableStatusOrder[normalizeStatus(left.status)] ?? 9) - (tableStatusOrder[normalizeStatus(right.status)] ?? 9);
     else if (tableSort === "updated") comparison = Number(left.updatedAt || left.lastTouchedAt || 0) - Number(right.updatedAt || right.lastTouchedAt || 0);
-    else comparison = activeSequenceOrder.indexOf(left.sequence) - activeSequenceOrder.indexOf(right.sequence);
+    else comparison = (activeSequenceOrder.indexOf(left.sequence) - activeSequenceOrder.indexOf(right.sequence)) ||
+      (sceneOrderIndex.get(asId(left.id)) - sceneOrderIndex.get(asId(right.id)));
     return (comparison || String(left.title || "").localeCompare(String(right.title || ""), undefined, { numeric:true })) * (tableSortDirection === "asc" ? 1 : -1);
   });
-  const ideaSearchNeedle = ideaSearch.trim().toLowerCase();
-  const filteredIdeaCards = ideaCards.filter(card => {
-    const bucket = inferIdeaBucket(card);
-    if (ideaSearchNeedle && !companionSearchMatches(companionIdeaSearchText(card), ideaSearchNeedle)) return false;
-    if (!ideaSearchNeedle && ideaBucket !== "all" && bucket !== ideaBucket) return false;
-    return true;
-  });
+  const filteredIdeaCards = ideaCards.filter(card => companionSearchMatches(companionIdeaSearchText(card), ideaSearch));
   const activeIdeaCard = activeId ? ideaCards.find(card => asId(card.id) === asId(activeId)) : null;
   const triageCards = activeIdeaCard && !filteredIdeaCards.some(card => asId(card.id) === asId(activeIdeaCard.id))
     ? [activeIdeaCard, ...filteredIdeaCards]
@@ -11268,7 +11363,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
         (Number.isFinite(rightOrder) ? rightOrder : Number.MAX_SAFE_INTEGER);
     }) : [];
   const selectedStatus = selectedIsSequenced ? normalizeStatus(selected.status) : "needs_edits";
-  const companionStatusValue = selectedStatus === "drafted" ? "todo" : (COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "todo");
+  const companionStatusValue = selectedStatus === "drafted" ? "todo" : (COMPANION_STATUS_VALUES.includes(selectedStatus) ? selectedStatus : "");
   const selectedSceneTitle = selected && !isIdeasMode ? (selected.title || "Untitled") : "";
   const newChangeText = selected ? (newChangeDrafts[selected.id] || "") : "";
   const titleDraftValueFor = card => card ? (Object.prototype.hasOwnProperty.call(titleDrafts, card.id) ? titleDrafts[card.id] : (card.title || "")) : "";
@@ -11293,9 +11388,6 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     localStorage.setItem("pickme_companion_sequence_view", sequenceView);
   }, [sequenceView]);
 
-  React.useEffect(() => {
-    localStorage.setItem("pickme_companion_idea_bucket", ideaBucket);
-  }, [ideaBucket]);
 
   React.useEffect(() => {
     if (isIdeasMode) {
@@ -11405,6 +11497,17 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const moveChange = (changeId, direction) => {
     const from = visibleChanges.findIndex(change => asId(change.id) === asId(changeId));
     reorderChange(changeId, from + direction);
+  };
+
+  const reorderScene = (sceneId, to) => {
+    const from = filtered.findIndex(card => asId(card.id) === asId(sceneId));
+    if (from < 0 || to < 0 || to >= filtered.length || from === to) return;
+    const ids = filtered.map(card => asId(card.id));
+    ids.splice(to, 0, ids.splice(from, 1)[0]);
+    const positions = new Map(ids.map((id, index) => [id, index]));
+    setScenes(prev => safeArray(prev).map(card => positions.has(asId(card.id))
+      ? touchRecord(card, { companionSceneOrder:positions.get(asId(card.id)) })
+      : card));
   };
 
   const rememberChangeHeight = (changeId, element) => {
@@ -11597,22 +11700,20 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const clearNewIdeaDraft = () => {
     setDraftIdeaTitle("");
     setDraftIdeaDetails("");
-    setDraftIdeaCategory("maybe");
     if (newIdeaPanelRef.current) newIdeaPanelRef.current.open = false;
   };
   const saveNewIdea = () => {
     const title = draftIdeaTitle.trim().replace(/\s+/g, " ");
     if (!title || !setScenes) return;
-    const category = ["maybe", "new", "need", "cut"].includes(draftIdeaCategory) ? draftIdeaCategory : "maybe";
     const timestamp = Date.now();
     const id = "companion-idea-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : timestamp.toString(36) + "-" + Math.random().toString(36).slice(2, 8));
     const card = normalizeCard({
       id,
       title,
       description:draftIdeaDetails.trim(),
-      category,
+      category:null,
       kind:"SCENE",
-      status:category === "cut" ? "cut" : "todo",
+      status:"todo",
       sequence:null,
       page:null,
       changes:[],
@@ -11625,19 +11726,10 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       lastTouchedAt:timestamp
     }, 0);
     setScenes(prev => [...safeArray(prev), card]);
-    setIdeaBucket(category);
     setIdeaSearch("");
     setActiveId(id);
     clearNewIdeaDraft();
     if (showToast) showToast("Idea saved");
-  };
-  const changeIdeaCategory = (cardId, category) => {
-    if (!["maybe", "new", "need", "cut"].includes(category)) return;
-    patchCard(cardId, card => ({
-      category,
-      status:category === "cut" ? "cut" : normalizeStatus(card.status) === "cut" ? "todo" : card.status
-    }));
-    setIdeaBucket(category);
   };
   const textareaRowCount = (value, minRows, maxRows) => {
     const text = String(value || "");
@@ -11679,7 +11771,6 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const saveNewCompanionScene = () => {
     const sequence = effectiveSequenceFilter;
     const title = String(draftSceneTitle || "").trim().replace(/\s+/g, " ");
-    const firstChange = String(draftChangesText || "").trim();
     if (!sequence || !title || !setScenes) return;
     if (newScenePanelRef.current) newScenePanelRef.current.open = false;
     const id = "companion-scene-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
@@ -11692,10 +11783,10 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       page: null,
       pageRange: "",
       kind: "SCENE",
-      status: firstChange ? "needs_edits" : "todo",
+      status: "todo",
       category: "next",
       description: "",
-      changes: firstChange ? [{ id: "change-" + slugify(id), verb: "ADJUST", text: firstChange, done: false, isRewriteTask: true, archived: false, maybe: false }] : [],
+      changes: [],
       openQuestions: "",
       rippleEffects: "",
       storyThreads: "",
@@ -11703,13 +11794,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       archived: false,
       source: "COMPANION_USER",
       order: timestamp,
+      ...(filtered.some(card => card.companionSceneOrder !== undefined && card.companionSceneOrder !== null)
+        ? { companionSceneOrder:filtered.length } : {}),
       createdAt: timestamp,
       updatedAt: timestamp,
       lastTouchedAt: timestamp
     }, 0);
     setScenes(prev => [...safeArray(prev), card]);
     setDraftSceneTitle("");
-    setDraftChangesText("");
     setActiveId(id);
     setSequenceView("scene");
     if (showToast) showToast("Scene saved");
@@ -11724,16 +11816,35 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
           <input id="companion-new-scene-title" className="companion-title-input" value={draftSceneTitle}
             onChange={e => setDraftSceneTitle(e.target.value)} placeholder="Scene name" aria-label="New scene name" />
         </label>
-        <label className="companion-picker-field" htmlFor="companion-new-scene-changes">
-          <span className="companion-picker-label">First scene change (optional)</span>
-          <textarea id="companion-new-scene-changes" className="companion-textarea companion-task-text"
-            value={draftChangesText} onChange={e => setDraftChangesText(e.target.value)}
-            placeholder="What needs to change?" rows={3} aria-label="First scene change" />
-        </label>
         <button type="button" className="companion-add-button" disabled={!effectiveSequenceFilter || !draftSceneTitle.trim()}
           onClick={saveNewCompanionScene}>Save scene</button>
       </div>
     </details>
+  );
+
+  const renderScenePicker = () => (
+    <div className="companion-sequence-picker">
+      <label className="companion-picker-field" htmlFor="companion-sequence-select">
+        <span className="companion-picker-label">Sequence</span>
+        <select id="companion-sequence-select" className="companion-select" aria-label="Sequence"
+          value={effectiveSequenceFilter}
+          onChange={e => { if (sceneSwitcherRef.current) sceneSwitcherRef.current.open = false; setSequenceFilter(e.target.value); setActiveId(null); setSequenceView("pick"); }}>
+          {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
+          {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
+        </select>
+      </label>
+      <label className="companion-picker-field" htmlFor="companion-scene-select">
+        <span className="companion-picker-label">Scene</span>
+        <select id="companion-scene-select" className="companion-select companion-scene-select"
+          value={sequenceView === "scene" && selected ? selected.id : ""}
+          disabled={filtered.length === 0}
+          onChange={e => { if (e.target.value) { if (sceneSwitcherRef.current) sceneSwitcherRef.current.open = false; setActiveId(e.target.value); setSequenceView("scene"); } }}
+          aria-label="Scene">
+          <option value="">{filtered.length ? "Choose scene" : "No scenes in this sequence"}</option>
+          {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
+        </select>
+      </label>
+    </div>
   );
 
   return (
@@ -11741,8 +11852,9 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       <div className={isMenuMode ? "companion-focus-bar is-menu-home" : "companion-focus-bar"}>
         {isMenuMode && (
           <div className="companion-main-menu" aria-label="Companion menu">
-            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("pick"); setActiveId(null); }}>Sequence</button>
             <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("ideas"); setActiveId(null); }}>Ideas</button>
+            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("pick"); setActiveId(null); }}>Edit a scene</button>
+            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("table"); setActiveId(null); }}>View all scenes</button>
           </div>
         )}
 
@@ -11752,57 +11864,13 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               <button type="button" className="companion-picker-tab is-active" onClick={() => { setSequenceView("pick"); setActiveId(null); }}>Sequence</button>
               <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setSequenceView("pick"); setActiveId(null); }}>Menu</button>
             </div>
-            {sequenceView !== "table" && <div className="companion-sequence-picker">
-              <label className="companion-picker-field" htmlFor="companion-sequence-select">
-                <span className="companion-picker-label">Sequence</span>
-                <select
-                  id="companion-sequence-select"
-                  className="companion-select"
-                  aria-label="Sequence"
-                  value={effectiveSequenceFilter}
-                  onChange={e => { setSequenceFilter(e.target.value); setActiveId(null); setSequenceView("pick"); }}
-                >
-                  {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
-                  {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
-                </select>
-              </label>
-              {sequenceView === "pick" && (
-              <>
-              <label className="companion-picker-field" htmlFor="companion-scene-select">
-                <span className="companion-picker-label">Scene</span>
-                <select
-                  id="companion-scene-select"
-                  className="companion-select companion-scene-select"
-                  value=""
-                  disabled={filtered.length === 0}
-                  onChange={e => { if (e.target.value) { setActiveId(e.target.value); setSequenceView("scene"); } }}
-                  aria-label="Scene"
-                >
-                  <option value="">{filtered.length ? "Choose scene" : "No scenes in this sequence"}</option>
-                  {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
-                </select>
-              </label>
-              <button type="button" className="companion-table-open" onClick={() => { setSequenceView("table"); setActiveId(null); }}>All scenes</button>
-              {renderNewScenePanel()}
-              <details className="companion-sequence-admin-panel">
-                <summary>Sequence settings</summary>
-                <div className="companion-sequence-admin">
-                  <input className="companion-sequence-name-input" value={sequenceNameDraft}
-                    onChange={e => setSequenceNameDraft(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter" && sequenceNameDraft.trim()) renameSequence(); }}
-                    disabled={!effectiveSequenceFilter} aria-label="Sequence name" />
-                  <button type="button" className="companion-sequence-rename-button" onClick={renameSequence}
-                    disabled={!effectiveSequenceFilter || !sequenceNameDraft.trim() || sequenceNameDraft.trim().replace(/\s+/g, " ") === currentSequenceTitle}>Rename</button>
-                  <button type="button" className="companion-sequence-delete-button" onClick={deleteSequence}
-                    disabled={!effectiveSequenceFilter || activeSequenceOrder.length <= 1} title="Delete sequence" aria-label="Delete sequence">
-                    <TrashIcon size={16} />
-                  </button>
-                </div>
+            {sequenceView === "pick" && renderScenePicker()}
+            {sequenceView === "scene" && (
+              <details ref={sceneSwitcherRef} className="companion-switcher">
+                <summary>Switch scene</summary>
+                {renderScenePicker()}
               </details>
-              </>
-              )}
-              {sequenceView === "scene" && renderNewScenePanel()}
-            </div>}
+            )}
           </div>
         )}
 
@@ -11813,7 +11881,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setActiveId(null); }}>Menu</button>
             </div>
             <details ref={newIdeaPanelRef} className="companion-new-idea-panel">
-              <summary onClick={() => { if (!newIdeaPanelRef.current?.open) setDraftIdeaCategory(ideaBucket === "all" ? "maybe" : ideaBucket); }}>+ New idea</summary>
+              <summary>+ New idea</summary>
               <div className="companion-new-idea-fields">
                 <label className="companion-picker-field">
                   <span className="companion-picker-label">Idea name</span>
@@ -11821,12 +11889,6 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                     onChange={e => setDraftIdeaTitle(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); saveNewIdea(); } }}
                     placeholder="Idea name" aria-label="New idea name" />
-                </label>
-                <label className="companion-picker-field">
-                  <span className="companion-picker-label">Category</span>
-                  <select className="companion-select" value={draftIdeaCategory} onChange={e => setDraftIdeaCategory(e.target.value)} aria-label="New idea category">
-                    {IDEA_INBOX_BUCKETS.filter(bucket => bucket.id !== "all").map(bucket => <option key={bucket.id} value={bucket.id}>{bucket.label}</option>)}
-                  </select>
                 </label>
                 <label className="companion-picker-field">
                   <span className="companion-picker-label">Details</span>
@@ -11850,30 +11912,13 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               }}
               placeholder="Search all ideas"
             />
-            <div className="companion-triage-tabs" aria-label="Idea categories">
-              {IDEA_INBOX_BUCKETS.map(bucket => (
-                <button
-                  key={bucket.id}
-                  type="button"
-                  className={ideaBucket === bucket.id ? "companion-triage-tab is-active" : "companion-triage-tab"}
-                  onClick={() => {
-                    setIdeaBucket(bucket.id);
-                    setActiveId(null);
-                  }}
-                >
-                  {bucket.label}
-                </button>
-              ))}
-            </div>
             <div className="companion-unplaced-list">
               {triageCards.length === 0 && <div className="companion-empty-note">No ideas match this view.</div>}
               {triageCards.map(card => {
                 const active = selected && selected.id === card.id;
-                const bucketId = inferIdeaBucket(card);
                 return (
                   <article key={card.id} className={active ? "companion-unplaced-card is-active" : "companion-unplaced-card"}>
                     <button type="button" className="companion-unplaced-card-main" onClick={() => setActiveId(active ? null : card.id)}>
-                      <span className="companion-unplaced-type">{ideaBucketLabel(bucketId)}</span>
                       <span className="companion-unplaced-title">{card.title || "Untitled"}</span>
                       <span className="companion-unplaced-snippet">{companionSnippet(card)}</span>
                     </button>
@@ -11891,13 +11936,6 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                               aria-label="Idea name"
                               placeholder="Untitled idea"
                             />
-                          </label>
-                          <label className="companion-idea-edit-field">
-                            <span>Category</span>
-                            <select className="companion-select" value={bucketId} onChange={e => changeIdeaCategory(card.id, e.target.value)} aria-label="Idea category">
-                              {bucketId === "all" && <option value="all" disabled>UNCATEGORIZED</option>}
-                              {IDEA_INBOX_BUCKETS.filter(bucket => bucket.id !== "all").map(bucket => <option key={bucket.id} value={bucket.id}>{bucket.label}</option>)}
-                            </select>
                           </label>
                           <label className="companion-idea-edit-field">
                             <span>Details</span>
@@ -11979,7 +12017,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
             <div className="companion-empty-note">{isIdeasMode ? "Choose an idea above, assign it to a sequence, or file it away." : "Pick a sequence with scenes."}</div>
           ) : isIdeasMode ? (
             <>
-              <div className="companion-scene-meta">IDEA - {ideaBucketLabel(inferIdeaBucket(selected))}</div>
+              <div className="companion-scene-meta">IDEA</div>
               <div className="companion-title-row">
                 <input
                   className="companion-title-input is-idea"
@@ -12026,6 +12064,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                     onChange={e => setStatus(e.target.value)}
                     disabled={!selected}
                   >
+                    {!companionStatusValue && <option value="" disabled>Choose status</option>}
                     {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{displayStatusLabel(status)}</option>)}
                   </select>
                 </label>
@@ -12123,6 +12162,52 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
           )}
         </div>
       </div>
+      )}
+      {isSequenceMode && sequenceView !== "table" && (
+        <div className="companion-bottom-tools">
+          <details className="companion-scene-order-panel">
+            <summary>Scene order</summary>
+            <div className="companion-scene-order-list">
+              {filtered.length === 0 && <div className="companion-empty-note">No scenes in this sequence yet.</div>}
+              {filtered.map((card, index) => (
+                <div key={card.id} className="companion-scene-order-row"
+                  onDragOver={event => { if (draggedSceneId.current) event.preventDefault(); }}
+                  onDrop={event => { event.preventDefault(); if (draggedSceneId.current) reorderScene(draggedSceneId.current, index); draggedSceneId.current = null; }}>
+                  <button type="button" className="companion-scene-order-title"
+                    onClick={() => { setActiveId(card.id); setSequenceView("scene"); }}>
+                    {card.title || "Untitled"}
+                  </button>
+                  <div className="companion-scene-order-actions">
+                    <button type="button" className="companion-drag-handle" draggable="true"
+                      onDragStart={event => { draggedSceneId.current = asId(card.id); event.dataTransfer.setData("text/plain", asId(card.id)); }}
+                      onDragEnd={() => { draggedSceneId.current = null; }}
+                      aria-label={"Drag to reorder " + (card.title || "scene")} title="Drag to reorder scene">{"\u22EE\u22EE"}</button>
+                    <button type="button" className="companion-reorder-button" disabled={index === 0}
+                      onClick={() => reorderScene(card.id, index - 1)} aria-label={"Move " + (card.title || "scene") + " up"}>{"\u2191"}</button>
+                    <button type="button" className="companion-reorder-button" disabled={index === filtered.length - 1}
+                      onClick={() => reorderScene(card.id, index + 1)} aria-label={"Move " + (card.title || "scene") + " down"}>{"\u2193"}</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </details>
+          {renderNewScenePanel()}
+          <details className="companion-sequence-admin-panel">
+            <summary>Sequence settings</summary>
+            <div className="companion-sequence-admin">
+              <input className="companion-sequence-name-input" value={sequenceNameDraft}
+                onChange={event => setSequenceNameDraft(event.target.value)}
+                onKeyDown={event => { if (event.key === "Enter" && sequenceNameDraft.trim()) renameSequence(); }}
+                disabled={!effectiveSequenceFilter} aria-label="Sequence name" />
+              <button type="button" className="companion-sequence-rename-button" onClick={renameSequence}
+                disabled={!effectiveSequenceFilter || !sequenceNameDraft.trim() || sequenceNameDraft.trim().replace(/\s+/g, " ") === currentSequenceTitle}>Rename</button>
+              <button type="button" className="companion-sequence-delete-button" onClick={deleteSequence}
+                disabled={!effectiveSequenceFilter || activeSequenceOrder.length <= 1} title="Delete sequence" aria-label="Delete sequence">
+                <TrashIcon size={16} />
+              </button>
+            </div>
+          </details>
+        </div>
       )}
     </div>
   );
@@ -13176,7 +13261,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260924c').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260924e').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
