@@ -4743,7 +4743,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.11";
+const APP_VERSION = "1.2.12";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -8609,6 +8609,14 @@ async function syncWithDropbox(localState, attempt) {
   syncInFlight = true;
   try {
     let download = await DBX.downloadData();
+    // A pull may begin before the writer focuses a field. Do not replace React
+    // state until the field's final input and blur handlers have committed.
+    while (document.activeElement && document.activeElement.matches("input, textarea, [contenteditable='true']")) {
+      await new Promise(resolve => {
+        const onBlur = () => { document.removeEventListener("focusout", onBlur); setTimeout(resolve, 0); };
+        document.addEventListener("focusout", onBlur);
+      });
+    }
     // Edits made while the download was in flight must be included in this merge.
     const current = loadCanonicalStateFromStorage();
     let rev = download && download.rev ? download.rev : null;
@@ -11572,7 +11580,9 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const queueChangeDraft = (changeId, value) => {
     setChangeDrafts(prev => ({ ...prev, [changeId]:value }));
     clearChangeTimer(changeId);
-    changeSaveTimers.current[changeId] = window.setTimeout(() => commitChangeDraft(changeId, value, true), 900);
+    // Persist each nonblank edit before a tab switch or mobile suspension can
+    // discard the draft. The blank draft stays local until the writer resolves it.
+    if (String(value).trim()) patchChange(changeId, { text:value });
   };
   const toggleChangeDone = (changeId, done) => {
     if (!selected || isIdeasMode || !selectedIsSequenced) return;
@@ -11717,7 +11727,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const queueIdeaDetailDraft = (cardId, value) => {
     setIdeaDetailDrafts(prev => ({ ...prev, [cardId]:value }));
     clearIdeaDetailTimer(cardId);
-    ideaDetailSaveTimers.current[cardId] = window.setTimeout(() => commitIdeaDetailDraft(cardId, value, true), 900);
+    patchCard(cardId, { description:value, openQuestions:"", rippleEffects:"", storyThreads:"" });
   };
   const archiveSceneCard = cardId => {
     if (!cardId) return;
@@ -11859,23 +11869,13 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     if (!selected) return;
     const id = selected.id;
     setNoteDrafts(prev => ({ ...prev, [id]:value }));
-    window.clearTimeout(noteSaveTimers.current[id]);
-    noteSaveTimers.current[id] = window.setTimeout(() => {
-      patchCard(id, { openQuestions:value });
-      setNoteDrafts(prev => {
-        if (prev[id] !== value) return prev;
-        const copy = { ...prev };
-        delete copy[id];
-        return copy;
-      });
-      delete noteSaveTimers.current[id];
-    }, 700);
+    patchCard(id, { openQuestions:value, rippleEffects:"", storyThreads:"" });
   };
   const commitNotes = () => {
     if (!selected || isIdeasMode || !selectedIsSequenced || !Object.prototype.hasOwnProperty.call(noteDrafts, selected.id)) return;
     window.clearTimeout(noteSaveTimers.current[selected.id]);
     delete noteSaveTimers.current[selected.id];
-    patchSelected({ openQuestions:noteDrafts[selected.id] || "" });
+    patchSelected({ openQuestions:noteDrafts[selected.id] || "", rippleEffects:"", storyThreads:"" });
     setNoteDrafts(prev => {
       const copy = { ...prev };
       delete copy[selected.id];
@@ -13110,7 +13110,7 @@ function App() {
     return { next:"Next", later:"Later", completed:"Completed", cut:"Cut", maybe:"Maybe" };
   });
   // ── Consolidated save: single source of truth, auto-push ──
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (_isFirstRender.current) {
       _isFirstRender.current = false;
       return;
