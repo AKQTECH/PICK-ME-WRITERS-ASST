@@ -3574,6 +3574,16 @@
             padding: 14px 0 8px;
         }
 
+        .companion-idea-tools {
+            display: grid;
+            gap: 8px;
+            grid-template-columns: minmax(0, 1fr) minmax(170px, 210px);
+        }
+
+        .companion-idea-type-select {
+            color: #000000;
+        }
+
         .companion-new-idea-actions {
             display: flex;
             flex-wrap: wrap;
@@ -4390,6 +4400,10 @@
             padding-right: 0;
         }
 
+        body.pwa-build .companion-idea-tools {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
         body.pwa-build .companion-assign-grid {
             gap: 8px;
             grid-template-columns: 1fr;
@@ -4743,7 +4757,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.12";
+const APP_VERSION = "1.2.13";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -4772,6 +4786,14 @@ const DELETED_SEQUENCES_KEY = "_deletedSequences";
 const KIND_VALUES = ["SCENE","THREAD","TWEAK","DECISION"];
 const STATUS_VALUES = ["todo","drafted","done","needs_edits","cut"];
 const COMPANION_STATUS_VALUES = ["todo","needs_edits","done"];
+const COMPANION_IDEA_TYPES = [
+  { id:"question", label:"Question" },
+  { id:"scene", label:"Scene to place" },
+  { id:"runner", label:"Runner" },
+  { id:"payoff", label:"Payoff" },
+  { id:"date_show", label:"Date / show" },
+  { id:"unresolved", label:"When / how TBD" }
+];
 const IDEA_INBOX_BUCKETS = [
   { id:"all", label:"ALL" },
   { id:"maybe", label:"MAYBE" },
@@ -11311,6 +11333,16 @@ function companionIdeaSearchText(card) {
   ].join(" ");
 }
 
+function companionIdeaType(card) {
+  const value = String(card && card.ideaType || "");
+  return COMPANION_IDEA_TYPES.some(type => type.id === value) ? value : "";
+}
+
+function companionIdeaTypeLabel(card) {
+  const type = COMPANION_IDEA_TYPES.find(item => item.id === companionIdeaType(card));
+  return type ? type.label : "Unsorted";
+}
+
 function tokenizeCompanionSearch(value) {
   return String(value || "")
     .toLowerCase()
@@ -11400,6 +11432,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [companionMode, setCompanionMode] = React.useState("menu");
   const [sequenceView, setSequenceView] = React.useState("pick");
   const [ideaSearch, setIdeaSearch] = React.useState("");
+  const [ideaTypeFilter, setIdeaTypeFilter] = React.useState("all");
   const [tableSearch, setTableSearch] = React.useState("");
   const [tableSequence, setTableSequence] = React.useState("all");
   const [tableStatus, setTableStatus] = React.useState("all");
@@ -11414,6 +11447,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [draftSceneTitle, setDraftSceneTitle] = React.useState("");
   const [draftIdeaTitle, setDraftIdeaTitle] = React.useState("");
   const [draftIdeaDetails, setDraftIdeaDetails] = React.useState("");
+  const [draftIdeaType, setDraftIdeaType] = React.useState("");
   const newScenePanelRef = React.useRef(null);
   const sceneSwitcherRef = React.useRef(null);
   const newIdeaPanelRef = React.useRef(null);
@@ -11464,7 +11498,10 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     else if (tableSort === "updated") comparison = Number(left.updatedAt || left.lastTouchedAt || 0) - Number(right.updatedAt || right.lastTouchedAt || 0);
     return (comparison || titleComparison) * direction;
   });
-  const filteredIdeaCards = ideaCards.filter(card => companionSearchMatches(companionIdeaSearchText(card), ideaSearch));
+  const filteredIdeaCards = ideaCards.filter(card =>
+    (ideaTypeFilter === "all" || companionIdeaType(card) === (ideaTypeFilter === "unsorted" ? "" : ideaTypeFilter)) &&
+    companionSearchMatches(companionIdeaSearchText(card), ideaSearch)
+  );
   const activeIdeaCard = activeId ? ideaCards.find(card => asId(card.id) === asId(activeId)) : null;
   const triageCards = activeIdeaCard && !filteredIdeaCards.some(card => asId(card.id) === asId(activeIdeaCard.id))
     ? [activeIdeaCard, ...filteredIdeaCards]
@@ -11825,6 +11862,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const clearNewIdeaDraft = () => {
     setDraftIdeaTitle("");
     setDraftIdeaDetails("");
+    setDraftIdeaType("");
     if (newIdeaPanelRef.current) newIdeaPanelRef.current.open = false;
   };
   const saveNewIdea = () => {
@@ -11836,6 +11874,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       id,
       title,
       description:draftIdeaDetails.trim(),
+      ideaType:draftIdeaType,
       category:null,
       kind:"SCENE",
       status:"todo",
@@ -12011,6 +12050,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                     placeholder="Idea name" aria-label="New idea name" />
                 </label>
                 <label className="companion-picker-field">
+                  <span className="companion-picker-label">Idea type</span>
+                  <select className="companion-select companion-idea-type-select" value={draftIdeaType}
+                    onChange={e => setDraftIdeaType(e.target.value)} aria-label="New idea type">
+                    <option value="">Unsorted</option>
+                    {COMPANION_IDEA_TYPES.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
+                  </select>
+                </label>
+                <label className="companion-picker-field">
                   <span className="companion-picker-label">Details</span>
                   <textarea className="companion-textarea companion-idea-detail-text" value={draftIdeaDetails}
                     onChange={e => setDraftIdeaDetails(e.target.value)} placeholder="Add idea details" aria-label="New idea details" rows={4} />
@@ -12021,17 +12068,30 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                 </div>
               </div>
             </details>
-            <input
-              id="companion-idea-search"
-              className="companion-search"
-              aria-label="Search ideas"
-              value={ideaSearch}
-              onChange={e => {
-                setIdeaSearch(e.target.value);
-                setActiveId(null);
-              }}
-              placeholder="Search all ideas"
-            />
+            <div className="companion-idea-tools">
+              <input
+                id="companion-idea-search"
+                className="companion-search"
+                aria-label="Search ideas"
+                value={ideaSearch}
+                onChange={e => {
+                  setIdeaSearch(e.target.value);
+                  setActiveId(null);
+                }}
+                placeholder="Search ideas"
+              />
+              <select className="companion-select companion-idea-type-select" value={ideaTypeFilter}
+                onChange={e => {
+                  const value = e.target.value;
+                  setIdeaTypeFilter(value);
+                  setDraftIdeaType(COMPANION_IDEA_TYPES.some(type => type.id === value) ? value : "");
+                  setActiveId(null);
+                }} aria-label="Filter ideas by type">
+                <option value="all">All ideas</option>
+                {COMPANION_IDEA_TYPES.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
+                <option value="unsorted">Unsorted</option>
+              </select>
+            </div>
             <div className="companion-unplaced-list">
               {triageCards.length === 0 && <div className="companion-empty-note">No ideas match this view.</div>}
               {triageCards.map(card => {
@@ -12039,6 +12099,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                 return (
                   <article key={card.id} className={active ? "companion-unplaced-card is-active" : "companion-unplaced-card"}>
                     <button type="button" className="companion-unplaced-card-main" onClick={() => setActiveId(active ? null : card.id)}>
+                      {companionIdeaType(card) && <span className="companion-unplaced-type">{companionIdeaTypeLabel(card)}</span>}
                       <span className="companion-unplaced-title">{card.title || "Untitled"}</span>
                       <span className="companion-unplaced-snippet">{companionSnippet(card)}</span>
                     </button>
@@ -12056,6 +12117,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                               aria-label="Idea name"
                               placeholder="Untitled idea"
                             />
+                          </label>
+                          <label className="companion-idea-edit-field">
+                            <span>Idea type</span>
+                            <select className="companion-select companion-idea-type-select" value={companionIdeaType(card)}
+                              onChange={e => patchCard(card.id, { ideaType:e.target.value })} aria-label="Idea type">
+                              <option value="">Unsorted</option>
+                              {COMPANION_IDEA_TYPES.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
+                            </select>
                           </label>
                           <label className="companion-idea-edit-field">
                             <span>Details</span>
