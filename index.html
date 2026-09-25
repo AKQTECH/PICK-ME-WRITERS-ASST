@@ -2923,7 +2923,7 @@
         .companion-switcher > summary {
             color: #E668A7;
             cursor: pointer;
-            font-size: 0.78rem;
+            font-size: 0.68rem;
             font-weight: 900;
             list-style: none;
             padding: 8px 2px;
@@ -3286,7 +3286,53 @@
 
         .companion-scene-title-block {
             display: grid;
-            gap: 7px;
+            gap: 5px;
+        }
+
+        .companion-scene-meta-row {
+            align-items: center;
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+            min-height: 32px;
+        }
+
+        .companion-quick-switch {
+            position: relative;
+        }
+
+        .companion-quick-switch > summary {
+            align-items: center;
+            border: 1px solid #F1BBD6;
+            border-radius: 50%;
+            color: #E668A7;
+            cursor: pointer;
+            display: flex;
+            height: 30px;
+            justify-content: center;
+            list-style: none;
+            width: 30px;
+        }
+
+        .companion-quick-switch > summary::-webkit-details-marker { display: none; }
+
+        .companion-quick-switch-panel {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 6px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            padding: 12px;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 6px);
+            width: min(300px, calc(100vw - 64px));
+            z-index: 10;
+        }
+
+        .companion-quick-switch-panel .companion-sequence-picker {
+            display: grid;
+            gap: 8px;
         }
 
         .companion-status-field {
@@ -3304,17 +3350,18 @@
         }
 
         .companion-title-row.companion-scene-title-row {
-            grid-template-columns: minmax(0, 1fr) 145px 38px;
+            gap: 8px;
+            grid-template-columns: minmax(0, 1fr) 134px 34px;
         }
 
         .companion-scene-title-row .companion-status-select {
             background-position: right 7px center;
             background-size: 14px 14px;
             color: #000000 !important;
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             font-weight: 800;
-            min-height: 46px;
-            padding: 8px 25px 8px 9px;
+            min-height: 40px;
+            padding: 6px 23px 6px 8px;
             text-transform: uppercase;
         }
 
@@ -3518,7 +3565,7 @@
         }
 
         .companion-task-row input[type="checkbox"] {
-            accent-color: #8B0040;
+            accent-color: #C21870;
             height: 16px;
             margin: 14px 0 0;
             width: 16px;
@@ -3581,8 +3628,19 @@
             resize: vertical;
         }
 
+        .companion-title-row.companion-scene-title-row textarea.companion-title-input {
+            font-size: 1.04rem;
+            min-height: 40px;
+            padding: 7px 9px;
+        }
+
         .companion-scene-archive-button {
             margin-top: 3px;
+        }
+
+        .companion-scene-title-row .companion-scene-archive-button {
+            height: 34px;
+            width: 34px;
         }
 
         .companion-unplaced-tools {
@@ -4411,14 +4469,20 @@
         }
 
         body.pwa-build .companion-title-row.companion-scene-title-row {
-            gap: 6px;
-            grid-template-columns: minmax(0, 1fr) 94px 42px;
+            gap: 5px;
+            grid-template-columns: minmax(0, 1fr) 90px 38px;
         }
 
         body.pwa-build .companion-scene-title-row .companion-status-select {
-            font-size: 0.6rem;
-            min-height: 46px;
+            font-size: 0.58rem;
+            min-height: 44px;
             padding: 8px 18px 8px 6px;
+        }
+
+        body.pwa-build .companion-title-row.companion-scene-title-row textarea.companion-title-input {
+            font-size: 0.95rem;
+            min-height: 44px;
+            padding: 9px 10px;
         }
 
         body.pwa-build .companion-title-input {
@@ -4436,6 +4500,12 @@
             height: 42px;
             margin-top: 7px;
             width: 42px;
+        }
+
+        body.pwa-build .companion-scene-title-row .companion-scene-archive-button {
+            height: 38px;
+            margin-top: 3px;
+            width: 38px;
         }
 
         body.pwa-build .companion-triage-tabs {
@@ -4813,7 +4883,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.15";
+const APP_VERSION = "1.2.16";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11380,13 +11450,11 @@ function companionCardSearchText(card) {
 }
 
 function companionIdeaSearchText(card) {
-  const snippet = companionSnippet(card);
-  const visibleSnippet = snippet === "No notes yet." ? "" : snippet;
   return [
     card && card.title,
     card && card.description,
     card && card.openQuestions,
-    visibleSnippet
+    companionSnippet(card)
   ].join(" ");
 }
 
@@ -11476,7 +11544,7 @@ function companionSnippet(card) {
     (isSequenced ? safeArray(card.changes)[0]?.text : "") ||
     ""
   ));
-  return cleaned ? cleaned.slice(0, 190) + (cleaned.length > 190 ? "..." : "") : "No notes yet.";
+  return cleaned ? cleaned.slice(0, 190) + (cleaned.length > 190 ? "..." : "") : "";
 }
 
 
@@ -11507,6 +11575,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [draftIdeaType, setDraftIdeaType] = React.useState("");
   const newScenePanelRef = React.useRef(null);
   const sceneSwitcherRef = React.useRef(null);
+  const quickSceneSwitcherRef = React.useRef(null);
   const newIdeaPanelRef = React.useRef(null);
   const ideaDetailSaveTimers = React.useRef({});
   const changeSaveTimers = React.useRef({});
@@ -12033,27 +12102,27 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     </details>
   );
 
-  const renderSequenceSelect = () => (
-      <label className="companion-picker-field" htmlFor="companion-sequence-select">
+  const renderSequenceSelect = (idPrefix = "companion") => (
+      <label className="companion-picker-field" htmlFor={idPrefix + "-sequence-select"}>
         <span className="companion-picker-label">Sequence</span>
-        <select id="companion-sequence-select" className="companion-select" aria-label="Sequence"
+        <select id={idPrefix + "-sequence-select"} className="companion-select" aria-label="Sequence"
           value={effectiveSequenceFilter}
-          onChange={e => { if (sceneSwitcherRef.current) sceneSwitcherRef.current.open = false; setSequenceFilter(e.target.value); setActiveId(null); if (sequenceView !== "order") setSequenceView("pick"); }}>
+          onChange={e => { if (sceneSwitcherRef.current) sceneSwitcherRef.current.open = false; if (quickSceneSwitcherRef.current) quickSceneSwitcherRef.current.open = false; setSequenceFilter(e.target.value); setActiveId(null); if (sequenceView !== "order") setSequenceView("pick"); }}>
           {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
           {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
         </select>
       </label>
   );
 
-  const renderScenePicker = () => (
+  const renderScenePicker = (idPrefix = "companion") => (
     <div className="companion-sequence-picker">
-      {renderSequenceSelect()}
-      <label className="companion-picker-field" htmlFor="companion-scene-select">
+      {renderSequenceSelect(idPrefix)}
+      <label className="companion-picker-field" htmlFor={idPrefix + "-scene-select"}>
         <span className="companion-picker-label">Scene</span>
-        <select id="companion-scene-select" className="companion-select companion-scene-select"
+        <select id={idPrefix + "-scene-select"} className="companion-select companion-scene-select"
           value={sequenceView === "scene" && selected ? selected.id : ""}
           disabled={filtered.length === 0}
-          onChange={e => { if (e.target.value) { if (sceneSwitcherRef.current) sceneSwitcherRef.current.open = false; setActiveId(e.target.value); setSequenceView("scene"); } }}
+          onChange={e => { if (e.target.value) { if (sceneSwitcherRef.current) sceneSwitcherRef.current.open = false; if (quickSceneSwitcherRef.current) quickSceneSwitcherRef.current.open = false; setActiveId(e.target.value); setSequenceView("scene"); } }}
           aria-label="Scene">
           <option value="">{filtered.length ? "Choose scene" : "No scenes in this sequence"}</option>
           {filtered.map(card => <option key={card.id} value={card.id}>{card.title || "Untitled"}</option>)}
@@ -12147,12 +12216,13 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               {triageCards.length === 0 && <div className="companion-empty-note">No ideas match this view.</div>}
               {triageCards.map(card => {
                 const active = selected && selected.id === card.id;
+                const snippet = companionSnippet(card);
                 return (
                   <article key={card.id} className={active ? "companion-unplaced-card is-active" : "companion-unplaced-card"}>
                     <button type="button" className="companion-unplaced-card-main" onClick={() => setActiveId(active ? null : card.id)}>
                       {companionIdeaType(card) && <span className="companion-unplaced-type">{companionIdeaTypeLabel(card)}</span>}
                       <span className="companion-unplaced-title">{card.title || "Untitled"}</span>
-                      <span className="companion-unplaced-snippet">{companionSnippet(card)}</span>
+                      {snippet && <span className="companion-unplaced-snippet">{snippet}</span>}
                     </button>
                     {active && (
                       <div className="companion-unplaced-actions">
@@ -12308,13 +12378,24 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   <ArchiveTrayIcon size={18} />
                 </button>
               </div>
-              <div className="companion-idea-preview">{companionSnippet(selected)}</div>
+              {companionSnippet(selected) && <div className="companion-idea-preview">{companionSnippet(selected)}</div>}
             </>
           ) : (
             <>
               <div className="companion-scene-header">
                 <div className="companion-scene-title-block">
-                  <div className="companion-scene-meta">{currentSequenceTitle}</div>
+                  <div className="companion-scene-meta-row">
+                    <div className="companion-scene-meta">{currentSequenceTitle}</div>
+                    <details ref={quickSceneSwitcherRef} className="companion-quick-switch">
+                      <summary title="Switch scene" aria-label="Switch scene">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <circle cx="12" cy="12" r="9" />
+                          <path d="M7 9h10l-2.5-2.5M17 15H7l2.5 2.5" />
+                        </svg>
+                      </summary>
+                      <div className="companion-quick-switch-panel">{renderScenePicker("companion-quick")}</div>
+                    </details>
+                  </div>
                   <div className="companion-title-row companion-scene-title-row">
                     <textarea
                       className="companion-title-input"
@@ -12441,7 +12522,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
           {sequenceView === "scene" && (
             <details ref={sceneSwitcherRef} className="companion-switcher">
               <summary>Switch scene</summary>
-              {renderScenePicker()}
+              {renderScenePicker("companion-bottom")}
             </details>
           )}
           {renderNewScenePanel()}
