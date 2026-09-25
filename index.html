@@ -3657,8 +3657,8 @@
             color: #000000;
             font-size: 0.62rem;
             font-weight: 900;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
+            letter-spacing: 0;
+            text-transform: none;
         }
 
         .companion-unplaced-title {
@@ -4757,7 +4757,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.13";
+const APP_VERSION = "1.2.14";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -4788,11 +4788,11 @@ const STATUS_VALUES = ["todo","drafted","done","needs_edits","cut"];
 const COMPANION_STATUS_VALUES = ["todo","needs_edits","done"];
 const COMPANION_IDEA_TYPES = [
   { id:"question", label:"Question" },
-  { id:"scene", label:"Scene to place" },
+  { id:"scene", label:"Scene Needs Where" },
   { id:"runner", label:"Runner" },
   { id:"payoff", label:"Payoff" },
-  { id:"date_show", label:"Date / show" },
-  { id:"unresolved", label:"When / how TBD" }
+  { id:"date_show", label:"Show Detail" },
+  { id:"scene_how", label:"Scene Needs How" }
 ];
 const IDEA_INBOX_BUCKETS = [
   { id:"all", label:"ALL" },
