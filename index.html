@@ -4743,7 +4743,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.10";
+const APP_VERSION = "1.2.11";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -8608,8 +8608,9 @@ async function syncWithDropbox(localState, attempt) {
   if (syncInFlight) { syncQueued = true; return false; }
   syncInFlight = true;
   try {
-    let current = normalizeState(localState || loadCanonicalStateFromStorage());
     let download = await DBX.downloadData();
+    // Edits made while the download was in flight must be included in this merge.
+    const current = loadCanonicalStateFromStorage();
     let rev = download && download.rev ? download.rev : null;
     let remote = null;
     if (download && download.text) {
@@ -13411,7 +13412,7 @@ readSnapshot().then(snapshot => {
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20260925b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20260925c').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
