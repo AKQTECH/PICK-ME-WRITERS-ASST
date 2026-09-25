@@ -2938,6 +2938,11 @@
             margin-top: 12px;
         }
 
+        .companion-bottom-tools > .companion-switcher {
+            border-top: 0;
+            padding-top: 0;
+        }
+
         .companion-bottom-tools {
             display: grid;
             gap: 10px;
@@ -2987,6 +2992,16 @@
         .companion-scene-order-title:focus {
             border-color: #E668A7;
             outline: none;
+        }
+
+        .companion-notebook input.companion-scene-order-title {
+            border: 0 !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+
+        .companion-notebook input.companion-scene-order-title:focus {
+            border-bottom: 1px solid #E668A7 !important;
         }
 
         .companion-scene-order-actions {
@@ -3288,6 +3303,21 @@
             text-transform: uppercase;
         }
 
+        .companion-title-row.companion-scene-title-row {
+            grid-template-columns: minmax(0, 1fr) 145px 38px;
+        }
+
+        .companion-scene-title-row .companion-status-select {
+            background-position: right 7px center;
+            background-size: 14px 14px;
+            color: #000000 !important;
+            font-size: 0.72rem;
+            font-weight: 800;
+            min-height: 46px;
+            padding: 8px 25px 8px 9px;
+            text-transform: uppercase;
+        }
+
         .companion-list-heading {
             align-items: flex-start;
             display: flex;
@@ -3506,6 +3536,14 @@
             transition: none;
         }
 
+        .companion-task-row.is-done .companion-task-text {
+            background: #FFF7FB !important;
+            border-color: #E668A7 !important;
+            color: #E668A7 !important;
+            text-decoration: line-through;
+            -webkit-text-fill-color: #E668A7;
+        }
+
         .companion-note-text {
             min-height: 104px;
         }
@@ -3577,11 +3615,17 @@
         .companion-idea-tools {
             display: grid;
             gap: 8px;
-            grid-template-columns: minmax(0, 1fr) minmax(170px, 210px);
+            grid-template-columns: minmax(0, 1fr) minmax(230px, 260px);
+        }
+
+        @media (max-width: 650px) {
+            .companion-idea-tools { grid-template-columns: minmax(0, 1fr); }
         }
 
         .companion-idea-type-select {
-            color: #000000;
+            color: #E668A7 !important;
+            font-weight: 800;
+            -webkit-text-fill-color: #E668A7;
         }
 
         .companion-new-idea-actions {
@@ -3654,11 +3698,12 @@
         }
 
         .companion-unplaced-type {
-            color: #000000;
+            color: #E668A7;
             font-size: 0.62rem;
             font-weight: 900;
             letter-spacing: 0;
             text-transform: none;
+            -webkit-text-fill-color: #E668A7;
         }
 
         .companion-unplaced-title {
@@ -4365,6 +4410,17 @@
             grid-template-columns: minmax(0, 1fr) 42px;
         }
 
+        body.pwa-build .companion-title-row.companion-scene-title-row {
+            gap: 6px;
+            grid-template-columns: minmax(0, 1fr) 94px 42px;
+        }
+
+        body.pwa-build .companion-scene-title-row .companion-status-select {
+            font-size: 0.6rem;
+            min-height: 46px;
+            padding: 8px 18px 8px 6px;
+        }
+
         body.pwa-build .companion-title-input {
             border-radius: 7px;
             font-size: clamp(1rem, 5vw, 1.18rem);
@@ -4757,7 +4813,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.14";
+const APP_VERSION = "1.2.15";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -4787,12 +4843,13 @@ const KIND_VALUES = ["SCENE","THREAD","TWEAK","DECISION"];
 const STATUS_VALUES = ["todo","drafted","done","needs_edits","cut"];
 const COMPANION_STATUS_VALUES = ["todo","needs_edits","done"];
 const COMPANION_IDEA_TYPES = [
-  { id:"question", label:"Question" },
-  { id:"scene", label:"Scene Needs Where" },
+  { id:"question", label:"Figuring This Out" },
+  { id:"alts", label:"This Needs Alts" },
+  { id:"scene", label:"Where Should This Happen?" },
+  { id:"scene_how", label:"How Should This Happen?" },
   { id:"runner", label:"Runner" },
   { id:"payoff", label:"Payoff" },
-  { id:"date_show", label:"Show Detail" },
-  { id:"scene_how", label:"Scene Needs How" }
+  { id:"date_show", label:"Show Detail" }
 ];
 const IDEA_INBOX_BUCKETS = [
   { id:"all", label:"ALL" },
@@ -12024,12 +12081,6 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setSequenceView("pick"); setActiveId(null); }}>Menu</button>
             </div>
             {sequenceView === "pick" && renderScenePicker()}
-            {sequenceView === "scene" && (
-              <details ref={sceneSwitcherRef} className="companion-switcher">
-                <summary>Switch scene</summary>
-                {renderScenePicker()}
-              </details>
-            )}
           </div>
         )}
 
@@ -12264,7 +12315,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
               <div className="companion-scene-header">
                 <div className="companion-scene-title-block">
                   <div className="companion-scene-meta">{currentSequenceTitle}</div>
-                  <div className="companion-title-row">
+                  <div className="companion-title-row companion-scene-title-row">
                     <textarea
                       className="companion-title-input"
                       value={titleDraftValue}
@@ -12275,24 +12326,21 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                       placeholder="Untitled scene"
                       rows={textareaRowCount(titleDraftValue, 1, 8)}
                     />
+                    <select
+                      id="companion-status-select"
+                      className="companion-status-select"
+                      value={companionStatusValue}
+                      onChange={e => setStatus(e.target.value)}
+                      aria-label="Scene status"
+                    >
+                      {!companionStatusValue && <option value="" disabled>Choose status</option>}
+                      {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{companionSceneStatusLabel(status)}</option>)}
+                    </select>
                     <button type="button" className="companion-archive-button companion-scene-archive-button" onClick={archiveSelectedScene} title="Archive scene" aria-label="Archive scene">
                       <ArchiveTrayIcon size={18} />
                     </button>
                   </div>
                 </div>
-                <label className="companion-status-field" htmlFor="companion-status-select">
-                  <span>Status</span>
-                  <select
-                    id="companion-status-select"
-                    className="companion-status-select"
-                    value={companionStatusValue}
-                    onChange={e => setStatus(e.target.value)}
-                    disabled={!selected}
-                  >
-                    {!companionStatusValue && <option value="" disabled>Choose status</option>}
-                    {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{companionSceneStatusLabel(status)}</option>)}
-                  </select>
-                </label>
               </div>
 
               <details className="companion-section" open>
@@ -12305,7 +12353,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   {visibleChanges.map((change, index) => (
                     <div
                       key={change.id}
-                      className={"companion-task-row" + (dropTargetId === asId(change.id) ? " is-drop-target" : "")}
+                      className={"companion-task-row" + (change.done ? " is-done" : "") + (dropTargetId === asId(change.id) ? " is-drop-target" : "")}
                       onDragOver={e => {
                         if (!draggedChangeId.current || draggedChangeId.current === asId(change.id)) return;
                         e.preventDefault();
@@ -12390,6 +12438,12 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
       )}
       {isSequenceMode && (sequenceView === "pick" || sequenceView === "scene") && (
         <div className="companion-bottom-tools">
+          {sequenceView === "scene" && (
+            <details ref={sceneSwitcherRef} className="companion-switcher">
+              <summary>Switch scene</summary>
+              {renderScenePicker()}
+            </details>
+          )}
           {renderNewScenePanel()}
           <details className="companion-sequence-admin-panel">
             <summary>Sequence settings</summary>
