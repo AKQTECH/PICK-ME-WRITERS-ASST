@@ -3316,6 +3316,16 @@
             width: 100%;
         }
 
+        .companion-table-sequence-label { display: none; }
+
+        .companion-scene-table .companion-table-sequence-edit {
+            color: #000000;
+            font-size: 0.82rem;
+            font-weight: 400;
+            min-height: 36px;
+            padding: 6px 32px 6px 8px;
+        }
+
         body.pwa-build .companion-table-scene {
             color: #000000;
             -webkit-text-fill-color: #000000;
@@ -4638,6 +4648,19 @@
             .companion-scene-table td:nth-child(2) { color: #E668A7; font-weight: 800; }
             .companion-scene-table td:nth-child(3) { font-size: 0.72rem; text-transform: uppercase; }
             .companion-table-scene { min-height: 36px; }
+            .companion-table-sequence-label {
+                color: #E668A7;
+                display: block;
+                font-size: 0.65rem;
+                font-weight: 900;
+                margin-bottom: 4px;
+                text-transform: uppercase;
+            }
+            .companion-scene-table .companion-table-sequence-edit {
+                font-size: 0.82rem;
+                min-height: 44px;
+                padding: 8px 32px 8px 8px;
+            }
             .companion-order-table .companion-order-group { background: #FFF7FB; padding: 0; }
             .companion-order-table .companion-order-group th { box-sizing: border-box; display: block; padding: 14px 4px 8px; width: 100% !important; }
             .companion-order-table .companion-order-row td:first-child { width: 100%; }
@@ -4968,7 +4991,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.21";
+const APP_VERSION = "1.2.22";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11940,6 +11963,31 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     patchCard(cardId, { status });
     if (showToast) showToast("Status updated");
   };
+  const moveSceneToSequence = (cardId, destination) => {
+    if (!activeSequenceOrder.includes(destination)) return;
+    const moving = sequencedCards.find(card => asId(card.id) === asId(cardId));
+    if (!moving || moving.sequence === destination || !setScenes) return;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    setScenes(prev => {
+      const cards = safeArray(prev);
+      const current = cards.find(card => asId(card.id) === asId(cardId));
+      if (!current || current.sequence === destination) return prev;
+      const destinationCards = sortSceneCards(cards.filter(card => card.sequence === destination && !card.archived && !card.maybe));
+      const positions = new Map(destinationCards.map((card, index) => [asId(card.id), index]));
+      return cards.map(card => {
+        if (asId(card.id) === asId(cardId)) {
+          return touchRecord(normalizeCard(card, 0), { sequence:destination, companionSceneOrder:destinationCards.length });
+        }
+        const position = positions.get(asId(card.id));
+        if (position === undefined || card.companionSceneOrder === position) return card;
+        return touchRecord(normalizeCard(card, 0), { companionSceneOrder:position });
+      });
+    });
+    requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+    requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+    if (showToast) showToast("Scene moved");
+  };
   const commitTitleDraft = (cardId) => {
     const id = cardId || (selected && selected.id);
     if (!id || !Object.prototype.hasOwnProperty.call(titleDrafts, id)) return;
@@ -12480,7 +12528,11 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                 <tbody>
                   {tableCards.map(card => <tr key={card.id}>
                     <td><button type="button" className="companion-table-scene" onClick={() => { setSequenceFilter(card.sequence); setActiveId(card.id); setSequenceView("scene"); }} aria-label={"Open scene " + (card.title || "Untitled")}>{card.title || "Untitled"}</button></td>
-                    <td>{getSequenceTitle(state.sequences, card.sequence)}</td>
+                    <td><span className="companion-table-sequence-label">Sequence</span><select className="companion-select companion-table-sequence-edit"
+                      value={card.sequence} onChange={event => moveSceneToSequence(card.id, event.target.value)}
+                      aria-label={"Move " + (card.title || "Untitled") + " to sequence"}>
+                      {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
+                    </select></td>
                     <td>{companionSceneStatusLabel(card.status)}</td>
                   </tr>)}
                 </tbody>
