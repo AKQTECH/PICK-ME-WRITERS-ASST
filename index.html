@@ -3210,6 +3210,64 @@
             width: 100%;
         }
 
+        .companion-table-tools select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%231C1410' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+            background-position: right 18px center !important;
+            background-repeat: no-repeat !important;
+            background-size: 16px 16px !important;
+            padding-right: 46px;
+        }
+
+        .companion-workspace-table th:first-child { width: 39%; }
+        .companion-workspace-table th:nth-child(2) { width: 25%; }
+        .companion-workspace-table th:nth-child(3) { width: 16%; }
+        .companion-workspace-table th:nth-child(4) { width: 20%; }
+
+        .companion-workspace-group th {
+            background: #FFF7FB;
+            border-bottom: 1px solid var(--companion-line);
+            color: #E668A7;
+            font-size: 0.78rem;
+            padding: 14px 12px 8px;
+            width: 100% !important;
+        }
+
+        .companion-workspace-title-row {
+            align-items: center;
+            display: flex;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .companion-workspace-title-row .companion-scene-order-title { min-width: 0; }
+        .companion-workspace-title-row .companion-table-open {
+            flex: 0 0 32px;
+            font-size: 1.1rem;
+            height: 32px;
+            min-height: 32px;
+            padding: 0;
+        }
+
+        .companion-workspace-table .companion-order-status-select {
+            color: #000000;
+            font-size: 0.72rem;
+            font-weight: 800;
+            min-height: 36px;
+            padding: 6px 24px 6px 8px;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .companion-workspace-table .companion-scene-order-actions { align-items: center; }
+        .companion-workspace-table .companion-scene-order-actions .companion-archive-button {
+            height: 36px;
+            width: 36px;
+        }
+
+        .companion-workspace-table .companion-drag-handle:disabled { cursor: default; opacity: 0.3; }
+
         .companion-table-direction {
             background: #FFFFFF;
             border: 1px solid var(--companion-line);
@@ -3316,6 +3374,18 @@
             width: 100%;
         }
 
+        .companion-table-match {
+            color: #000000;
+            display: -webkit-box;
+            font-size: 0.72rem;
+            font-weight: 400;
+            line-height: 1.35;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+
         .companion-table-sequence-label { display: none; }
 
         .companion-scene-table .companion-table-sequence-edit {
@@ -3391,6 +3461,21 @@
         }
 
         .companion-quick-switch > summary::-webkit-details-marker { display: none; }
+
+        .companion-scene-shortcuts { display: flex; gap: 8px; }
+        .companion-scene-shortcuts > button {
+            align-items: center;
+            background: #FFFFFF;
+            border: 1px solid #F1BBD6;
+            border-radius: 50%;
+            color: #F2C8DC;
+            cursor: pointer;
+            display: flex;
+            height: 30px;
+            justify-content: center;
+            padding: 0;
+            width: 30px;
+        }
 
         .companion-quick-switch-panel {
             background: #FFFFFF;
@@ -4678,6 +4763,12 @@
             }
             .companion-order-table .companion-order-status-select { max-width: 190px; }
             .companion-order-table .companion-scene-order-actions { justify-content: flex-end; }
+            .companion-workspace-table .companion-workspace-group { background: #FFF7FB; padding: 0; }
+            .companion-workspace-table .companion-workspace-group th { box-sizing: border-box; display: block; padding: 14px 4px 8px; width: 100% !important; }
+            .companion-workspace-table .companion-workspace-row td { color: #000000; width: 100%; }
+            .companion-workspace-table .companion-workspace-row td:first-child { font-size: 0.95rem; }
+            .companion-workspace-table .companion-order-status-select { max-width: none; min-height: 44px; }
+            .companion-workspace-table .companion-scene-order-actions { justify-content: flex-end; }
         }
 
         body.pwa-build .companion-scene-header {
@@ -4991,7 +5082,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.22";
+const APP_VERSION = "1.2.23";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11592,6 +11683,30 @@ function companionSearchMatches(text, query) {
   return queryTokens.every(token => textTokens.has(token));
 }
 
+function companionSceneSearchSources(card) {
+  return [
+    { label:"Notes", text:String(card.openQuestions || "") },
+    ...safeArray(card.changes)
+      .filter(change => !change.archived && !change.maybe && !isCompanionReferenceChange(card, change))
+      .map(change => ({ label:"Scene change", text:String(change.text || "") }))
+  ];
+}
+
+function companionSceneSearchText(card) {
+  return [card.title || "", ...companionSceneSearchSources(card).map(source => source.text)].join(" ");
+}
+
+function companionSceneSearchPreview(card, query) {
+  const tokens = tokenizeCompanionSearch(query);
+  if (!tokens.length || companionSearchMatches(card.title, query)) return "";
+  const sources = companionSceneSearchSources(card);
+  const match = sources.find(source => companionSearchMatches(source.text, query)) ||
+    sources.find(source => tokens.some(token => tokenizeCompanionSearch(source.text).includes(token)));
+  if (!match) return "";
+  const text = match.text.replace(/\s+/g, " ").trim();
+  return match.label + ": " + (text.length > 160 ? text.slice(0, 160) + "…" : text);
+}
+
 function companionIdeaDetailsText(card) {
   const chunks = [];
   const seen = new Set();
@@ -11672,7 +11787,6 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const [tableStatus, setTableStatus] = React.useState("all");
   const [tableSort, setTableSort] = React.useState("sequence_status");
   const [tableSortDirection, setTableSortDirection] = React.useState("asc");
-  const [orderSequence, setOrderSequence] = React.useState("all");
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [ideaDetailDrafts, setIdeaDetailDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
@@ -11713,15 +11827,12 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const isSequenceMode = companionMode === "sequence";
   const isIdeasMode = companionMode === "ideas";
   const filtered = sequencedCards.filter(card => card.sequence === effectiveSequenceFilter);
-  const orderGroups = activeSequenceOrder
-    .filter(seq => orderSequence === "all" || seq === orderSequence)
-    .map(seq => ({ sequence:seq, cards:sequencedCards.filter(card => card.sequence === seq) }));
   const tableStatusOrder = { done:0, needs_edits:1, todo:2, drafted:2, cut:3 };
   const sceneOrderIndex = new Map(sequencedCards.map((card, index) => [asId(card.id), index]));
   const tableCards = sequencedCards.filter(card =>
     (tableSequence === "all" || card.sequence === tableSequence) &&
     (tableStatus === "all" || (tableStatus === "todo" ? ["todo", "drafted"].includes(normalizeStatus(card.status)) : normalizeStatus(card.status) === tableStatus)) &&
-    companionSearchMatches(card.title, tableSearch)
+    companionSearchMatches(companionSceneSearchText(card), tableSearch)
   ).sort((left, right) => {
     const direction = tableSortDirection === "asc" ? 1 : -1;
     const titleComparison = String(left.title || "").localeCompare(String(right.title || ""), undefined, { numeric:true });
@@ -11738,6 +11849,8 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
     else if (tableSort === "updated") comparison = Number(left.updatedAt || left.lastTouchedAt || 0) - Number(right.updatedAt || right.lastTouchedAt || 0);
     return (comparison || titleComparison) * direction;
   });
+  const canReorderTable = tableSort === "sequence" && tableSortDirection === "asc" &&
+    tableStatus === "all" && !tableSearch.trim();
   const filteredIdeaCards = ideaCards.filter(card =>
     (ideaTypeFilter === "all" || companionIdeaType(card) === (ideaTypeFilter === "unsorted" ? "" : ideaTypeFilter)) &&
     companionSearchMatches(companionIdeaSearchText(card), ideaSearch)
@@ -12272,7 +12385,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
         <span className="companion-picker-label">Sequence</span>
         <select id={idPrefix + "-sequence-select"} className="companion-select" aria-label="Sequence"
           value={effectiveSequenceFilter}
-          onChange={e => { if (sceneSwitcherRef.current) sceneSwitcherRef.current.open = false; if (quickSceneSwitcherRef.current) quickSceneSwitcherRef.current.open = false; setSequenceFilter(e.target.value); setActiveId(null); if (sequenceView !== "order") setSequenceView("pick"); }}>
+          onChange={e => { if (sceneSwitcherRef.current) sceneSwitcherRef.current.open = false; if (quickSceneSwitcherRef.current) quickSceneSwitcherRef.current.open = false; setSequenceFilter(e.target.value); setActiveId(null); setSequenceView("pick"); }}>
           {activeSequenceOrder.length === 0 && <option value="">No sequences</option>}
           {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
         </select>
@@ -12303,15 +12416,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
           <div className="companion-main-menu" aria-label="Companion menu">
             <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("ideas"); setActiveId(null); }}>Ideas</button>
             <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("pick"); setActiveId(null); }}>Edit a scene</button>
-            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("table"); setActiveId(null); }}>View all scenes</button>
-            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("order"); setActiveId(null); }}>View ALL Sequences</button>
+            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("table"); setActiveId(null); }}>View scenes and sequences</button>
           </div>
         )}
 
         {isSequenceMode && (
           <div className="companion-sequence-controls">
             <div className="companion-picker-tabs companion-workspace-nav" aria-label="Sequence workspace">
-              <button type="button" className="companion-picker-tab is-active" onClick={() => { if (sequenceView !== "order") setSequenceView("pick"); setActiveId(null); }}>{sequenceView === "order" ? "All Sequences" : "Sequence"}</button>
+              <button type="button" className="companion-picker-tab is-active" onClick={() => { setSequenceView("pick"); setActiveId(null); }}>Sequence</button>
               <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setSequenceView("pick"); setActiveId(null); }}>Menu</button>
             </div>
             {sequenceView === "pick" && renderScenePicker()}
@@ -12447,61 +12559,11 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
 
       </div>
 
-      {isSequenceMode && sequenceView === "order" && (
-        <section className="companion-table-panel companion-sequence-order-panel" aria-label="View ALL Sequences">
-          <h2 className="companion-table-heading">View ALL Sequences</h2>
-          <div className="companion-table-tools companion-order-tools">
-            <select className="companion-table-sequence" value={orderSequence} onChange={event => setOrderSequence(event.target.value)} aria-label="Filter scene order by sequence">
-              <option value="all">All sequences</option>
-              {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
-            </select>
-          </div>
-          <div className="companion-table-scroll">
-            <table className="companion-scene-table companion-order-table">
-              <thead><tr><th scope="col">Order</th><th scope="col">Scene</th><th scope="col">Status</th><th scope="col">Move</th></tr></thead>
-              <tbody>
-                {orderGroups.map(group => <React.Fragment key={group.sequence}>
-                  <tr className="companion-order-group"><th colSpan="4" scope="colgroup">{getSequenceTitle(state.sequences, group.sequence)}</th></tr>
-                  {group.cards.length === 0 && <tr className="companion-order-row"><td colSpan="4">No scenes in this sequence yet.</td></tr>}
-                  {group.cards.map((card, index) => <tr key={card.id} data-scene-id={card.id} className="companion-order-row"
-                    onDragOver={event => { if (draggedSceneId.current) event.preventDefault(); }}
-                    onDrop={event => { event.preventDefault(); if (draggedSceneId.current) reorderScene(draggedSceneId.current, index, group.sequence); draggedSceneId.current = null; }}>
-                    <td>{index + 1}</td>
-                    <td><input className="companion-scene-order-title" value={titleDraftValueFor(card)}
-                      onChange={event => setTitleDrafts(prev => ({ ...prev, [card.id]:event.target.value }))}
-                      onBlur={() => commitTitleDraft(card.id)}
-                      onKeyDown={event => handleTitleKeyDown(event, card.id)}
-                      aria-label={"Rename scene " + (card.title || "Untitled")} /></td>
-                    <td><span className="companion-order-status-label">Status</span><select className="companion-status-select companion-order-status-select" value={sceneStatusForControl(card)}
-                      onChange={event => setSceneStatusById(card.id, event.target.value)} aria-label={"Status for " + (card.title || "Untitled")}>
-                      {!sceneStatusForControl(card) && <option value="" disabled>Choose status</option>}
-                      {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{companionSceneStatusLabel(status)}</option>)}
-                    </select></td>
-                    <td><div className="companion-scene-order-actions">
-                      <button type="button" className="companion-drag-handle" draggable="true"
-                        onDragStart={event => { draggedSceneId.current = asId(card.id); event.dataTransfer.setData("text/plain", asId(card.id)); }}
-                        onDragEnd={() => { draggedSceneId.current = null; }}
-                        aria-label={"Drag to reorder " + (card.title || "scene")} title="Drag to reorder scene">{"\u22EE\u22EE"}</button>
-                      <button type="button" className="companion-reorder-button" disabled={index === 0}
-                        onClick={() => reorderScene(card.id, index - 1, group.sequence)} aria-label={"Move " + (card.title || "scene") + " up"}>{"\u2191"}</button>
-                      <button type="button" className="companion-reorder-button" disabled={index === group.cards.length - 1}
-                        onClick={() => reorderScene(card.id, index + 1, group.sequence)} aria-label={"Move " + (card.title || "scene") + " down"}>{"\u2193"}</button>
-                      <button type="button" className="companion-archive-button" onClick={() => archiveSceneCard(card.id)}
-                        title="Archive scene" aria-label={"Archive scene " + (card.title || "Untitled")}><ArchiveTrayIcon size={18} /></button>
-                    </div></td>
-                  </tr>)}
-                </React.Fragment>)}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
       {isSequenceMode && sequenceView === "table" && (
-        <section className="companion-table-panel" aria-label="All scenes">
-          <h2 className="companion-table-heading">All scenes</h2>
+        <section className="companion-table-panel" aria-label="View scenes and sequences">
+          <h2 className="companion-table-heading">Scenes and sequences</h2>
           <div className="companion-table-tools">
-            <input className="companion-table-search" type="search" value={tableSearch} onChange={e => setTableSearch(e.target.value)} placeholder="Search scene names" aria-label="Search scene names" />
+            <input className="companion-table-search" type="search" value={tableSearch} onChange={e => setTableSearch(e.target.value)} placeholder="Search scenes, changes, notes" aria-label="Search scenes" />
             <select className="companion-table-sequence" value={tableSequence} onChange={e => setTableSequence(e.target.value)} aria-label="Filter by sequence">
               <option value="all">All sequences</option>
               {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
@@ -12523,18 +12585,53 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
           </div>
           {tableCards.length ? (
             <div className="companion-table-scroll">
-              <table className="companion-scene-table">
-                <thead><tr><th scope="col">Scene</th><th scope="col">Sequence</th><th scope="col">Status</th></tr></thead>
+              <table className="companion-scene-table companion-workspace-table">
+                <thead><tr><th scope="col">Scene</th><th scope="col">Sequence</th><th scope="col">Status</th><th scope="col">Order / archive</th></tr></thead>
                 <tbody>
-                  {tableCards.map(card => <tr key={card.id}>
-                    <td><button type="button" className="companion-table-scene" onClick={() => { setSequenceFilter(card.sequence); setActiveId(card.id); setSequenceView("scene"); }} aria-label={"Open scene " + (card.title || "Untitled")}>{card.title || "Untitled"}</button></td>
-                    <td><span className="companion-table-sequence-label">Sequence</span><select className="companion-select companion-table-sequence-edit"
-                      value={card.sequence} onChange={event => moveSceneToSequence(card.id, event.target.value)}
-                      aria-label={"Move " + (card.title || "Untitled") + " to sequence"}>
-                      {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
-                    </select></td>
-                    <td>{companionSceneStatusLabel(card.status)}</td>
-                  </tr>)}
+                  {tableCards.map((card, index) => {
+                    const preview = companionSceneSearchPreview(card, tableSearch);
+                    const sequenceIndex = sequencedCards.filter(item => item.sequence === card.sequence)
+                      .findIndex(item => asId(item.id) === asId(card.id));
+                    const sequenceCount = counts[card.sequence] || 0;
+                    const canDrag = canReorderTable && sequenceIndex >= 0;
+                    const showGroup = tableSort.startsWith("sequence") && (index === 0 || tableCards[index - 1].sequence !== card.sequence);
+                    return <React.Fragment key={card.id}>
+                      {showGroup && <tr className="companion-workspace-group"><th colSpan="4" scope="colgroup">{getSequenceTitle(state.sequences, card.sequence)}</th></tr>}
+                      <tr data-scene-id={card.id} className="companion-workspace-row"
+                        onDragOver={event => { if (canDrag && draggedSceneId.current) event.preventDefault(); }}
+                        onDrop={event => { event.preventDefault(); if (canDrag && draggedSceneId.current) reorderScene(draggedSceneId.current, sequenceIndex, card.sequence); draggedSceneId.current = null; }}>
+                        <td><div className="companion-workspace-title-row"><input className="companion-scene-order-title" value={titleDraftValueFor(card)}
+                          onChange={event => setTitleDrafts(prev => ({ ...prev, [card.id]:event.target.value }))}
+                          onBlur={() => commitTitleDraft(card.id)} onKeyDown={event => handleTitleKeyDown(event, card.id)}
+                          aria-label={"Rename scene " + (card.title || "Untitled")} />
+                          <button type="button" className="companion-table-open" onClick={() => { setSequenceFilter(card.sequence); setActiveId(card.id); setSequenceView("scene"); }}
+                            aria-label={"Open scene " + (card.title || "Untitled")} title="Open scene">{"\u2192"}</button></div>
+                          {preview && <span className="companion-table-match">{preview}</span>}</td>
+                        <td><span className="companion-table-sequence-label">Sequence</span><select className="companion-select companion-table-sequence-edit"
+                          value={card.sequence} onChange={event => moveSceneToSequence(card.id, event.target.value)}
+                          aria-label={"Move " + (card.title || "Untitled") + " to sequence"}>
+                          {activeSequenceOrder.map(seq => <option key={seq} value={seq}>{getSequenceTitle(state.sequences, seq)}</option>)}
+                        </select></td>
+                        <td><span className="companion-order-status-label">Status</span><select className="companion-status-select companion-order-status-select" value={sceneStatusForControl(card)}
+                          onChange={event => setSceneStatusById(card.id, event.target.value)} aria-label={"Status for " + (card.title || "Untitled")}>
+                          {!sceneStatusForControl(card) && <option value="" disabled>Choose status</option>}
+                          {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{companionSceneStatusLabel(status)}</option>)}
+                        </select></td>
+                        <td><div className="companion-scene-order-actions">
+                          <button type="button" className="companion-drag-handle" draggable={canDrag}
+                            onDragStart={event => { if (!canDrag) return; draggedSceneId.current = asId(card.id); event.dataTransfer.setData("text/plain", asId(card.id)); }}
+                            onDragEnd={() => { draggedSceneId.current = null; }}
+                            disabled={!canDrag} aria-label={"Drag to reorder " + (card.title || "scene")}
+                            title={canDrag ? "Drag to reorder scene" : "Choose Seq: scene order to reorder"}>{"\u22EE\u22EE"}</button>
+                          <button type="button" className="companion-reorder-button" disabled={!canDrag || sequenceIndex === 0}
+                            onClick={() => reorderScene(card.id, sequenceIndex - 1, card.sequence)} aria-label={"Move " + (card.title || "scene") + " up"}>{"\u2191"}</button>
+                          <button type="button" className="companion-reorder-button" disabled={!canDrag || sequenceIndex === sequenceCount - 1}
+                            onClick={() => reorderScene(card.id, sequenceIndex + 1, card.sequence)} aria-label={"Move " + (card.title || "scene") + " down"}>{"\u2193"}</button>
+                          <button type="button" className="companion-archive-button" onClick={() => archiveSceneCard(card.id)}
+                            title="Archive scene" aria-label={"Archive scene " + (card.title || "Untitled")}><ArchiveTrayIcon size={18} /></button>
+                        </div></td>
+                      </tr>
+                    </React.Fragment>})}
                 </tbody>
               </table>
             </div>
@@ -12572,6 +12669,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                 <div className="companion-scene-title-block">
                   <div className="companion-scene-meta-row">
                     <div className="companion-scene-meta">{currentSequenceTitle}</div>
+                    <div className="companion-scene-shortcuts">
                     <details ref={quickSceneSwitcherRef} className="companion-quick-switch">
                       <summary title="Switch scene" aria-label="Switch scene">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -12581,6 +12679,14 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                       </summary>
                       <div className="companion-quick-switch-panel">{renderScenePicker("companion-quick")}</div>
                     </details>
+                    <button type="button" onClick={() => { setActiveId(null); setSequenceView("table"); }}
+                      title="View scenes and sequences" aria-label="View scenes and sequences">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M4 5h16M4 12h16M4 19h16" />
+                        <path d="m16 9 3 3-3 3" />
+                      </svg>
+                    </button>
+                    </div>
                   </div>
                   <div className="companion-title-row companion-scene-title-row">
                     <textarea
