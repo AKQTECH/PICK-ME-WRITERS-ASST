@@ -3684,7 +3684,9 @@
         .companion-title-row.companion-scene-title-row textarea.companion-title-input {
             font-size: 0.72rem;
             min-height: 36px;
-            padding: 5px 9px;
+            overflow: hidden;
+            padding: 11px 9px 3px;
+            resize: none;
         }
 
         .companion-scene-archive-button {
@@ -4535,7 +4537,7 @@
         body.pwa-build .companion-title-row.companion-scene-title-row textarea.companion-title-input {
             font-size: 0.72rem;
             min-height: 44px;
-            padding: 9px 10px;
+            padding: 15px 10px 6px;
         }
 
         body.pwa-build .companion-title-input {
@@ -4943,7 +4945,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.19";
+const APP_VERSION = "1.2.20";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11638,6 +11640,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const newScenePanelRef = React.useRef(null);
   const sceneSwitcherRef = React.useRef(null);
   const quickSceneSwitcherRef = React.useRef(null);
+  const sceneTitleRef = React.useRef(null);
   const newIdeaPanelRef = React.useRef(null);
   const ideaDetailSaveTimers = React.useRef({});
   const changeSaveTimers = React.useRef({});
@@ -11716,6 +11719,22 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
   const titleDraftValue = selected ? titleDraftValueFor(selected) : "";
   const isSequencePickerOpen = isSequenceMode && sequenceView === "pick";
   const showCompanionWorkbench = isSequenceMode && sequenceView === "scene";
+
+  const fitSceneTitle = React.useCallback(() => {
+    const element = sceneTitleRef.current;
+    if (!element) return;
+    element.style.height = "auto";
+    const style = getComputedStyle(element);
+    const minHeight = Number.parseFloat(style.minHeight) || 0;
+    const borders = (Number.parseFloat(style.borderTopWidth) || 0) + (Number.parseFloat(style.borderBottomWidth) || 0);
+    element.style.height = Math.max(minHeight, element.scrollHeight + borders) + "px";
+  }, []);
+  React.useLayoutEffect(fitSceneTitle, [activeId, showCompanionWorkbench, titleDraftValue, fitSceneTitle]);
+  React.useEffect(() => {
+    if (!showCompanionWorkbench) return;
+    window.addEventListener("resize", fitSceneTitle);
+    return () => window.removeEventListener("resize", fitSceneTitle);
+  }, [showCompanionWorkbench, fitSceneTitle]);
 
   React.useEffect(() => {
     if (effectiveSequenceFilter) localStorage.setItem("pickme_companion_sequence_focus", effectiveSequenceFilter);
@@ -12476,6 +12495,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                   </div>
                   <div className="companion-title-row companion-scene-title-row">
                     <textarea
+                      ref={sceneTitleRef}
                       className="companion-title-input"
                       value={titleDraftValue}
                       onChange={e => setTitleDrafts(prev => ({ ...prev, [selected.id]:e.target.value }))}
@@ -12483,7 +12503,7 @@ function ScriptCompanionTab({ scenes, setScenes, sequences, setSequences, showTo
                       onKeyDown={event => handleTitleKeyDown(event, selected.id)}
                       aria-label="Scene name"
                       placeholder="Untitled scene"
-                      rows={textareaRowCount(titleDraftValue, 1, 8)}
+                      rows={1}
                     />
                     <select
                       id="companion-status-select"
