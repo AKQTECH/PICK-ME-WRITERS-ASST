@@ -3175,18 +3175,16 @@
 
         .companion-table-tools {
             align-items: stretch;
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
             gap: 12px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             margin-bottom: 18px;
+            max-width: 780px;
         }
 
-        .companion-table-search { flex: 2 1 210px; }
-        .companion-table-sequence,
-        .companion-table-status { flex: 1 1 155px; }
+        .companion-table-search { grid-column: 1 / -1; }
         .companion-table-sort-controls {
             display: flex;
-            flex: 1.3 1 230px;
             gap: 10px;
             min-width: 0;
         }
@@ -3223,8 +3221,11 @@
             min-height: 44px;
         }
 
-        .companion-order-tools .companion-table-sequence {
-            flex: 0 1 280px;
+        .companion-order-tools .companion-table-sequence { width: min(100%, 280px); }
+
+        @media (max-width: 900px) {
+            .companion-table-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .companion-table-sort-controls { grid-column: 1 / -1; }
         }
 
         .companion-order-table .companion-order-group th {
@@ -3335,6 +3336,8 @@
         .companion-scene-title-block {
             display: grid;
             gap: 5px;
+            max-width: 520px;
+            width: 100%;
         }
 
         .companion-scene-meta-row {
@@ -3401,7 +3404,7 @@
 
         .companion-title-row.companion-scene-title-row {
             gap: 8px;
-            grid-template-columns: minmax(0, 1fr) 134px 34px;
+            grid-template-columns: minmax(0, 1fr) 124px 34px;
         }
 
         .companion-scene-title-row .companion-status-select {
@@ -4940,7 +4943,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.18";
+const APP_VERSION = "1.2.19";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
