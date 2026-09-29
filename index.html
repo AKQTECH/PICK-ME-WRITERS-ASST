@@ -3461,6 +3461,7 @@
             padding-right: 52px;
         }
         .companion-scene-list-items { display: grid; gap: 8px; }
+        .companion-scene-list-count { color: #000000; font-size: 0.76rem; font-weight: 800; margin: 18px 0 0; text-align: left; text-transform: uppercase; }
         .companion-scene-list-row { align-items: center; background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(150px, 210px) 108px; min-width: 0; padding: 8px 12px; }
         .companion-scene-list-row.is-drop-target { outline: 2px solid #E668A7; outline-offset: 2px; }
         .companion-notebook .companion-scene-list-title { background: none; border: 0; color: #000000; cursor: pointer; font: inherit; font-size: 0.9rem; font-weight: 800; min-height: 44px; min-width: 0; overflow-wrap: anywhere; padding: 6px 4px; text-align: left; text-transform: uppercase; }
@@ -5305,7 +5306,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.31";
+const APP_VERSION = "1.2.32";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12311,6 +12312,7 @@ function CompanionSceneList({ scenes, setScenes, notecards, setNotecards, openNo
         </div>
       </div>)}
     </div> : <div className="companion-empty-note">{ordered.length ? "No scenes match this view." : "No scenes yet. Create a notecard to begin."}</div>}
+    <p className="companion-scene-list-count" aria-live="polite">{visible.length} {visible.length === 1 ? "scene" : "scenes"}</p>
   </section>;
 }
 
