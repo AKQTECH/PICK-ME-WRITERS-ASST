@@ -3296,6 +3296,7 @@
         .notecards-workspace.is-focused .notecards-grid { grid-template-columns: minmax(0, 1fr); }
         .notecards-workspace.is-focused .notecard { padding: 28px; }
         .notecards-workspace.is-focused .notecard-title { font-size: 1.35rem; }
+        .notecards-workspace.is-focused .notecard-top { margin-bottom: 24px; }
         .notecards-workspace.is-focused .notecard-drag { display: none; }
         .notecards-workspace.is-focused .notecard-details > summary { font-size: 1rem; }
         .notecards-workspace.is-focused .notecard-details[open] > summary { margin-bottom: 18px; }
@@ -3307,9 +3308,6 @@
         .notecard input.notecard-change-done { appearance: none !important; background: #FFFFFF !important; border: 1.5px solid #C3578D !important; border-radius: 3px !important; box-sizing: border-box !important; cursor: pointer; flex: 0 0 18px; height: 18px !important; margin: 0 !important; min-height: 0 !important; padding: 0 !important; position: relative; width: 18px !important; }
         .notecard input.notecard-change-done:checked { background: #C3578D !important; }
         .notecard-change-done:checked::after { border-bottom: 2px solid #FFFFFF; border-right: 2px solid #FFFFFF; content: ""; height: 8px; left: 5px; position: absolute; top: 2px; transform: rotate(45deg); width: 4px; }
-        .notecard-focus-fields { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
-        .notecard-focus-fields label { color: #000000; display: grid; font-size: 0.72rem; font-weight: 800; gap: 6px; margin: 0; min-width: 200px; text-transform: uppercase; }
-        .notecard-focus-fields select { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; color: #000000; font: inherit; font-size: 0.82rem; min-height: 42px; padding: 8px 12px; }
         .notecards-new {
             align-items: center;
             display: flex;
@@ -3450,7 +3448,6 @@
             .notecards-grid { grid-template-columns: minmax(0, 1fr); }
             .notecards-workspace { padding: 16px 0 4px; }
             .notecards-new { align-items: stretch; flex-direction: column; }
-            .notecard-focus-fields label { width: 100%; }
         }
 
         .companion-table-direction {
@@ -5267,7 +5264,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.27";
+const APP_VERSION = "1.2.28";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12167,11 +12164,6 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
             onDragEnd={() => { draggedId.current = null; setDropTargetId(null); }}>{"\u22EE\u22EE"}</span>
         </div>
         </div>
-        {focusedId && <div className="notecard-focus-fields">
-          <label>Status<select value={COMPANION_STATUS_VALUES.includes(normalizeStatus(sceneById.get(asId(card.sourceSceneId))?.status)) ? normalizeStatus(sceneById.get(asId(card.sourceSceneId))?.status) : "todo"} onChange={event => patchScene(card.sourceSceneId, { status:event.target.value })} aria-label="Notecard scene status">
-            {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{companionSceneStatusLabel(status)}</option>)}
-          </select></label>
-        </div>}
         <details key={focusedId ? "focused-" + card.id : "board-" + card.id} className="notecard-details" ref={element => { if (element && focusedId) element.open = true; }}>
           <summary>Notes</summary>
         <ul className="notecard-change-list">{safeArray(card.changes).filter(change => !change.archived).map(change => <li key={change.id} className={"notecard-change-row" + (change.done ? " is-done" : "")}>
