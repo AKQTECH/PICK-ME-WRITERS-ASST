@@ -5264,7 +5264,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.28";
+const APP_VERSION = "1.2.29";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12033,7 +12033,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
           if (position === undefined) {
             positions.set(sourceId, next.length);
             next.push(touchRecord(normalizeCard({
-              id:sourceId, title:card.title || "Untitled scene", kind:"SCENE", status:card.done ? "done" : "todo",
+              id:sourceId, title:card.title || "Untitled scene", kind:"SCENE", notecardScene:true, status:card.done ? "done" : "todo",
               sequence:null, companionSceneOrder:card.order, openQuestions:card.notes || "",
               changes:safeArray(card.changes), archived:!!card.archived, archivedAt:card.archivedAt || null
             }, next.length)));
@@ -12090,7 +12090,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
     const id = "notecard-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
     const sceneId = "scene-from-" + id;
     const card = touchRecord(normalizeNotecard({ id, sourceSceneId:sceneId, linked:true, order:safeArray(notecards).length, createdAt:nowStamp() }, safeArray(notecards).length));
-    setScenes(previous => [...safeArray(previous), touchRecord(normalizeCard({ id:sceneId, title, kind:"SCENE", status:"todo", sequence:null, openQuestions:"", changes:[] }, safeArray(previous).length))]);
+    setScenes(previous => [...safeArray(previous), touchRecord(normalizeCard({ id:sceneId, title, kind:"SCENE", notecardScene:true, status:"todo", sequence:null, openQuestions:"", changes:[] }, safeArray(previous).length))]);
     setNotecards(previous => [...safeArray(previous), card]);
     setNewTitle("");
     if (showToast) showToast("Notecard added");
@@ -12237,7 +12237,9 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const activeSequenceOrder = getActiveSequenceOrder(state.sequences);
   const companionCards = sortSceneCards(state.scenes.filter(card => !card.archived && (card.kind === "SCENE" || card.kind === "TWEAK")));
   const sequencedCards = companionCards.filter(card => activeSequenceOrder.includes(card.sequence) && !card.maybe);
-  const ideaCards = companionCards.filter(card => !activeSequenceOrder.includes(card.sequence));
+  const ideaCards = companionCards.filter(card =>
+    !activeSequenceOrder.includes(card.sequence) && !card.notecardScene && !asId(card.id).startsWith("scene-from-")
+  );
   const counts = {};
   activeSequenceOrder.forEach(seq => counts[seq] = 0);
   sequencedCards.forEach(card => {
