@@ -3444,10 +3444,42 @@
         .notecard.is-complete .notecard-details textarea { color: #C3578D !important; -webkit-text-fill-color: #C3578D !important; }
         .notecard-add-change button:disabled { cursor: default; opacity: 0.4; }
         .notecard-empty { color: #000000; font-size: 0.82rem; padding: 24px 0; }
+        .notecard-open { display: none; color: #E668A7; font-size: 1.25rem; }
+        .companion-scene-list { padding: 24px 4px 8px; }
+        .companion-scene-list h2 { color: #E668A7; font-size: 1rem; font-weight: 900; margin: 0 0 18px; text-transform: uppercase; }
+        .companion-scene-list-tools { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(180px, 230px); margin-bottom: 18px; }
+        .companion-scene-list-tools input,
+        .companion-scene-list-tools select { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; box-sizing: border-box; color: #000000; font: inherit; min-height: 44px; min-width: 0; padding: 8px 14px; width: 100%; }
+        .companion-scene-list-tools select { padding-right: 32px; }
+        .companion-scene-list-items { display: grid; gap: 8px; }
+        .companion-scene-list-row { align-items: center; background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(150px, 210px) 108px; min-width: 0; padding: 8px 12px; }
+        .companion-scene-list-row.is-drop-target { outline: 2px solid #E668A7; outline-offset: 2px; }
+        .companion-notebook .companion-scene-list-title { background: none; border: 0; color: #000000; cursor: pointer; font: inherit; font-size: 0.9rem; font-weight: 800; min-height: 44px; min-width: 0; overflow-wrap: anywhere; padding: 6px 4px; text-align: left; text-transform: uppercase; }
+        .companion-scene-list-title:hover { color: #C3578D; }
+        .companion-scene-list-status { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.76rem; font-weight: 800; min-height: 44px; min-width: 0; padding: 8px 12px; text-transform: uppercase; width: 100%; }
+        .companion-scene-list-order { align-items: center; display: flex; justify-content: end; }
+        .companion-scene-list-order button { display: none; }
+        .companion-scene-list-drag { align-items: center; color: #000000; cursor: grab; display: inline-flex; font-size: 1.18rem; height: 44px; justify-content: center; width: 44px; }
+        .companion-scene-list-drag:active { cursor: grabbing; }
         @media (max-width: 760px) {
             .notecards-grid { grid-template-columns: minmax(0, 1fr); }
             .notecards-workspace { padding: 16px 0 4px; }
             .notecards-new { align-items: stretch; flex-direction: column; }
+            .notecards-workspace.is-focused .notecard { padding: 16px; }
+            .notecards-workspace.is-focused .notecard-title { font-size: 1.05rem; }
+            .notecard-top { align-items: stretch; flex-direction: column; gap: 4px; }
+            .notecard-actions { flex-wrap: wrap; justify-content: end; margin-left: 0; }
+            .notecard-open { display: inline-flex; }
+            .notecard-icon-button, .notecard-complete-label, .notecard-drag { flex-basis: 44px; height: 44px; }
+            .notecard-change-row button, .notecard-add-change button { min-height: 44px; min-width: 44px; }
+            .notecard-details > summary { min-height: 44px; padding: 10px 0; }
+            .companion-scene-list { padding: 16px 0 4px; }
+            .companion-scene-list-tools { grid-template-columns: minmax(0, 1fr); }
+            .companion-scene-list-row { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; padding: 10px; }
+            .companion-scene-list-title { grid-column: 1 / -1; }
+            .companion-scene-list-order button { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; color: #000000; display: inline-flex; font: inherit; height: 44px; justify-content: center; align-items: center; width: 44px; }
+            .companion-scene-list-order button:disabled { opacity: 0.35; }
+            .companion-scene-list-drag { display: none; }
         }
 
         .companion-table-direction {
@@ -5264,7 +5296,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.29";
+const APP_VERSION = "1.2.30";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11222,8 +11254,8 @@ function SettingsTab({
       </div>
       <div className="settings-block">
         <div className="settings-block-title">Archived Companion Items</div>
-        <div className="settings-muted-copy">Archived scenes, rewrite tasks{APP_BUILD === "DESKTOP" ? ", and notecards" : ""} live here.</div>
-        {!archivedSceneCards.length && !archivedTaskRows.length && !(APP_BUILD === "DESKTOP" && archivedNotecards.length) && <div style={{fontSize:"0.9em",color:"var(--text-light)"}}>Nothing archived yet.</div>}
+        <div className="settings-muted-copy">Archived scenes, rewrite tasks, and notecards live here.</div>
+        {!archivedSceneCards.length && !archivedTaskRows.length && !archivedNotecards.length && <div style={{fontSize:"0.9em",color:"var(--text-light)"}}>Nothing archived yet.</div>}
         {archivedSceneCards.length > 0 && (
           <details ref={archivedScenesRef} style={{marginBottom:"12px"}}>
             <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Archived scenes ({archivedSceneCards.length})</summary>
@@ -11253,7 +11285,7 @@ function SettingsTab({
             </div>
           </details>
         )}
-        {APP_BUILD === "DESKTOP" && archivedNotecards.length > 0 && (
+        {archivedNotecards.length > 0 && (
           <details ref={archivedNotecardsRef} style={{marginBottom:"12px"}}>
             <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Archived notecards ({archivedNotecards.length})</summary>
             <div className="settings-archive-list">
@@ -12006,11 +12038,34 @@ function companionSnippet(card) {
 }
 
 
-function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showToast }) {
+function reorderSceneNotecards(orderedSceneIds, notecards, setNotecards, setScenes) {
+  const positions = new Map(orderedSceneIds.map((id, index) => [asId(id), index]));
+  setNotecards(previous => safeArray(previous).map(card => positions.has(asId(card.sourceSceneId))
+    ? touchRecord(card, { order:positions.get(asId(card.sourceSceneId)) }) : card));
+  setScenes(previous => safeArray(previous).map(scene => positions.has(asId(scene.id))
+    ? touchRecord(scene, { companionSceneOrder:positions.get(asId(scene.id)) }) : scene));
+}
+
+function seedSceneNotecards(scenes, setNotecards) {
+  const eligible = sortSceneCards(safeArray(scenes).filter(scene =>
+    !scene.archived && !scene.maybe && ["SCENE", "TWEAK"].includes(scene.kind) &&
+    (scene.sequence || scene.notecardScene || asId(scene.id).startsWith("scene-from-"))
+  ));
+  setNotecards(previous => {
+    const known = new Set(safeArray(previous).map(card => asId(card.sourceSceneId)));
+    const missing = eligible.filter(scene => !known.has(asId(scene.id)));
+    if (!missing.length) return previous;
+    return [...safeArray(previous), ...missing.map((scene, index) => normalizeNotecard({
+      id:"notecard-scene-" + asId(scene.id), sourceSceneId:asId(scene.id), linked:true,
+      order:safeArray(previous).length + index, createdAt:nowStamp()
+    }, safeArray(previous).length + index))];
+  });
+}
+
+function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showToast, focusedId, setFocusedId }) {
   const [newTitle, setNewTitle] = React.useState("");
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
-  const [focusedId, setFocusedId] = React.useState(null);
   const [dropTargetId, setDropTargetId] = React.useState(null);
   const draggedId = React.useRef(null);
   const sizeNote = element => {
@@ -12020,8 +12075,6 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   };
 
   React.useEffect(() => {
-    if (APP_BUILD !== "DESKTOP") return;
-    const sceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
     const unlinked = safeArray(notecards).filter(card => !card.linked);
     if (unlinked.length) {
       setScenes(previous => {
@@ -12055,17 +12108,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
         ? touchRecord(card, { linked:true, sourceSceneId:asId(card.sourceSceneId) || ("scene-from-" + asId(card.id)) }) : card));
       return;
     }
-    const knownSources = new Set(safeArray(notecards).map(card => asId(card.sourceSceneId)).filter(Boolean));
-    const missing = sortSceneCards(safeArray(scenes).filter(scene =>
-      !scene.archived && !scene.maybe && ["SCENE", "TWEAK"].includes(scene.kind) && scene.sequence && !knownSources.has(asId(scene.id))
-    ));
-    if (missing.length) setNotecards(previous => [
-      ...safeArray(previous),
-      ...missing.map((scene, index) => normalizeNotecard({
-        id:"notecard-scene-" + asId(scene.id), sourceSceneId:asId(scene.id), linked:true,
-        order:safeArray(previous).length + index, createdAt:nowStamp()
-      }, safeArray(previous).length + index))
-    ]);
+    seedSceneNotecards(scenes, setNotecards);
   }, [scenes, notecards, setScenes, setNotecards]);
 
   const sceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
@@ -12108,12 +12151,8 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
     const to = ids.indexOf(asId(targetId));
     if (from < 0 || to < 0 || from === to) return;
     ids.splice(to, 0, ids.splice(from, 1)[0]);
-    const positions = new Map(ids.map((id, index) => [id, index]));
-    setNotecards(previous => safeArray(previous).map(card => positions.has(asId(card.id))
-      ? touchRecord(card, { order:positions.get(asId(card.id)) }) : card));
-    const scenePositions = new Map(visible.map(card => [asId(card.sourceSceneId), positions.get(asId(card.id))]));
-    setScenes(previous => safeArray(previous).map(scene => scenePositions.has(asId(scene.id))
-      ? touchRecord(scene, { companionSceneOrder:scenePositions.get(asId(scene.id)) }) : scene));
+    const sceneByCard = new Map(visible.map(card => [asId(card.id), asId(card.sourceSceneId)]));
+    reorderSceneNotecards(ids.map(id => sceneByCard.get(id)), notecards, setNotecards, setScenes);
   };
 
   const focused = visible.find(card => asId(card.id) === asId(focusedId));
@@ -12151,6 +12190,8 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
           onBlur={() => commitTitle(card)} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }}
           aria-label={"Notecard title " + card.title} />
         <div className="notecard-actions">
+          {!focusedId && <button type="button" className="notecard-icon-button notecard-open" onClick={() => setFocusedId(card.id)}
+            title="Open notecard" aria-label={"Open notecard " + card.title}>{"\u2192"}</button>}
           <label className="notecard-complete-label" title="Mark notecard complete">
             <input type="checkbox" className="notecard-complete" checked={!!card.done}
               onChange={event => patchScene(card.sourceSceneId, { status:event.target.checked ? "done" : "needs_edits" })} aria-label={"Mark notecard complete " + card.title} />
@@ -12178,7 +12219,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
           <button type="button" className="notecard-icon-button" onClick={() => patchScene(card.sourceSceneId, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, archiveFields()) : item) }))}
             title="Remove notecard note" aria-label="Remove notecard note">{"\u00d7"}</button>
         </li>)}</ul>
-        {!focusedId && card.notes && <div className="notecard-note-row">
+        {card.notes && <div className="notecard-note-row">
           <span className="notecard-bullet" aria-hidden="true">{"\u2022"}</span>
           <textarea id={"notecard-notes-" + card.id} className="notecard-notes" value={card.notes || ""} rows={1} ref={sizeNote}
             onChange={event => { sizeNote(event.target); patchScene(card.sourceSceneId, { openQuestions:event.target.value, rippleEffects:"", storyThreads:"" }); }} aria-label={"Notecard notes for " + card.title} />
@@ -12196,6 +12237,74 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   </section>;
 }
 
+function CompanionSceneList({ scenes, setScenes, notecards, setNotecards, openNotecard }) {
+  const [search, setSearch] = React.useState("");
+  const [status, setStatus] = React.useState("all");
+  const [dropId, setDropId] = React.useState(null);
+  const draggedId = React.useRef(null);
+  React.useEffect(() => { seedSceneNotecards(scenes, setNotecards); }, [scenes, setNotecards]);
+  const sceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
+  const ordered = safeArray(notecards).map(meta => {
+    const scene = sceneById.get(asId(meta.sourceSceneId));
+    return scene && !scene.archived ? { meta, scene } : null;
+  }).filter(Boolean).sort((a, b) => Number(a.meta.order || 0) - Number(b.meta.order || 0));
+  const visible = ordered.filter(({ scene }) =>
+    (status === "all" || (status === "todo" ? ["todo", "drafted"].includes(normalizeStatus(scene.status)) : normalizeStatus(scene.status) === status)) &&
+    companionSearchMatches(companionSceneSearchText(scene), search)
+  );
+  const patchScene = (id, patch) => setScenes(previous => safeArray(previous).map(scene =>
+    asId(scene.id) === asId(id) ? touchRecord(normalizeCard(scene, 0), patch) : scene));
+  const move = (sourceId, targetId) => {
+    const shown = visible.map(item => asId(item.scene.id));
+    const from = shown.indexOf(asId(sourceId));
+    const to = shown.indexOf(asId(targetId));
+    if (from < 0 || to < 0 || from === to) return;
+    shown.splice(to, 0, shown.splice(from, 1)[0]);
+    const shownSet = new Set(shown);
+    let nextShown = 0;
+    const ids = ordered.map(item => {
+      const id = asId(item.scene.id);
+      return shownSet.has(id) ? shown[nextShown++] : id;
+    });
+    reorderSceneNotecards(ids, notecards, setNotecards, setScenes);
+  };
+  return <section className="companion-scene-list" aria-label="Scene List">
+    <h2>Scene List</h2>
+    <div className="companion-scene-list-tools">
+      <input type="search" value={search} onChange={event => setSearch(event.target.value)}
+        placeholder="Search scenes, changes, notes" aria-label="Search scenes" />
+      <select value={status} onChange={event => setStatus(event.target.value)} aria-label="Filter scenes by status">
+        <option value="all">All statuses</option>
+        {COMPANION_STATUS_VALUES.map(value => <option key={value} value={value}>{companionSceneStatusLabel(value)}</option>)}
+      </select>
+    </div>
+    {visible.length ? <div className="companion-scene-list-items">
+      {visible.map((item, index) => <div key={item.scene.id} className={"companion-scene-list-row" + (dropId === item.scene.id ? " is-drop-target" : "")}
+        data-scene-id={item.scene.id} onDoubleClick={() => openNotecard(item.meta.id)}
+        onDragOver={event => { if (draggedId.current && draggedId.current !== item.scene.id) { event.preventDefault(); setDropId(item.scene.id); } }}
+        onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDropId(null); }}
+        onDrop={event => { event.preventDefault(); if (draggedId.current) move(draggedId.current, item.scene.id); draggedId.current = null; setDropId(null); }}>
+        <button type="button" className="companion-scene-list-title" onClick={() => openNotecard(item.meta.id)}
+          aria-label={"Open notecard " + item.scene.title}>{item.scene.title || "Untitled scene"}</button>
+        <select className="companion-scene-list-status" value={COMPANION_STATUS_VALUES.includes(normalizeStatus(item.scene.status)) ? normalizeStatus(item.scene.status) : "todo"}
+          onChange={event => patchScene(item.scene.id, { status:event.target.value })} aria-label={"Status for " + item.scene.title}>
+          {COMPANION_STATUS_VALUES.map(value => <option key={value} value={value}>{companionSceneStatusLabel(value)}</option>)}
+        </select>
+        <div className="companion-scene-list-order">
+          <button type="button" disabled={index === 0} onClick={() => move(item.scene.id, visible[index - 1].scene.id)}
+            aria-label={"Move " + item.scene.title + " up"}>↑</button>
+          <button type="button" disabled={index === visible.length - 1} onClick={() => move(item.scene.id, visible[index + 1].scene.id)}
+            aria-label={"Move " + item.scene.title + " down"}>↓</button>
+          <span role="button" tabIndex="0" draggable="true" className="companion-scene-list-drag" title="Drag to reorder scene"
+            aria-label={"Drag to reorder " + item.scene.title}
+            onDragStart={event => { draggedId.current = item.scene.id; event.dataTransfer.setData("text/plain", item.scene.id); event.dataTransfer.effectAllowed = "move"; }}
+            onDragEnd={() => { draggedId.current = null; setDropId(null); }}>⋮⋮</span>
+        </div>
+      </div>)}
+    </div> : <div className="companion-empty-note">{ordered.length ? "No scenes match this view." : "No scenes yet. Create a notecard to begin."}</div>}
+  </section>;
+}
+
 function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequences, setSequences, showToast }) {
   const [sequenceFilter, setSequenceFilter] = React.useState(() => {
     const stored = localStorage.getItem("pickme_companion_sequence_focus");
@@ -12203,6 +12312,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   });
   const [activeId, setActiveId] = React.useState(null);
   const [companionMode, setCompanionMode] = React.useState("menu");
+  const [focusedNotecardId, setFocusedNotecardId] = React.useState(null);
   const [sequenceView, setSequenceView] = React.useState("pick");
   const [ideaSearch, setIdeaSearch] = React.useState("");
   const [ideaTypeFilter, setIdeaTypeFilter] = React.useState("all");
@@ -12233,6 +12343,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const draggedChangeId = React.useRef(null);
   const [dropTargetId, setDropTargetId] = React.useState(null);
 
+
   const state = normalizeState({ scenes, sequences });
   const activeSequenceOrder = getActiveSequenceOrder(state.sequences);
   const companionCards = sortSceneCards(state.scenes.filter(card => !card.archived && (card.kind === "SCENE" || card.kind === "TWEAK")));
@@ -12251,7 +12362,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const isMenuMode = companionMode === "menu";
   const isSequenceMode = companionMode === "sequence";
   const isIdeasMode = companionMode === "ideas";
-  const isNotecardsMode = APP_BUILD === "DESKTOP" && companionMode === "notecards";
+  const isNotecardsMode = companionMode === "notecards";
+  const isSceneListMode = companionMode === "scene-list";
   const filtered = sequencedCards.filter(card => card.sequence === effectiveSequenceFilter);
   const tableStatusOrder = { done:0, needs_edits:1, todo:2, drafted:2, cut:3 };
   const sceneOrderIndex = new Map(sequencedCards.map((card, index) => [asId(card.id), index]));
@@ -12692,6 +12804,29 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     setSequenceView("scene");
     if (showToast) showToast("Assigned to " + getSequenceTitle(state.sequences, sequence));
   };
+  const turnIdeaIntoNotecard = card => {
+    const id = asId(card.id);
+    const title = String(titleDraftValueFor(card) || "").trim().replace(/\s+/g, " ");
+    if (!title) { if (showToast) showToast("Idea name cannot be blank"); return; }
+    const details = String(ideaDetailDraftValueFor(card) || "").trim();
+    clearIdeaDetailTimer(id);
+    setScenes(previous => safeArray(previous).map(scene => asId(scene.id) === id
+      ? touchRecord(normalizeCard(scene, 0), {
+          title, description:details, openQuestions:details, rippleEffects:"", storyThreads:"",
+          kind:"SCENE", notecardScene:true, status:"todo", sequence:null
+        }) : scene));
+    const existing = safeArray(notecards).find(meta => asId(meta.sourceSceneId) === id);
+    const notecardId = existing ? existing.id : "notecard-idea-" + id;
+    if (!existing) setNotecards(previous => [...safeArray(previous), touchRecord(normalizeNotecard({
+      id:notecardId, sourceSceneId:id, linked:true, order:safeArray(previous).length, createdAt:nowStamp()
+    }, safeArray(previous).length))]);
+    setTitleDrafts(previous => { const next = { ...previous }; delete next[id]; return next; });
+    setIdeaDetailDrafts(previous => { const next = { ...previous }; delete next[id]; return next; });
+    setActiveId(null);
+    setFocusedNotecardId(notecardId);
+    setCompanionMode("notecards");
+    if (showToast) showToast("Idea turned into a notecard");
+  };
   const archiveIdeaCard = (cardId) => {
     if (!cardId) return;
     patchCard(cardId, archiveFields());
@@ -12850,9 +12985,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
         {isMenuMode && (
           <div className="companion-main-menu" aria-label="Companion menu">
             <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("ideas"); setActiveId(null); }}>Ideas</button>
-            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("pick"); setActiveId(null); }}>Edit a scene</button>
-            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("sequence"); setSequenceView("table"); setActiveId(null); }}>View scenes and sequences</button>
-            {APP_BUILD === "DESKTOP" && <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("notecards"); setActiveId(null); }}>Notecards</button>}
+            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("notecards"); setFocusedNotecardId(null); setActiveId(null); }}>Notecards</button>
+            <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("scene-list"); setActiveId(null); }}>Scene List</button>
           </div>
         )}
 
@@ -12972,14 +13106,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                             />
                           </label>
                         </div>
-                        <div className="companion-assign-grid" aria-label="Assign unplaced idea to sequence">
-                          {activeSequenceOrder.map(seq => (
-                            <button key={seq} type="button" className="companion-assign-button" onClick={() => assignIdeaCard(card.id, seq)}>
-                              {getSequenceTitle(state.sequences, seq)}
-                            </button>
-                          ))}
-                        </div>
                         <div className="companion-unplaced-action-row">
+                          <button type="button" className="companion-assign-button" onClick={() => turnIdeaIntoNotecard(card)}>Turn into notecard</button>
                           <button type="button" className="companion-archive-button" onClick={() => archiveIdeaCard(card.id)} title="Archive idea" aria-label="Archive idea">
                             <ArchiveTrayIcon size={18} />
                           </button>
@@ -12997,10 +13125,17 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
           <button type="button" className="companion-picker-tab is-active">Notecards</button>
           <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setActiveId(null); }}>Menu</button>
         </div>}
+        {isSceneListMode && <div className="companion-picker-tabs companion-workspace-nav" aria-label="Scene List workspace">
+          <button type="button" className="companion-picker-tab is-active">Scene List</button>
+          <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setActiveId(null); }}>Menu</button>
+        </div>}
 
       </div>
 
-      {isNotecardsMode && <NotecardsWorkspace scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards} showToast={showToast} />}
+      {isNotecardsMode && <NotecardsWorkspace scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards}
+        showToast={showToast} focusedId={focusedNotecardId} setFocusedId={setFocusedNotecardId} />}
+      {isSceneListMode && <CompanionSceneList scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards}
+        openNotecard={id => { setFocusedNotecardId(id); setCompanionMode("notecards"); }} />}
 
       {isSequenceMode && sequenceView === "table" && (
         <section className="companion-table-panel" aria-label="View scenes and sequences">
