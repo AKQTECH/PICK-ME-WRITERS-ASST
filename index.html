@@ -3297,7 +3297,16 @@
         .notecards-workspace.is-focused .notecard { padding: 28px; }
         .notecards-workspace.is-focused .notecard-title { font-size: 1.35rem; }
         .notecards-workspace.is-focused .notecard-drag { display: none; }
-        .notecards-workspace.is-focused .notecard-details textarea { font-size: 0.92rem; }
+        .notecards-workspace.is-focused .notecard-details > summary { font-size: 1rem; }
+        .notecards-workspace.is-focused .notecard-details[open] > summary { margin-bottom: 18px; }
+        .notecards-workspace.is-focused .notecard-change-row { margin-bottom: 14px; }
+        .notecards-workspace.is-focused .notecard-details textarea,
+        .notecards-workspace.is-focused .notecard-add-change input { font-size: 1.05rem; line-height: 1.55; }
+        .notecard-change-row.is-done textarea { color: #C3578D !important; -webkit-text-fill-color: #C3578D !important; text-decoration: line-through; }
+        .notecard-change-check { align-items: flex-start; cursor: pointer; display: inline-flex; flex: 0 0 26px; justify-content: center; margin: 0 !important; padding-top: 4px; }
+        .notecard input.notecard-change-done { appearance: none !important; background: #FFFFFF !important; border: 1.5px solid #C3578D !important; border-radius: 3px !important; box-sizing: border-box !important; cursor: pointer; flex: 0 0 18px; height: 18px !important; margin: 0 !important; min-height: 0 !important; padding: 0 !important; position: relative; width: 18px !important; }
+        .notecard input.notecard-change-done:checked { background: #C3578D !important; }
+        .notecard-change-done:checked::after { border-bottom: 2px solid #FFFFFF; border-right: 2px solid #FFFFFF; content: ""; height: 8px; left: 5px; position: absolute; top: 2px; transform: rotate(45deg); width: 4px; }
         .notecard-focus-fields { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
         .notecard-focus-fields label { color: #000000; display: grid; font-size: 0.72rem; font-weight: 800; gap: 6px; margin: 0; min-width: 200px; text-transform: uppercase; }
         .notecard-focus-fields select { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; color: #000000; font: inherit; font-size: 0.82rem; min-height: 42px; padding: 8px 12px; }
@@ -5258,7 +5267,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.26";
+const APP_VERSION = "1.2.27";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12000,7 +12009,7 @@ function companionSnippet(card) {
 }
 
 
-function NotecardsWorkspace({ scenes, setScenes, sequences, notecards, setNotecards, showToast }) {
+function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showToast }) {
   const [newTitle, setNewTitle] = React.useState("");
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
@@ -12112,7 +12121,6 @@ function NotecardsWorkspace({ scenes, setScenes, sequences, notecards, setNoteca
 
   const focused = visible.find(card => asId(card.id) === asId(focusedId));
   const displayed = focusedId ? (focused ? [focused] : []) : visible;
-  const sequenceOrder = getActiveSequenceOrder(sequences);
   const archiveCard = card => {
     patchScene(card.sourceSceneId, archiveFields());
     setNotecards(previous => safeArray(previous).map(item => asId(item.id) === asId(card.id) ? touchRecord(item, archiveFields()) : item));
@@ -12160,25 +12168,25 @@ function NotecardsWorkspace({ scenes, setScenes, sequences, notecards, setNoteca
         </div>
         </div>
         {focusedId && <div className="notecard-focus-fields">
-          <label>Sequence<select value={card.sequence || ""} onChange={event => patchScene(card.sourceSceneId, { sequence:event.target.value || null })} aria-label="Notecard sequence">
-            <option value="">Unassigned</option>
-            {sequenceOrder.map(sequence => <option key={sequence} value={sequence}>{getSequenceTitle(sequences, sequence)}</option>)}
-          </select></label>
           <label>Status<select value={COMPANION_STATUS_VALUES.includes(normalizeStatus(sceneById.get(asId(card.sourceSceneId))?.status)) ? normalizeStatus(sceneById.get(asId(card.sourceSceneId))?.status) : "todo"} onChange={event => patchScene(card.sourceSceneId, { status:event.target.value })} aria-label="Notecard scene status">
             {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{companionSceneStatusLabel(status)}</option>)}
           </select></label>
         </div>}
         <details key={focusedId ? "focused-" + card.id : "board-" + card.id} className="notecard-details" ref={element => { if (element && focusedId) element.open = true; }}>
           <summary>Notes</summary>
-        <ul className="notecard-change-list">{safeArray(card.changes).filter(change => !change.archived).map(change => <li key={change.id} className="notecard-change-row">
-          <span className="notecard-bullet" aria-hidden="true">{"\u2022"}</span>
+        <ul className="notecard-change-list">{safeArray(card.changes).filter(change => !change.archived).map(change => <li key={change.id} className={"notecard-change-row" + (change.done ? " is-done" : "")}>
+          {focusedId ? <label className="notecard-change-check" title="Mark scene change complete">
+            <input type="checkbox" className="notecard-change-done" checked={!!change.done}
+              onChange={event => patchScene(card.sourceSceneId, current => applyChangeDone(current, change.id, event.target.checked))}
+              aria-label={"Mark scene change complete " + (change.text || "note")} />
+          </label> : <span className="notecard-bullet" aria-hidden="true">{"\u2022"}</span>}
           <textarea value={change.text || ""} rows={1} ref={sizeNote}
             onChange={event => { const value = event.target.value; sizeNote(event.target); patchScene(card.sourceSceneId, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, { text:value }) : item) })); }}
             aria-label={"Notecard scene change for " + card.title} />
           <button type="button" className="notecard-icon-button" onClick={() => patchScene(card.sourceSceneId, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, archiveFields()) : item) }))}
             title="Remove notecard note" aria-label="Remove notecard note">{"\u00d7"}</button>
         </li>)}</ul>
-        {card.notes && <div className="notecard-note-row">
+        {!focusedId && card.notes && <div className="notecard-note-row">
           <span className="notecard-bullet" aria-hidden="true">{"\u2022"}</span>
           <textarea id={"notecard-notes-" + card.id} className="notecard-notes" value={card.notes || ""} rows={1} ref={sizeNote}
             onChange={event => { sizeNote(event.target); patchScene(card.sourceSceneId, { openQuestions:event.target.value, rippleEffects:"", storyThreads:"" }); }} aria-label={"Notecard notes for " + card.title} />
@@ -12998,7 +13006,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
 
       </div>
 
-      {isNotecardsMode && <NotecardsWorkspace scenes={scenes} setScenes={setScenes} sequences={sequences} notecards={notecards} setNotecards={setNotecards} showToast={showToast} />}
+      {isNotecardsMode && <NotecardsWorkspace scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards} showToast={showToast} />}
 
       {isSequenceMode && sequenceView === "table" && (
         <section className="companion-table-panel" aria-label="View scenes and sequences">
