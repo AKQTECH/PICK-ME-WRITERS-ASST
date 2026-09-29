@@ -3291,6 +3291,16 @@
             margin: 0;
             text-transform: uppercase;
         }
+        .notecard-back { background: transparent; border: 0; color: #000000; cursor: pointer; font: inherit; font-size: 0.82rem; font-weight: 800; padding: 0; text-transform: uppercase; }
+        .notecards-workspace.is-focused { box-sizing: border-box; margin: 0 auto; max-width: 960px; width: 100%; }
+        .notecards-workspace.is-focused .notecards-grid { grid-template-columns: minmax(0, 1fr); }
+        .notecards-workspace.is-focused .notecard { padding: 28px; }
+        .notecards-workspace.is-focused .notecard-title { font-size: 1.35rem; }
+        .notecards-workspace.is-focused .notecard-drag { display: none; }
+        .notecards-workspace.is-focused .notecard-details textarea { font-size: 0.92rem; }
+        .notecard-focus-fields { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+        .notecard-focus-fields label { color: #000000; display: grid; font-size: 0.72rem; font-weight: 800; gap: 6px; margin: 0; min-width: 200px; text-transform: uppercase; }
+        .notecard-focus-fields select { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; color: #000000; font: inherit; font-size: 0.82rem; min-height: 42px; padding: 8px 12px; }
         .notecards-new {
             align-items: center;
             display: flex;
@@ -3431,6 +3441,7 @@
             .notecards-grid { grid-template-columns: minmax(0, 1fr); }
             .notecards-workspace { padding: 16px 0 4px; }
             .notecards-new { align-items: stretch; flex-direction: column; }
+            .notecard-focus-fields label { width: 100%; }
         }
 
         .companion-table-direction {
@@ -5247,7 +5258,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.25";
+const APP_VERSION = "1.2.26";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11037,9 +11048,11 @@ function SettingsTab({
   const archiveBuckets = collectArchiveBuckets(scenes);
   const archivedSceneCards = archiveBuckets.archivedCards.filter(card => card.kind === "SCENE" || card.kind === "TWEAK");
   const archivedTaskRows = archiveBuckets.archivedTaskRows;
-  const archivedNotecards = safeArray(notecards).filter(card => card.archived);
+  const settingsSceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
+  const archivedNotecards = safeArray(notecards).filter(card => card.archived || settingsSceneById.get(asId(card.sourceSceneId))?.archived);
   const restoreArchivedScene = (id) => {
     setScenes(prev => safeArray(prev).map(card => asId(card.id) === asId(id) ? touchRecord(normalizeCard(card, 0), restoreFields()) : card));
+    setNotecards(previous => safeArray(previous).map(card => asId(card.sourceSceneId) === asId(id) ? touchRecord(card, restoreFields()) : card));
     if (showToast) showToast("Scene restored");
   };
   const restoreArchivedTask = (cardId, changeId) => {
@@ -11052,6 +11065,8 @@ function SettingsTab({
     if (showToast) showToast("Task restored");
   };
   const restoreArchivedNotecard = id => {
+    const sourceId = asId(safeArray(notecards).find(card => asId(card.id) === asId(id))?.sourceSceneId);
+    if (sourceId) setScenes(previous => safeArray(previous).map(scene => asId(scene.id) === sourceId ? touchRecord(normalizeCard(scene, 0), restoreFields()) : scene));
     setNotecards(previous => safeArray(previous).map(card => asId(card.id) === asId(id) ? touchRecord(card, restoreFields()) : card));
     if (showToast) showToast("Notecard restored");
   };
@@ -11237,7 +11252,7 @@ function SettingsTab({
             <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Archived notecards ({archivedNotecards.length})</summary>
             <div className="settings-archive-list">
               {archivedNotecards.map(card => <div key={card.id} className="settings-archive-row">
-                <div className="settings-archive-title">{card.title || "Untitled"}</div>
+                <div className="settings-archive-title">{settingsSceneById.get(asId(card.sourceSceneId))?.title || card.title || "Untitled"}</div>
                 <button className="btn btn-secondary" onClick={() => restoreArchivedNotecard(card.id)}>Restore</button>
               </div>)}
             </div>
@@ -11985,10 +12000,11 @@ function companionSnippet(card) {
 }
 
 
-function NotecardsWorkspace({ scenes, notecards, setNotecards, showToast }) {
+function NotecardsWorkspace({ scenes, setScenes, sequences, notecards, setNotecards, showToast }) {
   const [newTitle, setNewTitle] = React.useState("");
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
+  const [focusedId, setFocusedId] = React.useState(null);
   const [dropTargetId, setDropTargetId] = React.useState(null);
   const draggedId = React.useRef(null);
   const sizeNote = element => {
@@ -11999,41 +12015,66 @@ function NotecardsWorkspace({ scenes, notecards, setNotecards, showToast }) {
 
   React.useEffect(() => {
     if (APP_BUILD !== "DESKTOP") return;
-    setNotecards(previous => {
-      const knownSources = new Set(safeArray(previous).map(card => asId(card.sourceSceneId)).filter(Boolean));
-      const sourceScenes = sortSceneCards(safeArray(scenes).filter(card =>
-        !card.archived && !card.maybe && ["SCENE", "TWEAK"].includes(card.kind) && card.sequence
-      ));
-      const missing = sourceScenes.filter(scene => !knownSources.has(asId(scene.id)));
-      if (!missing.length) return previous;
-      const start = safeArray(previous).length;
-      const additions = missing.map((scene, index) => normalizeNotecard({
-        id:"notecard-scene-" + asId(scene.id),
-        sourceSceneId:asId(scene.id),
-        title:scene.title || "Untitled scene",
-        notes:scene.openQuestions || "",
-        changes:safeArray(scene.changes)
-          .filter(change => !change.archived && !change.maybe && !isCompanionReferenceChange(scene, change))
-          .sort((a, b) => (Number(a.companionOrder ?? Number.MAX_SAFE_INTEGER) - Number(b.companionOrder ?? Number.MAX_SAFE_INTEGER)))
-          .map((change, changeIndex) => normalizeChange({ id:asId(change.id) || ("notecard-change-" + changeIndex), text:change.text || "" }, changeIndex, scene.id)),
-        done:false,
-        archived:false,
-        order:start + index,
-        createdAt:nowStamp()
-      }, start + index));
-      return [...safeArray(previous), ...additions];
-    });
-  }, [scenes, setNotecards]);
+    const sceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
+    const unlinked = safeArray(notecards).filter(card => !card.linked);
+    if (unlinked.length) {
+      setScenes(previous => {
+        const next = safeArray(previous).slice();
+        const positions = new Map(next.map((scene, index) => [asId(scene.id), index]));
+        unlinked.forEach(card => {
+          const sourceId = asId(card.sourceSceneId) || ("scene-from-" + asId(card.id));
+          const position = positions.get(sourceId);
+          if (position === undefined) {
+            positions.set(sourceId, next.length);
+            next.push(touchRecord(normalizeCard({
+              id:sourceId, title:card.title || "Untitled scene", kind:"SCENE", status:card.done ? "done" : "todo",
+              sequence:null, companionSceneOrder:card.order, openQuestions:card.notes || "",
+              changes:safeArray(card.changes), archived:!!card.archived, archivedAt:card.archivedAt || null
+            }, next.length)));
+            return;
+          }
+          const scene = next[position];
+          const newerText = Number(card.updatedAt || 0) > Number(scene.updatedAt || 0);
+          const mergedChanges = mergeArraysById(scene.changes, card.changes, (change, index) => normalizeChange(change, index, sourceId));
+          next[position] = touchRecord(normalizeCard(scene, position), {
+            ...(newerText ? { title:card.title || scene.title, openQuestions:card.notes, rippleEffects:"", storyThreads:"" } : {}),
+            changes:mergedChanges,
+            ...(card.done ? { status:"done" } : {}),
+            ...(card.archived ? archiveFields() : {})
+          });
+        });
+        return next;
+      });
+      setNotecards(previous => safeArray(previous).map(card => !card.linked
+        ? touchRecord(card, { linked:true, sourceSceneId:asId(card.sourceSceneId) || ("scene-from-" + asId(card.id)) }) : card));
+      return;
+    }
+    const knownSources = new Set(safeArray(notecards).map(card => asId(card.sourceSceneId)).filter(Boolean));
+    const missing = sortSceneCards(safeArray(scenes).filter(scene =>
+      !scene.archived && !scene.maybe && ["SCENE", "TWEAK"].includes(scene.kind) && scene.sequence && !knownSources.has(asId(scene.id))
+    ));
+    if (missing.length) setNotecards(previous => [
+      ...safeArray(previous),
+      ...missing.map((scene, index) => normalizeNotecard({
+        id:"notecard-scene-" + asId(scene.id), sourceSceneId:asId(scene.id), linked:true,
+        order:safeArray(previous).length + index, createdAt:nowStamp()
+      }, safeArray(previous).length + index))
+    ]);
+  }, [scenes, notecards, setScenes, setNotecards]);
 
-  const visible = safeArray(notecards).filter(card => !card.archived)
+  const sceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
+  const visible = safeArray(notecards).map(meta => {
+    const scene = sceneById.get(asId(meta.sourceSceneId));
+    return scene ? { ...meta, title:scene.title, sequence:scene.sequence, notes:scene.openQuestions || "", changes:scene.changes, done:normalizeStatus(scene.status) === "done", archived:!!scene.archived } : null;
+  }).filter(card => card && !card.archived)
     .sort((a, b) => Number(a.order || 0) - Number(b.order || 0) || String(a.title || "").localeCompare(String(b.title || "")));
-  const patch = (id, update) => setNotecards(previous => safeArray(previous).map(card =>
-    asId(card.id) === asId(id) ? touchRecord(card, typeof update === "function" ? update(card) : update) : card
+  const patchScene = (id, update) => setScenes(previous => safeArray(previous).map(scene =>
+    asId(scene.id) === asId(id) ? touchRecord(normalizeCard(scene, 0), typeof update === "function" ? update(scene) : update) : scene
   ));
   const commitTitle = card => {
     if (!Object.prototype.hasOwnProperty.call(titleDrafts, card.id)) return;
     const clean = String(titleDrafts[card.id] || "").trim().replace(/\s+/g, " ");
-    if (clean) patch(card.id, { title:clean });
+    if (clean) patchScene(card.sourceSceneId, { title:clean });
     else if (showToast) showToast("Notecard name cannot be blank");
     setTitleDrafts(previous => { const next = { ...previous }; delete next[card.id]; return next; });
   };
@@ -12041,7 +12082,9 @@ function NotecardsWorkspace({ scenes, notecards, setNotecards, showToast }) {
     const title = newTitle.trim().replace(/\s+/g, " ");
     if (!title) return;
     const id = "notecard-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
-    const card = touchRecord(normalizeNotecard({ id, title, notes:"", changes:[], done:false, archived:false, order:safeArray(notecards).length, createdAt:nowStamp() }, safeArray(notecards).length));
+    const sceneId = "scene-from-" + id;
+    const card = touchRecord(normalizeNotecard({ id, sourceSceneId:sceneId, linked:true, order:safeArray(notecards).length, createdAt:nowStamp() }, safeArray(notecards).length));
+    setScenes(previous => [...safeArray(previous), touchRecord(normalizeCard({ id:sceneId, title, kind:"SCENE", status:"todo", sequence:null, openQuestions:"", changes:[] }, safeArray(previous).length))]);
     setNotecards(previous => [...safeArray(previous), card]);
     setNewTitle("");
     if (showToast) showToast("Notecard added");
@@ -12050,7 +12093,7 @@ function NotecardsWorkspace({ scenes, notecards, setNotecards, showToast }) {
     const text = String(changeDrafts[card.id] || "").trim();
     if (!text) return;
     const id = "notecard-change-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
-    patch(card.id, current => ({ changes:[...safeArray(current.changes), touchRecord(normalizeChange({ id, text }, safeArray(current.changes).length, current.id))] }));
+    patchScene(card.sourceSceneId, current => ({ changes:[...safeArray(current.changes), touchRecord(normalizeChange({ id, text, source:"COMPANION_USER", isRewriteTask:true }, safeArray(current.changes).length, current.id))] }));
     setChangeDrafts(previous => ({ ...previous, [card.id]:"" }));
   };
   const reorder = (sourceId, targetId) => {
@@ -12062,21 +12105,34 @@ function NotecardsWorkspace({ scenes, notecards, setNotecards, showToast }) {
     const positions = new Map(ids.map((id, index) => [id, index]));
     setNotecards(previous => safeArray(previous).map(card => positions.has(asId(card.id))
       ? touchRecord(card, { order:positions.get(asId(card.id)) }) : card));
+    const scenePositions = new Map(visible.map(card => [asId(card.sourceSceneId), positions.get(asId(card.id))]));
+    setScenes(previous => safeArray(previous).map(scene => scenePositions.has(asId(scene.id))
+      ? touchRecord(scene, { companionSceneOrder:scenePositions.get(asId(scene.id)) }) : scene));
   };
 
-  return <section className="notecards-workspace" aria-label="Notecards">
+  const focused = visible.find(card => asId(card.id) === asId(focusedId));
+  const displayed = focusedId ? (focused ? [focused] : []) : visible;
+  const sequenceOrder = getActiveSequenceOrder(sequences);
+  const archiveCard = card => {
+    patchScene(card.sourceSceneId, archiveFields());
+    setNotecards(previous => safeArray(previous).map(item => asId(item.id) === asId(card.id) ? touchRecord(item, archiveFields()) : item));
+    setFocusedId(null);
+  };
+
+  return <section className={"notecards-workspace" + (focusedId ? " is-focused" : "")} aria-label="Notecards">
     <div className="notecards-toolbar">
-      <h2>Notecards</h2>
+      {focusedId ? <button type="button" className="notecard-back" onClick={() => setFocusedId(null)}>← Notecards</button> : <h2>Notecards</h2>}
     </div>
-    <div className="notecards-new">
+    {!focusedId && <div className="notecards-new">
       <input value={newTitle} onChange={event => setNewTitle(event.target.value)}
         onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) createCard(); }}
         placeholder="New notecard title" aria-label="New notecard title" />
       <button type="button" disabled={!newTitle.trim()} onClick={createCard}>+ Notecard</button>
-    </div>
-    {visible.length ? <div className="notecards-grid">
-      {visible.map(card => <article key={card.id} className={"notecard" + (card.done ? " is-complete" : "") + (dropTargetId === card.id ? " is-drop-target" : "")}
+    </div>}
+    {displayed.length ? <div className="notecards-grid">
+      {displayed.map(card => <article key={card.id} className={"notecard" + (card.done ? " is-complete" : "") + (dropTargetId === card.id ? " is-drop-target" : "")}
         data-notecard-id={card.id}
+        onDoubleClick={() => { if (!focusedId) setFocusedId(card.id); }}
         onDragOver={event => { if (draggedId.current && draggedId.current !== card.id) { event.preventDefault(); setDropTargetId(card.id); } }}
         onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDropTargetId(null); }}
         onDrop={event => { event.preventDefault(); if (draggedId.current) reorder(draggedId.current, card.id); draggedId.current = null; setDropTargetId(null); }}>
@@ -12085,16 +12141,16 @@ function NotecardsWorkspace({ scenes, notecards, setNotecards, showToast }) {
           onChange={event => {
             const value = event.target.value;
             setTitleDrafts(previous => ({ ...previous, [card.id]:value }));
-            if (value.trim()) patch(card.id, { title:value.trim().replace(/\s+/g, " ") });
+            if (value.trim()) patchScene(card.sourceSceneId, { title:value.trim().replace(/\s+/g, " ") });
           }}
           onBlur={() => commitTitle(card)} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }}
           aria-label={"Notecard title " + card.title} />
         <div className="notecard-actions">
           <label className="notecard-complete-label" title="Mark notecard complete">
             <input type="checkbox" className="notecard-complete" checked={!!card.done}
-              onChange={event => patch(card.id, { done:event.target.checked })} aria-label={"Mark notecard complete " + card.title} />
+              onChange={event => patchScene(card.sourceSceneId, { status:event.target.checked ? "done" : "needs_edits" })} aria-label={"Mark notecard complete " + card.title} />
           </label>
-          <button type="button" className="notecard-icon-button" onClick={() => patch(card.id, archiveFields())}
+          <button type="button" className="notecard-icon-button" onClick={() => archiveCard(card)}
             title="Archive notecard" aria-label={"Archive notecard " + card.title}>
             <ArchiveTrayIcon size={18} />
           </button>
@@ -12103,20 +12159,29 @@ function NotecardsWorkspace({ scenes, notecards, setNotecards, showToast }) {
             onDragEnd={() => { draggedId.current = null; setDropTargetId(null); }}>{"\u22EE\u22EE"}</span>
         </div>
         </div>
-        <details className="notecard-details">
+        {focusedId && <div className="notecard-focus-fields">
+          <label>Sequence<select value={card.sequence || ""} onChange={event => patchScene(card.sourceSceneId, { sequence:event.target.value || null })} aria-label="Notecard sequence">
+            <option value="">Unassigned</option>
+            {sequenceOrder.map(sequence => <option key={sequence} value={sequence}>{getSequenceTitle(sequences, sequence)}</option>)}
+          </select></label>
+          <label>Status<select value={COMPANION_STATUS_VALUES.includes(normalizeStatus(sceneById.get(asId(card.sourceSceneId))?.status)) ? normalizeStatus(sceneById.get(asId(card.sourceSceneId))?.status) : "todo"} onChange={event => patchScene(card.sourceSceneId, { status:event.target.value })} aria-label="Notecard scene status">
+            {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{companionSceneStatusLabel(status)}</option>)}
+          </select></label>
+        </div>}
+        <details key={focusedId ? "focused-" + card.id : "board-" + card.id} className="notecard-details" ref={element => { if (element && focusedId) element.open = true; }}>
           <summary>Notes</summary>
         <ul className="notecard-change-list">{safeArray(card.changes).filter(change => !change.archived).map(change => <li key={change.id} className="notecard-change-row">
           <span className="notecard-bullet" aria-hidden="true">{"\u2022"}</span>
           <textarea value={change.text || ""} rows={1} ref={sizeNote}
-            onChange={event => { const value = event.target.value; sizeNote(event.target); patch(card.id, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, { text:value }) : item) })); }}
+            onChange={event => { const value = event.target.value; sizeNote(event.target); patchScene(card.sourceSceneId, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, { text:value }) : item) })); }}
             aria-label={"Notecard scene change for " + card.title} />
-          <button type="button" className="notecard-icon-button" onClick={() => patch(card.id, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, archiveFields()) : item) }))}
+          <button type="button" className="notecard-icon-button" onClick={() => patchScene(card.sourceSceneId, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, archiveFields()) : item) }))}
             title="Remove notecard note" aria-label="Remove notecard note">{"\u00d7"}</button>
         </li>)}</ul>
         {card.notes && <div className="notecard-note-row">
           <span className="notecard-bullet" aria-hidden="true">{"\u2022"}</span>
           <textarea id={"notecard-notes-" + card.id} className="notecard-notes" value={card.notes || ""} rows={1} ref={sizeNote}
-            onChange={event => { sizeNote(event.target); patch(card.id, { notes:event.target.value }); }} aria-label={"Notecard notes for " + card.title} />
+            onChange={event => { sizeNote(event.target); patchScene(card.sourceSceneId, { openQuestions:event.target.value, rippleEffects:"", storyThreads:"" }); }} aria-label={"Notecard notes for " + card.title} />
         </div>}
         <div className="notecard-add-change">
           <span className="notecard-bullet" aria-hidden="true">{"\u2022"}</span>
@@ -12127,7 +12192,7 @@ function NotecardsWorkspace({ scenes, notecards, setNotecards, showToast }) {
         </div>
         </details>
       </article>)}
-    </div> : <div className="notecard-empty">No notecards yet.</div>}
+    </div> : <div className="notecard-empty">{focusedId ? "This scene is no longer available." : "No notecards yet."}</div>}
   </section>;
 }
 
@@ -12166,7 +12231,6 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const changeResizeStarts = React.useRef({});
   const noteSaveTimers = React.useRef({});
   const draggedChangeId = React.useRef(null);
-  const draggedSceneId = React.useRef(null);
   const [dropTargetId, setDropTargetId] = React.useState(null);
 
   const state = normalizeState({ scenes, sequences });
@@ -12209,7 +12273,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     else if (tableSort === "updated") comparison = Number(left.updatedAt || left.lastTouchedAt || 0) - Number(right.updatedAt || right.lastTouchedAt || 0);
     return (comparison || titleComparison) * direction;
   });
-  const canReorderTable = tableSort === "sequence" && tableSortDirection === "asc" &&
+  const canReorderMobileTable = APP_BUILD === "PWA" && tableSort === "sequence" && tableSortDirection === "asc" &&
     tableStatus === "all" && !tableSearch.trim();
   const filteredIdeaCards = ideaCards.filter(card =>
     (ideaTypeFilter === "all" || companionIdeaType(card) === (ideaTypeFilter === "unsorted" ? "" : ideaTypeFilter)) &&
@@ -12388,16 +12452,25 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     reorderChange(changeId, from + direction);
   };
 
-  const reorderScene = (sceneId, to, sequence) => {
-    const scenesInSequence = sequencedCards.filter(card => card.sequence === sequence);
-    const from = scenesInSequence.findIndex(card => asId(card.id) === asId(sceneId));
-    if (from < 0 || to < 0 || to >= scenesInSequence.length || from === to) return;
-    const ids = scenesInSequence.map(card => asId(card.id));
+  const reorderMobileScene = (sceneId, to, sequence) => {
+    const inSequence = sequencedCards.filter(card => card.sequence === sequence);
+    const from = inSequence.findIndex(card => asId(card.id) === asId(sceneId));
+    if (from < 0 || to < 0 || to >= inSequence.length || from === to) return;
+    const ids = inSequence.map(card => asId(card.id));
     ids.splice(to, 0, ids.splice(from, 1)[0]);
     const positions = new Map(ids.map((id, index) => [id, index]));
-    setScenes(prev => safeArray(prev).map(card => positions.has(asId(card.id))
-      ? touchRecord(card, { companionSceneOrder:positions.get(asId(card.id)) })
-      : card));
+    setScenes(previous => safeArray(previous).map(scene => positions.has(asId(scene.id))
+      ? touchRecord(scene, { companionSceneOrder:positions.get(asId(scene.id)) }) : scene));
+    setNotecards(previous => {
+      const boardCards = safeArray(previous).filter(card => positions.has(asId(card.sourceSceneId)))
+        .sort((left, right) => Number(left.order || 0) - Number(right.order || 0));
+      if (boardCards.length < 2) return previous;
+      const slots = boardCards.map(card => Number(card.order || 0));
+      const boardIds = new Set(boardCards.map(card => asId(card.sourceSceneId)));
+      const boardPositions = new Map(ids.filter(id => boardIds.has(id)).map((id, index) => [id, slots[index]]));
+      return safeArray(previous).map(card => boardPositions.has(asId(card.sourceSceneId))
+        ? touchRecord(card, { order:boardPositions.get(asId(card.sourceSceneId)) }) : card);
+    });
   };
 
   const rememberChangeHeight = (changeId, element) => {
@@ -12925,7 +12998,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
 
       </div>
 
-      {isNotecardsMode && <NotecardsWorkspace scenes={scenes} notecards={notecards} setNotecards={setNotecards} showToast={showToast} />}
+      {isNotecardsMode && <NotecardsWorkspace scenes={scenes} setScenes={setScenes} sequences={sequences} notecards={notecards} setNotecards={setNotecards} showToast={showToast} />}
 
       {isSequenceMode && sequenceView === "table" && (
         <section className="companion-table-panel" aria-label="View scenes and sequences">
@@ -12954,20 +13027,16 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
           {tableCards.length ? (
             <div className="companion-table-scroll">
               <table className="companion-scene-table companion-workspace-table">
-                <thead><tr><th scope="col">Scene</th><th scope="col">Sequence</th><th scope="col">Status</th><th scope="col">Order / archive</th></tr></thead>
+                <thead><tr><th scope="col">Scene</th><th scope="col">Sequence</th><th scope="col">Status</th><th scope="col">{APP_BUILD === "PWA" ? "Order / archive" : "Archive"}</th></tr></thead>
                 <tbody>
                   {tableCards.map((card, index) => {
                     const preview = companionSceneSearchPreview(card, tableSearch);
-                    const sequenceIndex = sequencedCards.filter(item => item.sequence === card.sequence)
-                      .findIndex(item => asId(item.id) === asId(card.id));
+                    const sequenceIndex = APP_BUILD === "PWA" ? sequencedCards.filter(item => item.sequence === card.sequence).findIndex(item => asId(item.id) === asId(card.id)) : -1;
                     const sequenceCount = counts[card.sequence] || 0;
-                    const canDrag = canReorderTable && sequenceIndex >= 0;
                     const showGroup = tableSort.startsWith("sequence") && (index === 0 || tableCards[index - 1].sequence !== card.sequence);
                     return <React.Fragment key={card.id}>
                       {showGroup && <tr className="companion-workspace-group"><th colSpan="4" scope="colgroup">{getSequenceTitle(state.sequences, card.sequence)}</th></tr>}
-                      <tr data-scene-id={card.id} className="companion-workspace-row"
-                        onDragOver={event => { if (canDrag && draggedSceneId.current) event.preventDefault(); }}
-                        onDrop={event => { event.preventDefault(); if (canDrag && draggedSceneId.current) reorderScene(draggedSceneId.current, sequenceIndex, card.sequence); draggedSceneId.current = null; }}>
+                      <tr data-scene-id={card.id} className="companion-workspace-row">
                         <td><div className="companion-workspace-title-row"><input className="companion-scene-order-title" value={titleDraftValueFor(card)}
                           onChange={event => setTitleDrafts(prev => ({ ...prev, [card.id]:event.target.value }))}
                           onBlur={() => commitTitleDraft(card.id)} onKeyDown={event => handleTitleKeyDown(event, card.id)}
@@ -12988,15 +13057,12 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                           {COMPANION_STATUS_VALUES.map(status => <option key={status} value={status}>{companionSceneStatusLabel(status)}</option>)}
                         </select></td>
                         <td><div className="companion-scene-order-actions">
-                          <button type="button" className="companion-drag-handle" draggable={canDrag}
-                            onDragStart={event => { if (!canDrag) return; draggedSceneId.current = asId(card.id); event.dataTransfer.setData("text/plain", asId(card.id)); }}
-                            onDragEnd={() => { draggedSceneId.current = null; }}
-                            disabled={!canDrag} aria-label={"Drag to reorder " + (card.title || "scene")}
-                            title={canDrag ? "Drag to reorder scene" : "Choose Seq: scene order to reorder"}>{"\u22EE\u22EE"}</button>
-                          <button type="button" className="companion-reorder-button" disabled={!canDrag || sequenceIndex === 0}
-                            onClick={() => reorderScene(card.id, sequenceIndex - 1, card.sequence)} aria-label={"Move " + (card.title || "scene") + " up"}>{"\u2191"}</button>
-                          <button type="button" className="companion-reorder-button" disabled={!canDrag || sequenceIndex === sequenceCount - 1}
-                            onClick={() => reorderScene(card.id, sequenceIndex + 1, card.sequence)} aria-label={"Move " + (card.title || "scene") + " down"}>{"\u2193"}</button>
+                          {APP_BUILD === "PWA" && <>
+                            <button type="button" className="companion-reorder-button" disabled={!canReorderMobileTable || sequenceIndex === 0}
+                              onClick={() => reorderMobileScene(card.id, sequenceIndex - 1, card.sequence)} aria-label={"Move " + (card.title || "scene") + " up"}>{"\u2191"}</button>
+                            <button type="button" className="companion-reorder-button" disabled={!canReorderMobileTable || sequenceIndex === sequenceCount - 1}
+                              onClick={() => reorderMobileScene(card.id, sequenceIndex + 1, card.sequence)} aria-label={"Move " + (card.title || "scene") + " down"}>{"\u2193"}</button>
+                          </>}
                           <button type="button" className="companion-archive-button" onClick={() => archiveSceneCard(card.id)}
                             title="Archive scene" aria-label={"Archive scene " + (card.title || "Untitled")}><ArchiveTrayIcon size={18} /></button>
                         </div></td>
