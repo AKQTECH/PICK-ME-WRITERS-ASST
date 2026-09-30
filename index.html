@@ -3394,6 +3394,13 @@
             padding: 0;
         }
         .notecard-archive-stack { align-items: center; display: flex; flex: 0 0 30px; flex-direction: column; }
+        body:not(.pwa-build) .notecards-workspace.is-focused .notecard { position: relative; }
+        body:not(.pwa-build) .notecards-workspace.is-focused .notecard-top { align-items: flex-start; margin-bottom: 8px; padding-right: 42px; }
+        body:not(.pwa-build) .notecards-workspace.is-focused .notecard-actions { align-items: center; flex-direction: column; flex-wrap: nowrap; gap: 0; position: absolute; right: 28px; top: 20px; }
+        body:not(.pwa-build) .notecards-workspace.is-focused .notecard-details { padding-right: 42px; }
+        body:not(.pwa-build) .notecards-workspace.is-focused .notecard-complete-label,
+        body:not(.pwa-build) .notecards-workspace.is-focused .notecard-icon-button { flex: 0 0 30px; height: 30px; width: 30px; }
+        body:not(.pwa-build) .notecards-workspace.is-focused .notecard-complete { flex-basis: 13px; height: 13px !important; width: 13px !important; }
         .notecard-details > summary {
             color: #E668A7;
             cursor: pointer;
@@ -3430,6 +3437,9 @@
         .notecard-add-change input:focus { border-bottom-color: #E668A7 !important; outline: none; }
         .notecard-change-row textarea { flex: 1; min-height: 24px; resize: none; overflow: hidden; }
         .notecard-change-row button { color: #000000; flex: 0 0 24px; font-size: 1.1rem; }
+        body:not(.pwa-build) .notecard-change-row:not(.is-editing) textarea { cursor: grab; }
+        body:not(.pwa-build) .notecard-change-row.is-editing textarea { cursor: text; }
+        body:not(.pwa-build) .notecard-change-row.is-drop-target { box-shadow: inset 0 2px #E668A7; }
         .notecard-note-row { margin-top: 8px; }
         .notecard-notes { flex: 1; min-height: 24px; resize: none; overflow: hidden; }
         .notecard-add-change input { flex: 1; min-height: 30px; }
@@ -3478,6 +3488,8 @@
             .notecards-workspace { padding: 16px 0 4px; }
             .notecards-new { align-items: stretch; flex-direction: column; }
             .notecards-workspace.is-focused .notecard { padding: 16px; }
+            body:not(.pwa-build) .notecards-workspace.is-focused .notecard-top { flex-direction: row; }
+            body:not(.pwa-build) .notecards-workspace.is-focused .notecard-actions { right: 16px; top: 12px; }
             .notecards-workspace.is-focused .notecard-title { font-size: 1.05rem; }
             .notecard-top { align-items: stretch; flex-direction: column; gap: 4px; }
             .notecard-actions { flex-wrap: wrap; justify-content: end; margin-left: 0; }
@@ -5309,7 +5321,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.34";
+const APP_VERSION = "1.2.36";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -8429,10 +8441,16 @@ function collectDerivedTaskSpecs(record, parentId) {
   return specs;
 }
 function prepareSceneListChanges(record, parentId, rawChanges) {
-  return safeArray(rawChanges).map((change, changeIndex) => normalizeChange({
+  const changes = safeArray(rawChanges).map((change, changeIndex) => normalizeChange({
     ...(change || {}),
     isRewriteTask: change && change.isRewriteTask === false ? false : true
   }, changeIndex, parentId));
+  const hasOrder = change => change.notecardOrder !== null && change.notecardOrder !== undefined && Number.isFinite(Number(change.notecardOrder));
+  if (!changes.some(hasOrder)) return changes;
+  return changes.map((change, index) => ({ change, index })).sort((left, right) =>
+    (hasOrder(left.change) ? Number(left.change.notecardOrder) : left.index) -
+    (hasOrder(right.change) ? Number(right.change.notecardOrder) : right.index) || left.index - right.index
+  ).map(item => item.change);
 }
 
 function normalizeChange(change, index, parentId) {
@@ -8748,6 +8766,89 @@ function touchChangedCollection(nextArray, previousArray, prefix) {
     return { ...record, updatedAt: record.updatedAt || prev.updatedAt || 0, updatedBy: record.updatedBy || prev.updatedBy || "" };
   });
 }
+const WINDOW_CONFLICT_BACKUP_KEY = "pickme_window_conflict_draft_" + Math.random().toString(36).slice(2);
+const COORDINATED_COLLECTIONS = ["songs", "scenes", "notecards", "notes", "sceneNotes"];
+const RECORD_METADATA_FIELDS = new Set(["createdAt", "updatedAt", "updatedBy", "lastTouchedAt", "archivedAt", "deletedAt"]);
+function sameSavedValue(left, right) { return stableStringify(left) === stableStringify(right); }
+function rebaseRecordCollection(baseRows, editedRows, latestRows, path, conflicts, preferMine) {
+  const base = safeArray(baseRows);
+  const edited = safeArray(editedRows);
+  const latest = safeArray(latestRows);
+  const baseMap = new Map(base.map(row => [asId(row.id), row]));
+  const latestMap = new Map(latest.map(row => [asId(row.id), row]));
+  const result = new Map(latest.map(row => [asId(row.id), row]));
+  edited.forEach(row => {
+    const id = asId(row.id);
+    if (!id) return;
+    const before = baseMap.get(id);
+    const current = latestMap.get(id);
+    if (before && sameSavedValue(contentSignature(row), contentSignature(before))) return;
+    if (!before && current && !sameSavedValue(contentSignature(row), contentSignature(current))) {
+      conflicts.push(path + " / " + (row.title || row.name || id));
+      if (preferMine) result.set(id, row);
+    } else if (!current || !before || sameSavedValue(contentSignature(current), contentSignature(before))) {
+      result.set(id, row);
+    } else {
+      result.set(id, rebaseEditedRecord(before, row, current, path + " / " + (row.title || row.name || id), conflicts, preferMine));
+    }
+  });
+  const ids = rows => rows.map(row => asId(row.id)).filter(Boolean);
+  const baseOrder = ids(base).filter(id => result.has(id));
+  const editedOrder = ids(edited).filter(id => result.has(id));
+  const latestOrder = ids(latest).filter(id => result.has(id));
+  const editedReordered = !sameSavedValue(editedOrder.filter(id => baseMap.has(id)), baseOrder.filter(id => editedOrder.includes(id)));
+  const latestReordered = !sameSavedValue(latestOrder.filter(id => baseMap.has(id)), baseOrder.filter(id => latestOrder.includes(id)));
+  if (editedReordered && latestReordered && !sameSavedValue(editedOrder, latestOrder)) conflicts.push(path + " order");
+  const order = editedReordered && (!latestReordered || preferMine) ? editedOrder : latestOrder;
+  return [...new Set([...order, ...result.keys()])].map(id => result.get(id)).filter(Boolean);
+}
+function rebaseEditedRecord(before, edited, latest, path, conflicts, preferMine) {
+  const result = { ...latest };
+  Object.keys(edited).forEach(key => {
+    if (RECORD_METADATA_FIELDS.has(key)) return;
+    const oldValue = before[key];
+    const myValue = edited[key];
+    const theirValue = latest[key];
+    if (sameSavedValue(myValue, oldValue)) return;
+    if (sameSavedValue(theirValue, oldValue) || sameSavedValue(myValue, theirValue)) result[key] = myValue;
+    else if (["changes", "moments", "scenes"].includes(key) && Array.isArray(myValue) && Array.isArray(theirValue)) {
+      result[key] = rebaseRecordCollection(oldValue, myValue, theirValue, path + " / " + key, conflicts, preferMine);
+    } else {
+      conflicts.push(path + " / " + key);
+      if (preferMine) result[key] = myValue;
+    }
+  });
+  return result;
+}
+function rebaseEditorState(parts, baseInput, preferMine) {
+  const base = normalizeState(baseInput);
+  const latest = loadCanonicalStateFromStorage();
+  const conflicts = [];
+  const rebased = {};
+  COORDINATED_COLLECTIONS.forEach(key => {
+    rebased[key] = rebaseRecordCollection(base[key], parts[key], latest[key], key, conflicts, preferMine);
+  });
+  ["sequences", "categoryNames"].forEach(key => {
+    rebased[key] = { ...latest[key] };
+    Object.keys(parts[key] || {}).forEach(field => {
+      if (sameSavedValue(parts[key][field], base[key][field])) return;
+      if (!sameSavedValue(latest[key][field], base[key][field]) && !sameSavedValue(latest[key][field], parts[key][field])) {
+        conflicts.push(key + " / " + field);
+        if (!preferMine) return;
+      }
+      rebased[key][field] = parts[key][field];
+    });
+  });
+  ["notionUrl", "now", "conversionReport"].forEach(key => {
+    if (sameSavedValue(parts[key], base[key])) return;
+    if (!sameSavedValue(latest[key], base[key]) && !sameSavedValue(latest[key], parts[key])) {
+      conflicts.push(key);
+      if (!preferMine) return;
+    }
+    rebased[key] = parts[key];
+  });
+  return { state:conflicts.length && !preferMine ? null : buildPersistedState(rebased), conflicts };
+}
 function buildPersistedState(parts) {
   const previous = loadCanonicalStateFromStorage();
   const state = normalizeState({ ...previous, ...(parts || {}), schemaVersion: SCHEMA_VERSION, appVersion: APP_VERSION, lastModified: nowStamp() });
@@ -8762,7 +8863,10 @@ function buildPersistedState(parts) {
   if (stableStringify(state.now) !== stableStringify(previous.now)) state.sectionUpdatedAt.now = nowStamp();
   return normalizeState(state);
 }
-function saveCanonicalState(state) {
+const PICKME_WINDOW_ID = "window-" + Math.random().toString(36).slice(2);
+let pickmeWindowChannel = null;
+try { if (window.BroadcastChannel) pickmeWindowChannel = new BroadcastChannel("pickme-writers-assistant-state"); } catch (error) {}
+function saveCanonicalState(state, options) {
   const normalized = normalizeState(state);
   let snapshotRequired = false;
   try {
@@ -8774,6 +8878,9 @@ function saveCanonicalState(state) {
     snapshotRequired = true;
   }
   queueSnapshot(normalized, snapshotRequired);
+  if (!(options && options.quiet) && pickmeWindowChannel) {
+    try { pickmeWindowChannel.postMessage({ from:PICKME_WINDOW_ID, state:normalized }); } catch (error) { console.warn("Window update could not be sent:", error); }
+  }
   return normalized;
 }
 function downloadJsonFile(data, filename) {
@@ -11078,7 +11185,9 @@ function SettingsTab({
   setPendingUpdate,
   showToast,
   showAdvancedTabs,
-  setShowAdvancedTabs
+  setShowAdvancedTabs,
+  getCoordinatedState,
+  markCoordinatedStateSaved
 }) {
   const [draft, setDraft] = useState(notionUrl);
   const [saved, setSaved] = useState(false);
@@ -11128,7 +11237,7 @@ function SettingsTab({
     return () => window.removeEventListener("dbxStatusChanged", refresh);
   }, []);
 
-  const currentState = () => buildPersistedState({ songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, now:nowState, conversionReport });
+  const currentState = () => getCoordinatedState() || null;
   const applyState = (state) => {
     const current = loadCanonicalStateFromStorage();
     const normalized = saveCanonicalState(preserveUnversionedNotionUrl(state, current.notionUrl || notionUrl || DEFAULT_NOTION_URL));
@@ -11154,11 +11263,14 @@ function SettingsTab({
   };
   const dbxPush = async () => {
     if (!DBX.isConnected()) return;
+    const current = currentState();
+    if (!current) { setDbxMsg("Resolve the edit conflict before syncing."); return; }
     setDbxSyncing(true); setDbxMsg("Syncing...");
-    const state = saveCanonicalState(currentState());
+    const state = saveCanonicalState(current);
+    markCoordinatedStateSaved(state);
     try {
-      await syncWithDropbox(state, 0);
-      setDbxMsg("Synced to Dropbox.");
+      const synced = await syncWithDropbox(state, 0);
+      setDbxMsg(synced ? "Synced to Dropbox." : "Sync failed. Check connection.");
       setTimeout(() => setDbxMsg(""), 3000);
     } catch(e) {
       console.error("DBX sync failed:", e);
@@ -11180,7 +11292,9 @@ function SettingsTab({
     setTimeout(() => setDbxMsg(""), 3000);
   };
   const downloadAllData = () => {
-    const data = { ...currentState(), exportedAt:new Date().toISOString() };
+    const current = currentState();
+    if (!current) return;
+    const data = { ...current, exportedAt:new Date().toISOString() };
     downloadJsonFile(data, exportFilename());
     if (showToast) showToast("Download started");
   };
@@ -11193,7 +11307,9 @@ function SettingsTab({
     const raw = localStorage.getItem(PREUPDATE_BACKUP_KEY);
     if (!raw) { alert("No pre-update backup found in this browser."); return; }
     if (!confirm("Restore the pre-update backup in this browser? Dropbox will not be updated until you press Sync now.")) return;
-    localStorage.setItem("pickme_backup_before_restore_" + Date.now(), JSON.stringify(currentState()));
+    const current = currentState();
+    if (!current) return;
+    localStorage.setItem("pickme_backup_before_restore_" + Date.now(), JSON.stringify(current));
     window.__pickmeSkipNextDropboxPush = true;
     const parsed = JSON.parse(raw);
     const normalized = normalizeState(parsed);
@@ -11203,10 +11319,13 @@ function SettingsTab({
   };
   const reviewDuplicatesAgain = () => {
     const raw = currentState();
+    if (!raw) return;
     setPendingUpdate({ raw, state:normalizeState(raw), forceDuplicateReview:true });
   };
   const runChecks = () => {
-    const checks = runDataChecks(currentState());
+    const current = currentState();
+    if (!current) return;
+    const checks = runDataChecks(current);
     const count = Object.values(checks).reduce((sum, value) => sum + (Array.isArray(value) ? value.length : 0), 0);
     setDataSummary(count ? count + " records need review." : "No data problems found.");
   };
@@ -11217,7 +11336,9 @@ function SettingsTab({
       return;
     }
     if (!confirm("Load the 7/16 script companion into Companion? This replaces the current Companion cards in this browser, but saves a backup first. Songs, playlist notes, and settings stay untouched.")) return;
-    localStorage.setItem("pickme_backup_before_script_companion_" + Date.now(), JSON.stringify(currentState()));
+    const current = currentState();
+    if (!current) return;
+    localStorage.setItem("pickme_backup_before_script_companion_" + Date.now(), JSON.stringify(current));
     window.__pickmeSkipNextDropboxPush = true;
     const nextScenes = companionCards.map((card, index) => touchRecord(normalizeCard(card, index), { order:index }));
     setScenes(nextScenes);
@@ -12081,6 +12202,10 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   const [changeDrafts, setChangeDrafts] = React.useState({});
   const [dropTargetId, setDropTargetId] = React.useState(null);
   const draggedId = React.useRef(null);
+  const [editingChangeId, setEditingChangeId] = React.useState(null);
+  const [dropChangeId, setDropChangeId] = React.useState(null);
+  const bulletPointerRef = React.useRef(null);
+  const suppressBulletClickRef = React.useRef(false);
   const openFocusedDetails = React.useCallback(element => {
     if (element && focusedId) element.open = true;
   }, [focusedId]);
@@ -12161,6 +12286,49 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
     patchScene(card.sourceSceneId, current => ({ changes:[...safeArray(current.changes), touchRecord(normalizeChange({ id, text, source:"COMPANION_USER", isRewriteTask:true }, safeArray(current.changes).length, current.id))] }));
     setChangeDrafts(previous => ({ ...previous, [card.id]:"" }));
   };
+  const reorderChanges = (card, sourceId, targetId) => {
+    if (asId(sourceId) === asId(targetId)) return;
+    patchScene(card.sourceSceneId, current => {
+      const changes = safeArray(current.changes);
+      const active = changes.filter(change => !change.archived);
+      const from = active.findIndex(change => asId(change.id) === asId(sourceId));
+      const to = active.findIndex(change => asId(change.id) === asId(targetId));
+      if (from < 0 || to < 0) return {};
+      active.splice(to, 0, active.splice(from, 1)[0]);
+      let nextActive = 0;
+      const ordered = changes.map(change => change.archived ? change : active[nextActive++]);
+      return { changes:ordered.map((change, index) => touchRecord(change, { notecardOrder:index })) };
+    });
+  };
+  const startBulletDrag = (event, changeId) => {
+    if (APP_BUILD !== "DESKTOP" || event.button !== 0 || editingChangeId === changeId || event.target.closest("button, input")) return;
+    bulletPointerRef.current = { pointerId:event.pointerId, sourceId:changeId, startX:event.clientX, startY:event.clientY, targetId:null, dragging:false };
+  };
+  const moveBulletDrag = event => {
+    const drag = bulletPointerRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag.dragging && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 7) return;
+    if (!drag.dragging) event.currentTarget.setPointerCapture(event.pointerId);
+    drag.dragging = true;
+    event.preventDefault();
+    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-notecard-change-id]");
+    drag.targetId = target && target.closest(".notecard-change-list") === event.currentTarget.closest(".notecard-change-list") ? target.dataset.notecardChangeId : null;
+    setDropChangeId(drag.targetId && drag.targetId !== drag.sourceId ? drag.targetId : null);
+    if (event.clientY > window.innerHeight - 48) window.scrollBy(0, 18);
+    else if (event.clientY < 48) window.scrollBy(0, -18);
+  };
+  const endBulletDrag = (event, card) => {
+    const drag = bulletPointerRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    bulletPointerRef.current = null;
+    setDropChangeId(null);
+    if (!drag.dragging) return;
+    event.preventDefault();
+    suppressBulletClickRef.current = true;
+    if (document.activeElement && document.activeElement.matches("textarea")) document.activeElement.blur();
+    if (drag.targetId && drag.targetId !== drag.sourceId) reorderChanges(card, drag.sourceId, drag.targetId);
+    setTimeout(() => { suppressBulletClickRef.current = false; }, 0);
+  };
   const reorder = (sourceId, targetId) => {
     const ids = visible.map(card => asId(card.id));
     const from = ids.indexOf(asId(sourceId));
@@ -12178,7 +12346,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   ].filter(Boolean) : [];
   const copyFocusedBullets = async () => {
     if (!focusedBullets.length) return;
-    const text = focusedBullets.map(item => "\u2022 " + item.replace(/\r\n?/g, "\n").replace(/\n/g, "\n  ")).join("\n");
+    const text = focusedBullets.map(item => "- " + item.replace(/^[\s\u2022-]+/, "").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/[\u2013\u2014\u2022]/g, "-").replace(/\u2026/g, "...").replace(/\u00a0/g, " ").replace(/\r\n?/g, "\n").replace(/\n/g, "\n  ")).join("\n");
     let copied = false;
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -12238,10 +12406,6 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
               onChange={event => patchScene(card.sourceSceneId, { status:event.target.checked ? "done" : "needs_edits" })} aria-label={"Mark notecard complete " + card.title} />
           </label>
           <div className="notecard-archive-stack">
-            <button type="button" className="notecard-icon-button" onClick={() => archiveCard(card)}
-              title="Archive notecard" aria-label={"Archive notecard " + card.title}>
-              <ArchiveTrayIcon size={18} />
-            </button>
             {APP_BUILD === "DESKTOP" && focusedId && <button type="button" className="notecard-icon-button notecard-copy-button"
               onClick={copyFocusedBullets} disabled={!focusedBullets.length} title="Copy all bullets"
               aria-label={"Copy all bullets from " + card.title}>
@@ -12250,6 +12414,10 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
                 <path d="M16 8V5a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h2" />
               </svg>
             </button>}
+            <button type="button" className="notecard-icon-button" onClick={() => archiveCard(card)}
+              title="Archive notecard" aria-label={"Archive notecard " + card.title}>
+              <ArchiveTrayIcon size={18} />
+            </button>
           </div>
           <span className="notecard-drag" role="button" tabIndex="0" draggable="true" title="Drag to reorder notecard" aria-label={"Drag to reorder " + card.title}
             onDragStart={event => { draggedId.current = card.id; event.dataTransfer.setData("text/plain", card.id); event.dataTransfer.effectAllowed = "move"; }}
@@ -12258,13 +12426,18 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
         </div>
         <details key={focusedId ? "focused-" + card.id : "board-" + card.id} className="notecard-details" ref={openFocusedDetails}>
           <summary>Notes</summary>
-        <ul className="notecard-change-list">{safeArray(card.changes).filter(change => !change.archived).map(change => <li key={change.id} className={"notecard-change-row" + (change.done ? " is-done" : "")}>
+        <ul className="notecard-change-list">{safeArray(card.changes).filter(change => !change.archived).map(change => <li key={change.id} data-notecard-change-id={change.id}
+          className={"notecard-change-row" + (change.done ? " is-done" : "") + (editingChangeId === change.id ? " is-editing" : "") + (dropChangeId === change.id ? " is-drop-target" : "")}
+          onPointerDown={event => startBulletDrag(event, change.id)}
+          onPointerMove={moveBulletDrag}
+          onPointerUp={event => endBulletDrag(event, card)}
+          onPointerCancel={() => { bulletPointerRef.current = null; setDropChangeId(null); }}>
           {focusedId ? <label className="notecard-change-check" title="Mark scene change complete">
             <input type="checkbox" className="notecard-change-done" checked={!!change.done}
               onChange={event => patchScene(card.sourceSceneId, current => applyChangeDone(current, change.id, event.target.checked))}
               aria-label={"Mark scene change complete " + (change.text || "note")} />
           </label> : <span className="notecard-bullet" aria-hidden="true">{"\u2022"}</span>}
-          <textarea value={change.text || ""} rows={1} ref={sizeNote}
+          <textarea value={change.text || ""} rows={1} ref={sizeNote} onClick={event => { if (suppressBulletClickRef.current) { event.preventDefault(); return; } setEditingChangeId(change.id); }} onBlur={() => setEditingChangeId(null)}
             onChange={event => { const value = event.target.value; sizeNote(event.target); patchScene(card.sourceSceneId, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, { text:value }) : item) })); }}
             aria-label={"Notecard scene change for " + card.title} />
           <button type="button" className="notecard-icon-button" onClick={() => patchScene(card.sourceSceneId, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, archiveFields()) : item) }))}
@@ -14169,6 +14342,10 @@ function App() {
   const [dbxConnected, setDbxConnected] = useState(() => DBX.isConnected());
   const _skipPushRef = React.useRef(false);
   const _isFirstRender = React.useRef(true);
+  const lastAppliedStateRef = React.useRef(loadCanonicalStateFromStorage());
+  const pendingWindowStateRef = React.useRef(null);
+  const conflictDraftRef = React.useRef(null);
+  const [windowConflict, setWindowConflict] = useState(null);
   const [pendingUpdate, setPendingUpdate] = useState(() => getPendingUpdateState());
   const [duplicateReview, setDuplicateReview] = useState(null);
   const [conversionReport, setConversionReport] = useState(() => loadCanonicalStateFromStorage().conversionReport);
@@ -14244,19 +14421,33 @@ function App() {
       _skipPushRef.current = false;
       return;
     }
-    const state = buildPersistedState({ songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, now:nowState, conversionReport });
-    saveCanonicalState(state);
+    const parts = { songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, now:nowState, conversionReport };
+    const result = rebaseEditorState(parts, lastAppliedStateRef.current, false);
+    if (result.conflicts.length) {
+      conflictDraftRef.current = parts;
+      setWindowConflict(result.conflicts);
+      try { localStorage.setItem(WINDOW_CONFLICT_BACKUP_KEY, JSON.stringify({ savedAt:nowStamp(), state:normalizeState({ ...loadCanonicalStateFromStorage(), ...parts }) })); }
+      catch (error) { window.dispatchEvent(new CustomEvent("pickme_storage_error")); }
+      return;
+    }
+    const state = saveCanonicalState(result.state);
+    lastAppliedStateRef.current = normalizeState({ ...state, ...parts });
+    if (windowConflict) setWindowConflict(null);
     window.dispatchEvent(new Event("notesUpdated"));
     if (window.__pickmeSkipNextDropboxPush) {
       window.__pickmeSkipNextDropboxPush = false;
     } else {
+      if (DBX.isConnected()) window.dispatchEvent(new CustomEvent("dbxSyncStatus", { detail:"pending" }));
       scheduleDropboxPush();
     }
   }, [songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, nowState, conversionReport]); // eslint-disable-line
 
   // ── Listen for dbxSyncStatus events (from auto-push/pull) ───────────────
   React.useEffect(() => {
-    const handler = e => setDbxSyncStatus(e.detail);
+    const handler = e => {
+      setDbxSyncStatus(e.detail);
+      if (e.detail === "idle") setLastSynced(localStorage.getItem(LAST_SYNCED_KEY) || "");
+    };
     window.addEventListener('dbxSyncStatus', handler);
     return () => window.removeEventListener('dbxSyncStatus', handler);
   }, []);
@@ -14268,29 +14459,110 @@ function App() {
     return () => window.removeEventListener('dbxStatusChanged', handler);
   }, []);
 
-  // ── Apply state pulled from Dropbox ─────────────────────────────────────
+  const applyIncomingState = React.useCallback(input => {
+    const d = normalizeState(input);
+    lastAppliedStateRef.current = d;
+    _skipPushRef.current = true;
+    clearTimeout(_dbxPushTimer);
+    ReactDOM.unstable_batchedUpdates(() => {
+      setSongs(activeRecords(d.songs));
+      setScenes(getSceneCardsForSavedState(d));
+      setNotecards(d.notecards);
+      setNotes(activeRecords(d.notes));
+      setSequences(d.sequences);
+      setSceneNotes(d.sceneNotes);
+      setCategoryNames(d.categoryNames || {});
+      setNotionUrl(d.notionUrl);
+      setNowState(d.now);
+      setConversionReport(d.conversionReport);
+      setLastSynced(localStorage.getItem(LAST_SYNCED_KEY) || "");
+    });
+  }, []);
+
   React.useEffect(() => {
-    const handler = e => {
-      const d = normalizeState(e.detail);
-      _skipPushRef.current = true;
-      clearTimeout(_dbxPushTimer);
-      ReactDOM.unstable_batchedUpdates(() => {
-        setSongs(activeRecords(d.songs));
-        setScenes(getSceneCardsForSavedState(d));
-        setNotecards(d.notecards);
-        setNotes(activeRecords(d.notes));
-        setSequences(d.sequences);
-        setSceneNotes(d.sceneNotes);
-        setCategoryNames(d.categoryNames || {});
-        setNotionUrl(d.notionUrl);
-        setNowState(d.now);
-        setConversionReport(d.conversionReport);
-        setLastSynced(localStorage.getItem(LAST_SYNCED_KEY) || "");
-      });
+    const fromDropbox = event => {
+      if (conflictDraftRef.current) { pendingWindowStateRef.current = event.detail; return; }
+      applyIncomingState(event.detail);
     };
-    window.addEventListener('pickme_state_updated', handler);
-    return () => window.removeEventListener('pickme_state_updated', handler);
-  }, []); // eslint-disable-line
+    window.addEventListener("pickme_state_updated", fromDropbox);
+    return () => window.removeEventListener("pickme_state_updated", fromDropbox);
+  }, [applyIncomingState]);
+
+  React.useEffect(() => {
+    const hasActiveEdit = () => document.activeElement && document.activeElement.matches("input, textarea, [contenteditable='true']");
+    const receive = input => {
+      if (!input) return;
+      const incoming = normalizeState(input);
+      const saved = loadCanonicalStateFromStorage();
+      const newest = Number(incoming.lastModified || 0) > Number(saved.lastModified || 0) ? incoming : saved;
+      if (newest === incoming && !sameSavedValue(incoming, saved)) saveCanonicalState(incoming, { quiet:true });
+      if (sameSavedValue(newest, lastAppliedStateRef.current)) return;
+      if (hasActiveEdit() || conflictDraftRef.current) { pendingWindowStateRef.current = newest; return; }
+      applyIncomingState(newest);
+    };
+    const onStorage = event => {
+      if (event.key !== PICKME_STATE_KEY || !event.newValue) return;
+      try { receive(JSON.parse(event.newValue)); } catch (error) { console.warn("Window update could not be read:", error); }
+    };
+    const onMessage = event => {
+      if (event.data && event.data.from !== PICKME_WINDOW_ID) receive(event.data.state);
+    };
+    const onFocusOut = () => setTimeout(() => {
+      if (hasActiveEdit() || conflictDraftRef.current || !pendingWindowStateRef.current) return;
+      const pending = pendingWindowStateRef.current;
+      pendingWindowStateRef.current = null;
+      receive(pending);
+    }, 0);
+    const onBeforeUnload = event => {
+      if (!conflictDraftRef.current) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("focusout", onFocusOut);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    if (pickmeWindowChannel) pickmeWindowChannel.addEventListener("message", onMessage);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("focusout", onFocusOut);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      if (pickmeWindowChannel) pickmeWindowChannel.removeEventListener("message", onMessage);
+    };
+  }, [applyIncomingState]);
+
+  const downloadConflictDraft = () => {
+    const raw = localStorage.getItem(WINDOW_CONFLICT_BACKUP_KEY);
+    const draft = raw ? JSON.parse(raw).state : normalizeState({ ...loadCanonicalStateFromStorage(), ...(conflictDraftRef.current || {}) });
+    downloadJsonFile(draft, "pickme_window_conflict_draft_" + Date.now() + ".json");
+  };
+  const resolveWindowConflict = keepMine => {
+    if (keepMine && conflictDraftRef.current) {
+      const result = rebaseEditorState(conflictDraftRef.current, lastAppliedStateRef.current, true);
+      const saved = saveCanonicalState(result.state);
+      conflictDraftRef.current = null;
+      setWindowConflict(null);
+      applyIncomingState(saved);
+      scheduleDropboxPush();
+    } else {
+      conflictDraftRef.current = null;
+      setWindowConflict(null);
+      applyIncomingState(loadCanonicalStateFromStorage());
+    }
+    pendingWindowStateRef.current = null;
+  };
+  const getCoordinatedState = () => {
+    const parts = { songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, now:nowState, conversionReport };
+    const result = rebaseEditorState(parts, lastAppliedStateRef.current, false);
+    if (!result.conflicts.length) return result.state;
+    conflictDraftRef.current = parts;
+    setWindowConflict(result.conflicts);
+    try { localStorage.setItem(WINDOW_CONFLICT_BACKUP_KEY, JSON.stringify({ savedAt:nowStamp(), state:normalizeState({ ...loadCanonicalStateFromStorage(), ...parts }) })); }
+    catch (error) { window.dispatchEvent(new CustomEvent("pickme_storage_error")); }
+    return null;
+  };
+  const markCoordinatedStateSaved = state => {
+    lastAppliedStateRef.current = normalizeState({ ...state, songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, now:nowState, conversionReport });
+  };
 
   const completePendingUpdate = (downloadConfirmed) => {
     if (!pendingUpdate) return;
@@ -14353,21 +14625,18 @@ function App() {
       if (isUserTyping()) return;
       window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
       await performDropboxPull();
-      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
     })();
     
     const iv = setInterval(async () => {
       if (document.hidden || isUserTyping()) return;
       window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
       await performDropboxPull();
-      window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
     }, 10000);
     
     const onVis = async () => {
       if (!document.hidden && !isUserTyping()) {
         window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'syncing' }));
         await performDropboxPull();
-        window.dispatchEvent(new CustomEvent('dbxSyncStatus', { detail: 'idle' }));
       }
     };
     
@@ -14441,6 +14710,20 @@ function App() {
             onClick={() => downloadJsonFile(loadCanonicalStateFromStorage(), exportFilename())}>Download backup</button>
         </div>
       )}
+
+      {windowConflict && (
+        <div role="alert" style={{background:"#FFFFFF",border:"2px solid #C3578D",padding:"14px 16px",marginBottom:"16px",color:"#000000"}}>
+          <strong>EDIT CONFLICT</strong> Another window changed {windowConflict[0]}. Your edit is still here and has not overwritten it.
+          <div style={{display:"flex",flexWrap:"wrap",gap:"8px",marginTop:"10px"}}>
+            <button type="button" className="btn btn-secondary" onClick={downloadConflictDraft}>Download my draft</button>
+            <button type="button" className="btn btn-secondary" onClick={() => resolveWindowConflict(true)}>Keep my edit</button>
+            <button type="button" className="btn btn-secondary" onClick={() => resolveWindowConflict(false)}>Use newer edit</button>
+          </div>
+        </div>
+      )}
+      <div role="status" style={{color:"#000000",fontSize:"0.75rem",margin:"0 0 12px",textAlign:"right"}}>
+        {storageError ? "Browser save failed" : dbxConnected ? (dbxSyncStatus === "pending" ? "Saved locally · Dropbox pending" : dbxSyncStatus === "syncing" ? "Saved locally · Dropbox syncing" : dbxSyncStatus === "error" ? "Saved locally · Dropbox sync failed" : lastSynced ? "Dropbox synced " + formatDateShort(Number(lastSynced)) : "Dropbox connected · not yet synced") : "Saved in this browser"}
+      </div>
 
       {showGlobalSequenceProgress && showSequenceBar && (
         <div className="progress-bar-container">
@@ -14520,7 +14803,7 @@ function App() {
           <SceneNotesTab sceneNotes={sceneNotes} setSceneNotes={setSceneNotes} sequences={sequences} setSequences={setSequences} showToast={showToast} />
         )}
         {activeTab === "settings" && (
-          <SettingsTab notionUrl={notionUrl} setNotionUrl={setNotionUrl} songs={songs} scenes={scenes} notecards={notecards} notes={notes} sequences={sequences} sceneNotes={sceneNotes} categoryNames={categoryNames} setCategoryNames={setCategoryNames} setSongs={setSongs} setScenes={setScenes} setNotecards={setNotecards} setNotes={setNotes} setSequences={setSequences} setSceneNotes={setSceneNotes} nowState={nowState} setNowState={setNowState} conversionReport={conversionReport} setConversionReport={setConversionReport} lastSynced={lastSynced} setPendingUpdate={setPendingUpdate} showToast={showToast} showAdvancedTabs={showAdvancedTabs} setShowAdvancedTabs={setShowAdvancedTabs} />
+          <SettingsTab notionUrl={notionUrl} setNotionUrl={setNotionUrl} songs={songs} scenes={scenes} notecards={notecards} notes={notes} sequences={sequences} sceneNotes={sceneNotes} categoryNames={categoryNames} setCategoryNames={setCategoryNames} setSongs={setSongs} setScenes={setScenes} setNotecards={setNotecards} setNotes={setNotes} setSequences={setSequences} setSceneNotes={setSceneNotes} nowState={nowState} setNowState={setNowState} conversionReport={conversionReport} setConversionReport={setConversionReport} lastSynced={lastSynced} setPendingUpdate={setPendingUpdate} showToast={showToast} showAdvancedTabs={showAdvancedTabs} setShowAdvancedTabs={setShowAdvancedTabs} getCoordinatedState={getCoordinatedState} markCoordinatedStateSaved={markCoordinatedStateSaved} />
         )}
       </div>
 
