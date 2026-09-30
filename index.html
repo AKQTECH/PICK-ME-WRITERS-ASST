@@ -3393,6 +3393,7 @@
             justify-content: center;
             padding: 0;
         }
+        .notecard-archive-stack { align-items: center; display: flex; flex: 0 0 30px; flex-direction: column; }
         .notecard-details > summary {
             color: #E668A7;
             cursor: pointer;
@@ -3482,6 +3483,7 @@
             .notecard-actions { flex-wrap: wrap; justify-content: end; margin-left: 0; }
             .notecard-open { display: inline-flex; }
             .notecard-icon-button, .notecard-complete-label, .notecard-drag { flex-basis: 44px; height: 44px; }
+            .notecard-archive-stack { flex-basis: 44px; }
             .notecard-change-row button, .notecard-add-change button { min-height: 44px; min-width: 44px; }
             .notecard-details > summary { min-height: 44px; padding: 10px 0; }
             .companion-scene-list { padding: 16px 0 4px; }
@@ -5307,7 +5309,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.33";
+const APP_VERSION = "1.2.34";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12170,6 +12172,31 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   };
 
   const focused = visible.find(card => asId(card.id) === asId(focusedId));
+  const focusedBullets = focused ? [
+    ...safeArray(focused.changes).filter(change => !change.archived).map(change => String(change.text || "").trim()),
+    String(focused.notes || "").trim()
+  ].filter(Boolean) : [];
+  const copyFocusedBullets = async () => {
+    if (!focusedBullets.length) return;
+    const text = focusedBullets.map(item => "\u2022 " + item.replace(/\r\n?/g, "\n").replace(/\n/g, "\n  ")).join("\n");
+    let copied = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      }
+    } catch (error) { /* The local desktop file may not have Clipboard API permission. */ }
+    if (!copied) {
+      const field = document.createElement("textarea");
+      field.value = text;
+      field.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+      document.body.appendChild(field);
+      field.select();
+      try { copied = document.execCommand("copy"); } catch (error) { copied = false; }
+      field.remove();
+    }
+    if (showToast) showToast(copied ? "Bullets copied" : "Could not copy bullets");
+  };
   const displayed = focusedId ? (focused ? [focused] : []) : visible;
   const archiveCard = card => {
     patchScene(card.sourceSceneId, archiveFields());
@@ -12210,10 +12237,20 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
             <input type="checkbox" className="notecard-complete" checked={!!card.done}
               onChange={event => patchScene(card.sourceSceneId, { status:event.target.checked ? "done" : "needs_edits" })} aria-label={"Mark notecard complete " + card.title} />
           </label>
-          <button type="button" className="notecard-icon-button" onClick={() => archiveCard(card)}
-            title="Archive notecard" aria-label={"Archive notecard " + card.title}>
-            <ArchiveTrayIcon size={18} />
-          </button>
+          <div className="notecard-archive-stack">
+            <button type="button" className="notecard-icon-button" onClick={() => archiveCard(card)}
+              title="Archive notecard" aria-label={"Archive notecard " + card.title}>
+              <ArchiveTrayIcon size={18} />
+            </button>
+            {APP_BUILD === "DESKTOP" && focusedId && <button type="button" className="notecard-icon-button notecard-copy-button"
+              onClick={copyFocusedBullets} disabled={!focusedBullets.length} title="Copy all bullets"
+              aria-label={"Copy all bullets from " + card.title}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="8" y="8" width="11" height="12" rx="1" />
+                <path d="M16 8V5a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h2" />
+              </svg>
+            </button>}
+          </div>
           <span className="notecard-drag" role="button" tabIndex="0" draggable="true" title="Drag to reorder notecard" aria-label={"Drag to reorder " + card.title}
             onDragStart={event => { draggedId.current = card.id; event.dataTransfer.setData("text/plain", card.id); event.dataTransfer.effectAllowed = "move"; }}
             onDragEnd={() => { draggedId.current = null; setDropTargetId(null); }}>{"\u22EE\u22EE"}</span>
