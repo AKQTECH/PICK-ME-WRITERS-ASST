@@ -3446,7 +3446,8 @@
         .notecard-empty { color: #000000; font-size: 0.82rem; padding: 24px 0; }
         .notecard-open { display: none; color: #E668A7; font-size: 1.25rem; }
         .companion-scene-list { padding: 24px 4px 8px; }
-        .companion-scene-list h2 { color: #E668A7; font-size: 1rem; font-weight: 900; margin: 0 0 18px; text-transform: uppercase; }
+        .companion-scene-list-heading { align-items: baseline; display: flex; gap: 12px; justify-content: space-between; margin-bottom: 18px; }
+        .companion-scene-list h2 { color: #E668A7; font-size: 1rem; font-weight: 900; margin: 0; text-transform: uppercase; }
         .companion-scene-list-tools { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(180px, 230px); margin-bottom: 18px; }
         .companion-scene-list-tools input,
         .companion-scene-list-tools select { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; box-sizing: border-box; color: #000000; font: inherit; min-height: 44px; min-width: 0; padding: 8px 14px; width: 100%; }
@@ -3461,7 +3462,7 @@
             padding-right: 52px;
         }
         .companion-scene-list-items { display: grid; gap: 8px; }
-        .companion-scene-list-count { color: #000000; font-size: 0.76rem; font-weight: 800; margin: 18px 0 0; text-align: left; text-transform: uppercase; }
+        .companion-scene-list-count { color: #000000; flex: 0 0 auto; font-size: 0.76rem; font-weight: 800; margin: 0; text-align: right; text-transform: uppercase; }
         .companion-scene-list-row { align-items: center; background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(150px, 210px) 108px; min-width: 0; padding: 8px 12px; }
         .companion-scene-list-row.is-drop-target { outline: 2px solid #E668A7; outline-offset: 2px; }
         .companion-notebook .companion-scene-list-title { background: none; border: 0; color: #000000; cursor: pointer; font: inherit; font-size: 0.9rem; font-weight: 800; min-height: 44px; min-width: 0; overflow-wrap: anywhere; padding: 6px 4px; text-align: left; text-transform: uppercase; }
@@ -5306,7 +5307,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.32";
+const APP_VERSION = "1.2.33";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12078,6 +12079,9 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   const [changeDrafts, setChangeDrafts] = React.useState({});
   const [dropTargetId, setDropTargetId] = React.useState(null);
   const draggedId = React.useRef(null);
+  const openFocusedDetails = React.useCallback(element => {
+    if (element && focusedId) element.open = true;
+  }, [focusedId]);
   const sizeNote = element => {
     if (!element) return;
     element.style.height = "auto";
@@ -12215,7 +12219,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
             onDragEnd={() => { draggedId.current = null; setDropTargetId(null); }}>{"\u22EE\u22EE"}</span>
         </div>
         </div>
-        <details key={focusedId ? "focused-" + card.id : "board-" + card.id} className="notecard-details" ref={element => { if (element && focusedId) element.open = true; }}>
+        <details key={focusedId ? "focused-" + card.id : "board-" + card.id} className="notecard-details" ref={openFocusedDetails}>
           <summary>Notes</summary>
         <ul className="notecard-change-list">{safeArray(card.changes).filter(change => !change.archived).map(change => <li key={change.id} className={"notecard-change-row" + (change.done ? " is-done" : "")}>
           {focusedId ? <label className="notecard-change-check" title="Mark scene change complete">
@@ -12279,7 +12283,10 @@ function CompanionSceneList({ scenes, setScenes, notecards, setNotecards, openNo
     reorderSceneNotecards(ids, notecards, setNotecards, setScenes);
   };
   return <section className="companion-scene-list" aria-label="Scene List">
-    <h2>Scene List</h2>
+    <div className="companion-scene-list-heading">
+      <h2>Scene List</h2>
+      <p className="companion-scene-list-count" aria-live="polite">{visible.length} {visible.length === 1 ? "scene" : "scenes"}</p>
+    </div>
     <div className="companion-scene-list-tools">
       <input type="search" value={search} onChange={event => setSearch(event.target.value)}
         placeholder="Search scenes, changes, notes" aria-label="Search scenes" />
@@ -12312,7 +12319,6 @@ function CompanionSceneList({ scenes, setScenes, notecards, setNotecards, openNo
         </div>
       </div>)}
     </div> : <div className="companion-empty-note">{ordered.length ? "No scenes match this view." : "No scenes yet. Create a notecard to begin."}</div>}
-    <p className="companion-scene-list-count" aria-live="polite">{visible.length} {visible.length === 1 ? "scene" : "scenes"}</p>
   </section>;
 }
 
