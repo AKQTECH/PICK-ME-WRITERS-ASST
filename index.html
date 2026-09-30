@@ -3291,7 +3291,11 @@
             margin: 0;
             text-transform: uppercase;
         }
+        .notecards-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; margin-left: auto; text-align: right; }
+        .notecards-sync-status { color: #F2C8DC; font-size: 0.78rem; font-weight: 700; }
+        .notecards-sync-status.is-error { color: #000000; }
         .notecards-count { color: #F2C8DC; font-size: 0.78rem; font-weight: 700; margin-left: auto; white-space: nowrap; }
+        body:has(.notecards-workspace) .global-sync-status { display: none; }
         .notecard-back { background: transparent; border: 0; color: #000000; cursor: pointer; font: inherit; font-size: 0.82rem; font-weight: 800; padding: 0; text-transform: uppercase; }
         .notecards-workspace.is-focused { box-sizing: border-box; margin: 0 auto; max-width: 960px; width: 100%; }
         .notecards-workspace.is-focused .notecards-grid { grid-template-columns: minmax(0, 1fr); }
@@ -5322,7 +5326,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.38";
+const APP_VERSION = "1.2.39";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11437,7 +11441,7 @@ function SettingsTab({
         <div className="settings-muted-copy">
           {dbxConnected ? "Connected" : "Connect Dropbox to keep desktop and mobile in sync."}
           {dbxAccount ? " as " + dbxAccount : ""}
-          <br />Last synced: {lastSynced ? formatDateShort(Number(lastSynced)) : "Not yet"}
+          <br /><span style={{color:lastSynced ? "#F2C8DC" : undefined}}>Last synced: {lastSynced ? formatDateShort(Number(lastSynced)) : "Not yet"}</span>
         </div>
         {dbxMsg && <div style={{padding:"8px 12px",background:"#fff3f9",border:"1px solid #fec3e4",borderRadius:"6px",fontSize:"0.85em",marginBottom:"12px"}}>{dbxMsg}</div>}
         <div className="settings-actions">
@@ -12197,7 +12201,7 @@ function seedSceneNotecards(scenes, setNotecards) {
   });
 }
 
-function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showToast, focusedId, setFocusedId }) {
+function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showToast, focusedId, setFocusedId, syncLabel, syncError }) {
   const [newTitle, setNewTitle] = React.useState("");
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
@@ -12377,7 +12381,10 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   return <section className={"notecards-workspace" + (focusedId ? " is-focused" : "")} aria-label="Notecards">
     <div className="notecards-toolbar">
       {focusedId ? <button type="button" className="notecard-back" onClick={() => setFocusedId(null)}>← Notecards</button> : <h2>Notecards</h2>}
-      {!focusedId && <span className="notecards-count" aria-label={uncheckedCount + " unchecked notecards"}>{uncheckedCount} {uncheckedCount === 1 ? "notecard" : "notecards"}</span>}
+      <div className="notecards-meta">
+        <div role="status" className={"notecards-sync-status" + (syncError ? " is-error" : "")}>{syncLabel}</div>
+        {!focusedId && <span className="notecards-count" aria-label={uncheckedCount + " unchecked notecards"}>{uncheckedCount} {uncheckedCount === 1 ? "notecard" : "notecards"}</span>}
+      </div>
     </div>
     {!focusedId && <div className="notecards-new">
       <input value={newTitle} onChange={event => setNewTitle(event.target.value)}
@@ -12535,7 +12542,7 @@ function CompanionSceneList({ scenes, setScenes, notecards, setNotecards, openNo
   </section>;
 }
 
-function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequences, setSequences, showToast }) {
+function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequences, setSequences, showToast, syncLabel, syncError }) {
   const [sequenceFilter, setSequenceFilter] = React.useState(() => {
     const stored = localStorage.getItem("pickme_companion_sequence_focus");
     return SEQUENCE_ORDER.includes(stored) ? stored : "AUTO";
@@ -13363,7 +13370,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
       </div>
 
       {isNotecardsMode && <NotecardsWorkspace scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards}
-        showToast={showToast} focusedId={focusedNotecardId} setFocusedId={setFocusedNotecardId} />}
+        showToast={showToast} focusedId={focusedNotecardId} setFocusedId={setFocusedNotecardId} syncLabel={syncLabel} syncError={syncError} />}
       {isSceneListMode && <CompanionSceneList scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards}
         openNotecard={id => { setFocusedNotecardId(id); setCompanionMode("notecards"); }} />}
 
@@ -14683,6 +14690,8 @@ function App() {
     ? [SIMPLE_TABS[0], ...ADVANCED_TABS, ...SIMPLE_TABS.slice(1)]
     : SIMPLE_TABS;
   const showGlobalSequenceProgress = activeTab !== "companion";
+  const syncError = storageError || dbxSyncStatus === "error";
+  const syncLabel = storageError ? "Browser save failed" : dbxConnected ? (dbxSyncStatus === "pending" ? "Saved locally · Dropbox pending" : dbxSyncStatus === "syncing" ? "Saved locally · Dropbox syncing" : dbxSyncStatus === "error" ? "Saved locally · Dropbox sync failed" : lastSynced ? "Dropbox synced " + formatDateShort(Number(lastSynced)) : "Dropbox connected · not yet synced") : "Saved in this browser";
 
   return (
     <div className="container">
@@ -14724,8 +14733,8 @@ function App() {
           </div>
         </div>
       )}
-      <div role="status" style={{color:"#000000",fontSize:"0.75rem",margin:"0 0 12px",textAlign:"right"}}>
-        {storageError ? "Browser save failed" : dbxConnected ? (dbxSyncStatus === "pending" ? "Saved locally · Dropbox pending" : dbxSyncStatus === "syncing" ? "Saved locally · Dropbox syncing" : dbxSyncStatus === "error" ? "Saved locally · Dropbox sync failed" : lastSynced ? "Dropbox synced " + formatDateShort(Number(lastSynced)) : "Dropbox connected · not yet synced") : "Saved in this browser"}
+      <div role="status" className="global-sync-status" style={{color:syncError ? "#000000" : "#C3578D",fontSize:"0.75rem",margin:"0 0 12px",textAlign:"right"}}>
+        {syncLabel}
       </div>
 
       {showGlobalSequenceProgress && showSequenceBar && (
@@ -14776,7 +14785,7 @@ function App() {
 
       <div className="card">
         {activeTab === "companion" && (
-          <ScriptCompanionTab scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards} sequences={sequences} setSequences={setSequences} showToast={showToast} />
+          <ScriptCompanionTab scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards} sequences={sequences} setSequences={setSequences} showToast={showToast} syncLabel={syncLabel} syncError={syncError} />
         )}
         {activeTab === "script" && (
           <ScriptRailTab scenes={scenes} setScenes={setScenes} nowState={nowState} setNowState={setNowState} />
