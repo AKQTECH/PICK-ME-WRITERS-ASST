@@ -3291,6 +3291,7 @@
             margin: 0;
             text-transform: uppercase;
         }
+        .notecards-count { color: #F2C8DC; font-size: 0.78rem; font-weight: 700; margin-left: auto; white-space: nowrap; }
         .notecard-back { background: transparent; border: 0; color: #000000; cursor: pointer; font: inherit; font-size: 0.82rem; font-weight: 800; padding: 0; text-transform: uppercase; }
         .notecards-workspace.is-focused { box-sizing: border-box; margin: 0 auto; max-width: 960px; width: 100%; }
         .notecards-workspace.is-focused .notecards-grid { grid-template-columns: minmax(0, 1fr); }
@@ -5321,7 +5322,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.36";
+const APP_VERSION = "1.2.37";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12375,6 +12376,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   return <section className={"notecards-workspace" + (focusedId ? " is-focused" : "")} aria-label="Notecards">
     <div className="notecards-toolbar">
       {focusedId ? <button type="button" className="notecard-back" onClick={() => setFocusedId(null)}>← Notecards</button> : <h2>Notecards</h2>}
+      {!focusedId && <span className="notecards-count" aria-label={visible.length + " notecards"}>{visible.length} {visible.length === 1 ? "notecard" : "notecards"}</span>}
     </div>
     {!focusedId && <div className="notecards-new">
       <input value={newTitle} onChange={event => setNewTitle(event.target.value)}
