@@ -5322,7 +5322,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.37";
+const APP_VERSION = "1.2.38";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12367,6 +12367,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
     if (showToast) showToast(copied ? "Bullets copied" : "Could not copy bullets");
   };
   const displayed = focusedId ? (focused ? [focused] : []) : visible;
+  const uncheckedCount = visible.filter(card => !card.done).length;
   const archiveCard = card => {
     patchScene(card.sourceSceneId, archiveFields());
     setNotecards(previous => safeArray(previous).map(item => asId(item.id) === asId(card.id) ? touchRecord(item, archiveFields()) : item));
@@ -12376,7 +12377,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   return <section className={"notecards-workspace" + (focusedId ? " is-focused" : "")} aria-label="Notecards">
     <div className="notecards-toolbar">
       {focusedId ? <button type="button" className="notecard-back" onClick={() => setFocusedId(null)}>← Notecards</button> : <h2>Notecards</h2>}
-      {!focusedId && <span className="notecards-count" aria-label={visible.length + " notecards"}>{visible.length} {visible.length === 1 ? "notecard" : "notecards"}</span>}
+      {!focusedId && <span className="notecards-count" aria-label={uncheckedCount + " unchecked notecards"}>{uncheckedCount} {uncheckedCount === 1 ? "notecard" : "notecards"}</span>}
     </div>
     {!focusedId && <div className="notecards-new">
       <input value={newTitle} onChange={event => setNewTitle(event.target.value)}
