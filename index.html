@@ -5214,7 +5214,7 @@ const DBX = (() => {
   }
   function saveTokens() {
     localStorage.setItem(KEY_TOKENS, JSON.stringify({ accessToken:st.accessToken, refreshToken:st.refreshToken, expiresAt:st.expiresAt, account:st.account }));
-    if (st.fileId) localStorage.setItem(KEY_FILEID, st.fileId);
+    if (st.fileId) saveUiPreference(KEY_FILEID, st.fileId);
   }
   function clearTokens() {
     localStorage.removeItem(KEY_TOKENS); localStorage.removeItem(KEY_FILEID);
@@ -5273,7 +5273,8 @@ const DBX = (() => {
     const body = new URLSearchParams({ grant_type:'refresh_token', refresh_token:st.refreshToken, client_id:APP_KEY });
     const r = await fetch('https://api.dropbox.com/oauth2/token', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body });
     if (!r.ok) { clearTokens(); throw new Error('Dropbox session expired — please reconnect'); }
-    const t = await r.json(); st.accessToken=t.access_token; st.expiresAt=Date.now()+(t.expires_in||14400)*1000; saveTokens();
+    const t = await r.json(); st.accessToken=t.access_token; st.expiresAt=Date.now()+(t.expires_in||14400)*1000;
+    try { saveTokens(); } catch (error) { if (error.name !== "QuotaExceededError") throw error; console.warn("Refreshed Dropbox token could not be cached:", error); }
   }
 
   // ── API ───────────────────────────────────────────────────────────────────
@@ -5315,7 +5316,7 @@ const DBX = (() => {
     let path = knownPath || PICKME_PATH;
     if (!knownPath && st.fileId) { const cur=await getPathById(st.fileId); if(cur) path=cur; }
     const res = await uploadPath(path, content, rev || null);
-    st.fileId=res.id; localStorage.setItem(KEY_FILEID, res.id); return res;
+    st.fileId=res.id; saveUiPreference(KEY_FILEID, res.id); return res;
   }
 
   async function downloadPath(path) {
@@ -5339,7 +5340,7 @@ const DBX = (() => {
       if(p) result=await downloadPath(p);
     }
     if (!result) result = await downloadPath(PICKME_PATH);
-    if (result && result.id) { st.fileId=result.id; localStorage.setItem(KEY_FILEID, result.id); }
+    if (result && result.id) { st.fileId=result.id; saveUiPreference(KEY_FILEID, result.id); }
     return result;
   }
 
@@ -5351,7 +5352,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.41";
+const APP_VERSION = "1.2.42";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -8776,6 +8777,10 @@ function loadRawSavedState() {
 function loadCanonicalStateFromStorage() {
   return normalizeState(loadRawSavedState() || createDefaultState());
 }
+function saveUiPreference(key, value) {
+  try { localStorage.setItem(key, value); }
+  catch (error) { console.warn("UI preference could not be saved:", key, error); }
+}
 function preserveUnversionedNotionUrl(state, fallbackUrl) {
   const normalized = normalizeState(state);
   if (!Number(normalized.sectionUpdatedAt.notionUrl || 0)) {
@@ -9370,8 +9375,9 @@ async function syncWithDropbox(localState, attempt) {
     window.dispatchEvent(new CustomEvent("pickme_state_updated", { detail: merged }));
     try {
       const uploaded = await DBX.uploadSmart(JSON.stringify(merged, null, 2), rev, download && download.path ? download.path : null);
-      localStorage.setItem(LAST_SYNCED_KEY, String(nowStamp()));
-      window.dispatchEvent(new CustomEvent("dbxSyncStatus", { detail:"idle" }));
+      const syncedAt = nowStamp();
+      saveUiPreference(LAST_SYNCED_KEY, String(syncedAt));
+      window.dispatchEvent(new CustomEvent("dbxSyncStatus", { detail:"idle", syncedAt }));
       return uploaded;
     } catch(uploadError) {
       if (uploadError && uploadError.isConflict && (attempt || 0) < 3) {
@@ -10574,8 +10580,8 @@ function SceneNotesTab({ sceneNotes, setSceneNotes, sequences, setSequences, sho
   }, [sceneNotes]);
 
   // Persist selection across tab switches
-  useEffect(() => { if (selectedSequenceId) localStorage.setItem("pickMe_selectedSeqId", selectedSequenceId); }, [selectedSequenceId]);
-  useEffect(() => { if (selectedSceneId) localStorage.setItem("pickMe_selectedSceneId", selectedSceneId); }, [selectedSceneId]);
+  useEffect(() => { if (selectedSequenceId) saveUiPreference("pickMe_selectedSeqId", selectedSequenceId); }, [selectedSequenceId]);
+  useEffect(() => { if (selectedSceneId) saveUiPreference("pickMe_selectedSceneId", selectedSceneId); }, [selectedSceneId]);
 
   const currentSequence = sceneNotes?.find(s => s.id === selectedSequenceId);
   const currentScene = currentSequence?.scenes?.find(sc => sc.id === selectedSceneId);
@@ -12704,7 +12710,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   }, [showCompanionWorkbench, fitSceneTitle]);
 
   React.useEffect(() => {
-    if (effectiveSequenceFilter) localStorage.setItem("pickme_companion_sequence_focus", effectiveSequenceFilter);
+    if (effectiveSequenceFilter) saveUiPreference("pickme_companion_sequence_focus", effectiveSequenceFilter);
   }, [effectiveSequenceFilter]);
 
   React.useEffect(() => {
@@ -12712,13 +12718,13 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   }, [effectiveSequenceFilter, currentSequenceTitle]);
 
   React.useEffect(() => {
-    localStorage.setItem("pickme_companion_mode", companionMode);
+    saveUiPreference("pickme_companion_mode", companionMode);
   }, [companionMode]);
 
-  React.useEffect(() => { localStorage.setItem("pickme_ideas_layout", ideaLayout); }, [ideaLayout]);
+  React.useEffect(() => { saveUiPreference("pickme_ideas_layout", ideaLayout); }, [ideaLayout]);
 
   React.useEffect(() => {
-    localStorage.setItem("pickme_companion_sequence_view", sequenceView);
+    saveUiPreference("pickme_companion_sequence_view", sequenceView);
   }, [sequenceView]);
 
 
@@ -13792,11 +13798,11 @@ function SceneListTab({ scenes, setScenes, nowState, setNowState, showToast }) {
   const selectedTaskStats = selected ? taskStats(selected) : { total:0, complete:0 };
 
   React.useEffect(() => {
-    localStorage.setItem("pickme_scene_sequence_focus", effectiveSequenceFilter);
+    saveUiPreference("pickme_scene_sequence_focus", effectiveSequenceFilter);
   }, [effectiveSequenceFilter]);
 
   React.useEffect(() => {
-    localStorage.setItem("pickme_scene_focus_only", focusSceneOnly ? "1" : "0");
+    saveUiPreference("pickme_scene_focus_only", focusSceneOnly ? "1" : "0");
   }, [focusSceneOnly]);
 
   React.useEffect(() => {
@@ -14009,7 +14015,7 @@ function ScriptRailTab({ scenes, setScenes, nowState, setNowState }) {
     try { return JSON.parse(localStorage.getItem("pickme_collapsed_sequences") || "{}"); } catch(e) { return {}; }
   });
   const [filter, setFilter] = React.useState("ALL");
-  React.useEffect(() => { localStorage.setItem("pickme_collapsed_sequences", JSON.stringify(collapsed)); }, [collapsed]);
+  React.useEffect(() => { saveUiPreference("pickme_collapsed_sequences", JSON.stringify(collapsed)); }, [collapsed]);
   const state = normalizeState({ scenes });
   const cardOptions = state.scenes.filter(c => !c.archived && c.kind !== "DECISION" && c.kind !== "THREAD");
   const entries = [];
@@ -14426,14 +14432,14 @@ function App() {
   const [lastSynced, setLastSynced] = useState(() => localStorage.getItem(LAST_SYNCED_KEY) || "");
   const [showAdvancedTabs, setShowAdvancedTabs] = useState(() => localStorage.getItem("pickme_show_advanced_tabs") === "1");
 
-  React.useEffect(() => { localStorage.setItem("pickme_show_advanced_tabs", showAdvancedTabs ? "1" : "0"); }, [showAdvancedTabs]);
+  React.useEffect(() => { saveUiPreference("pickme_show_advanced_tabs", showAdvancedTabs ? "1" : "0"); }, [showAdvancedTabs]);
   React.useEffect(() => {
     const simpleTabs = new Set(["companion","progress","archive","notes","playlist","settings"]);
     const advancedTabs = new Set(["script","scenes","question","eval","ritual"]);
     if (activeTab === "scene-list" || (!simpleTabs.has(activeTab) && (!showAdvancedTabs || !advancedTabs.has(activeTab)))) setActiveTab("companion");
   }, [activeTab, showAdvancedTabs]);
 
-  React.useEffect(() => { localStorage.setItem("pickme_active_tab", activeTab); }, [activeTab]);
+  React.useEffect(() => { saveUiPreference("pickme_active_tab", activeTab); }, [activeTab]);
 
   const [songs, setSongs] = useState(() => {
     const p = loadRawSavedState();
@@ -14519,7 +14525,7 @@ function App() {
   React.useEffect(() => {
     const handler = e => {
       setDbxSyncStatus(e.detail);
-      if (e.detail === "idle") setLastSynced(localStorage.getItem(LAST_SYNCED_KEY) || "");
+      if (e.detail === "idle") setLastSynced(String(e.syncedAt || localStorage.getItem(LAST_SYNCED_KEY) || ""));
     };
     window.addEventListener('dbxSyncStatus', handler);
     return () => window.removeEventListener('dbxSyncStatus', handler);
@@ -14900,7 +14906,7 @@ class AppErrorBoundary extends React.Component {
       <h1 style={{color:"#000000",fontSize:"1.2rem"}}>APP COULD NOT OPEN</h1>
       <p>Your saved work has not been cleared. Download a local backup before trying again.</p>
       <div style={{display:"flex",flexWrap:"wrap",gap:"10px"}}>
-        <button type="button" className="btn btn-secondary" onClick={() => { const raw = localStorage.getItem(PICKME_STATE_KEY); if (raw) downloadJsonFile(raw, exportFilename()); }}>Download local backup</button>
+        <button type="button" className="btn btn-secondary" onClick={() => { const saved = loadRawSavedState(); if (saved) downloadJsonFile(saved, exportFilename()); }}>Download local backup</button>
         <button type="button" className="btn btn-secondary" onClick={() => location.reload()}>Reload</button>
       </div>
       <p style={{color:"#000000",fontSize:"0.8rem",overflowWrap:"anywhere"}}>{String(this.state.error.message || "Unknown render error")}</p>
