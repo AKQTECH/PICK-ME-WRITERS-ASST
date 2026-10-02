@@ -4078,6 +4078,7 @@
         }
 
         .companion-idea-tools {
+            align-items: start;
             display: grid;
             gap: 8px;
             grid-template-columns: minmax(0, 1fr) minmax(230px, 260px);
@@ -4092,6 +4093,60 @@
             font-weight: 800;
             -webkit-text-fill-color: #E668A7;
         }
+
+        .companion-idea-filter { min-width: 0; position: relative; }
+        .companion-idea-filter > summary {
+            align-items: center;
+            background: var(--companion-surface);
+            border: 1px solid var(--companion-line);
+            border-radius: 4px;
+            color: #E668A7;
+            cursor: pointer;
+            display: flex;
+            font-size: 16px;
+            font-weight: 800;
+            justify-content: space-between;
+            list-style: none;
+            min-height: 44px;
+            padding: 10px 14px;
+        }
+        .companion-idea-filter > summary::-webkit-details-marker { display: none; }
+        .companion-idea-filter > summary::after { content: "▾"; color: #000000; margin-left: 12px; }
+        .companion-idea-filter[open] > summary::after { content: "▴"; }
+        .companion-idea-filter > summary:focus-visible { outline: 2px solid #E668A7; outline-offset: 2px; }
+        .companion-idea-filter-options {
+            background: #FFFFFF;
+            border: 1px solid var(--companion-line);
+            border-radius: 4px;
+            left: 0;
+            max-height: min(320px, 60vh);
+            overflow-y: auto;
+            padding: 4px;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 4;
+        }
+        .companion-idea-filter-options button,
+        .companion-idea-filter-options label {
+            align-items: center;
+            background: #FFFFFF;
+            border: 0;
+            color: #000000;
+            cursor: pointer;
+            display: flex;
+            font-family: inherit;
+            font-size: 0.88rem;
+            gap: 10px;
+            min-height: 44px;
+            padding: 8px 10px;
+            text-align: left;
+            width: 100%;
+        }
+        .companion-idea-filter-options button:hover,
+        .companion-idea-filter-options label:hover { background: #FBE8F2; }
+        .companion-idea-filter-options button { position: sticky; top: 0; z-index: 1; }
+        .companion-idea-filter-options input { accent-color: #E668A7; height: 18px; width: 18px; }
 
         .companion-new-idea-actions {
             display: flex;
@@ -5354,7 +5409,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.43";
+const APP_VERSION = "1.2.44";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12585,7 +12640,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const [focusedNotecardId, setFocusedNotecardId] = React.useState(null);
   const [sequenceView, setSequenceView] = React.useState("pick");
   const [ideaSearch, setIdeaSearch] = React.useState("");
-  const [ideaTypeFilter, setIdeaTypeFilter] = React.useState("all");
+  const [ideaTypeFilters, setIdeaTypeFilters] = React.useState([]);
   const [ideaLayout, setIdeaLayout] = React.useState(() => localStorage.getItem("pickme_ideas_layout") === "board" ? "board" : "list");
   const [dropIdeaId, setDropIdeaId] = React.useState(null);
   const draggedIdeaId = React.useRef(null);
@@ -12623,8 +12678,15 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const sequencedCards = companionCards.filter(card => activeSequenceOrder.includes(card.sequence) && !card.maybe);
   const ideaCards = companionCards.filter(card =>
     !activeSequenceOrder.includes(card.sequence) && !card.notecardScene && !asId(card.id).startsWith("scene-from-")
-  ).sort((a, b) => (Number.isFinite(Number(a.ideaBoardOrder)) && a.ideaBoardOrder !== null && a.ideaBoardOrder !== undefined ? Number(a.ideaBoardOrder) : Number.MAX_SAFE_INTEGER) -
-    (Number.isFinite(Number(b.ideaBoardOrder)) && b.ideaBoardOrder !== null && b.ideaBoardOrder !== undefined ? Number(b.ideaBoardOrder) : Number.MAX_SAFE_INTEGER));
+  ).sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  const orderedIdeaCards = ideaLayout === "board" ? [...ideaCards].sort((a, b) => {
+    const aOrder = a.ideaBoardOrder === null || a.ideaBoardOrder === undefined ? null : Number(a.ideaBoardOrder);
+    const bOrder = b.ideaBoardOrder === null || b.ideaBoardOrder === undefined ? null : Number(b.ideaBoardOrder);
+    if (Number.isFinite(aOrder) && Number.isFinite(bOrder)) return aOrder - bOrder;
+    if (Number.isFinite(aOrder)) return 1;
+    if (Number.isFinite(bOrder)) return -1;
+    return Number(b.createdAt || 0) - Number(a.createdAt || 0);
+  }) : ideaCards;
   const counts = {};
   activeSequenceOrder.forEach(seq => counts[seq] = 0);
   sequencedCards.forEach(card => {
@@ -12663,10 +12725,16 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   });
   const canReorderMobileTable = APP_BUILD === "PWA" && tableSort === "sequence" && tableSortDirection === "asc" &&
     tableStatus === "all" && !tableSearch.trim();
-  const filteredIdeaCards = ideaCards.filter(card =>
-    (ideaTypeFilter === "all" || companionIdeaType(card) === (ideaTypeFilter === "unsorted" ? "" : ideaTypeFilter)) &&
+  const filteredIdeaCards = orderedIdeaCards.filter(card =>
+    (!ideaTypeFilters.length || ideaTypeFilters.includes(companionIdeaType(card) || "unsorted")) &&
     companionSearchMatches(companionIdeaSearchText(card), ideaSearch)
   );
+  const toggleIdeaTypeFilter = type => {
+    const next = ideaTypeFilters.includes(type) ? ideaTypeFilters.filter(item => item !== type) : [...ideaTypeFilters, type];
+    setIdeaTypeFilters(next);
+    setDraftIdeaType(next.length === 1 && next[0] !== "unsorted" ? next[0] : "");
+    setActiveId(null);
+  };
   const activeIdeaCard = activeId ? ideaCards.find(card => asId(card.id) === asId(activeId)) : null;
   const triageCards = activeIdeaCard && !filteredIdeaCards.some(card => asId(card.id) === asId(activeIdeaCard.id))
     ? [activeIdeaCard, ...filteredIdeaCards]
@@ -13110,7 +13178,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     if (showToast) showToast("Idea archived");
   };
   const reorderIdeas = (sourceId, targetId) => {
-    const ids = ideaCards.map(card => asId(card.id));
+    const ids = orderedIdeaCards.map(card => asId(card.id));
     const from = ids.indexOf(asId(sourceId));
     const to = ids.indexOf(asId(targetId));
     if (from < 0 || to < 0 || from === to) return;
@@ -13338,17 +13406,22 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                 }}
                 placeholder="Search ideas"
               />
-              <select className="companion-select companion-idea-type-select" value={ideaTypeFilter}
-                onChange={e => {
-                  const value = e.target.value;
-                  setIdeaTypeFilter(value);
-                  setDraftIdeaType(COMPANION_IDEA_TYPES.some(type => type.id === value) ? value : "");
-                  setActiveId(null);
-                }} aria-label="Filter ideas by type">
-                <option value="all">All ideas</option>
-                {COMPANION_IDEA_TYPES.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
-                <option value="unsorted">Unsorted</option>
-              </select>
+              <details className="companion-idea-filter">
+                <summary aria-label="Filter ideas by category">
+                  {ideaTypeFilters.length === 0 ? "All ideas" :
+                    ideaTypeFilters.length === 1 ? (COMPANION_IDEA_TYPES.find(type => type.id === ideaTypeFilters[0])?.label || "Unsorted") :
+                    ideaTypeFilters.length + " categories"}
+                </summary>
+                <div className="companion-idea-filter-options">
+                  <button type="button" onClick={() => { setIdeaTypeFilters([]); setDraftIdeaType(""); setActiveId(null); }}>All ideas</button>
+                  {COMPANION_IDEA_TYPES.map(type => (
+                    <label key={type.id}><input type="checkbox" checked={ideaTypeFilters.includes(type.id)}
+                      onChange={() => toggleIdeaTypeFilter(type.id)} />{type.label}</label>
+                  ))}
+                  <label><input type="checkbox" checked={ideaTypeFilters.includes("unsorted")}
+                    onChange={() => toggleIdeaTypeFilter("unsorted")} />Unsorted</label>
+                </div>
+              </details>
             </div>
             <div className="companion-ideas-view-toggle" role="group" aria-label="Idea layout">
               <button type="button" className={ideaLayout === "list" ? "is-active" : ""} aria-pressed={ideaLayout === "list"} onClick={() => setIdeaLayout("list")}>List</button>
@@ -14927,7 +15000,7 @@ readSnapshot().then(snapshot => {
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20261001a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20261002a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
