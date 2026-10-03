@@ -5407,7 +5407,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.45";
+const APP_VERSION = "1.2.46";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -13224,7 +13224,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     }, 0);
     setScenes(prev => [...safeArray(prev), card]);
     setIdeaSearch("");
-    setActiveId(id);
+    setActiveId(null);
     clearNewIdeaDraft();
     if (showToast) showToast("Idea saved");
   };
@@ -15006,7 +15006,7 @@ readSnapshot().then(snapshot => {
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20261002b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20261003a').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
