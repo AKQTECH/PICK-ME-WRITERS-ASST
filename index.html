@@ -4195,6 +4195,13 @@
         .companion-ideas-view-toggle button { background: #FFFFFF; border: 0; color: #000000; cursor: pointer; font: inherit; font-size: 0.7rem; font-weight: 800; min-height: 38px; padding: 8px 16px; text-transform: uppercase; }
         .companion-ideas-view-toggle button + button { border-left: 1px solid var(--companion-line); }
         .companion-ideas-view-toggle button.is-active { background: #F7C7DE; }
+        .companion-category-panel { border-top: 1px solid var(--companion-line); padding-top: 10px; }
+        .companion-category-panel > summary { color: #E668A7; cursor: pointer; font-size: 0.7rem; font-weight: 800; list-style-position: inside; min-height: 44px; padding: 12px 0; text-transform: uppercase; }
+        .companion-category-rows { display: grid; gap: 8px; padding: 8px 0 4px; }
+        .companion-category-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .companion-category-row input { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; flex: 1 1 200px; font: inherit; min-height: 44px; min-width: 0; padding: 8px 12px; }
+        .companion-category-row button { background: #F7C7DE; border: 1px solid #E668A7; border-radius: 4px; color: #000000; cursor: pointer; font: inherit; font-size: 0.7rem; font-weight: 800; min-height: 44px; min-width: 68px; padding: 8px 12px; text-transform: uppercase; }
+        .companion-category-row button:disabled { color: #000000 !important; cursor: not-allowed; opacity: 0.4; }
         .companion-unplaced-list.is-board { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; max-height: none; overflow: visible; padding-right: 0; }
         .companion-unplaced-list.is-board .companion-unplaced-card { aspect-ratio: 1; min-width: 0; position: relative; }
         .companion-unplaced-list.is-board .companion-unplaced-card.is-active { aspect-ratio: auto; grid-column: 1 / -1; }
@@ -5407,7 +5414,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.47";
+const APP_VERSION = "1.2.48";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -5448,6 +5455,19 @@ const COMPANION_IDEA_TYPES = [
   { id:"date_show", label:"Show Detail" }
 ];
 const IDEA_FILTER_TYPES = [...COMPANION_IDEA_TYPES.map(type => type.id), "unsorted"];
+function companionIdeaTypes(names, scenes) {
+  const labels = safeObject(names);
+  const known = new Set(COMPANION_IDEA_TYPES.map(type => type.id));
+  const types = COMPANION_IDEA_TYPES.map(type => ({
+    id:type.id, label:String(labels[type.id] || type.label).trim() || type.label
+  }));
+  [...Object.keys(labels), ...safeArray(scenes).map(card => String(card && card.ideaType || ""))].forEach(id => {
+    if (!id || known.has(id)) return;
+    known.add(id);
+    types.push({ id, label:String(labels[id] || id).trim() || id });
+  });
+  return types;
+}
 const IDEA_INBOX_BUCKETS = [
   { id:"all", label:"ALL" },
   { id:"maybe", label:"MAYBE" },
@@ -8357,9 +8377,10 @@ function createDefaultState(overrides) {
     sequenceMeta: {},
     sceneNotes: [],
     categoryNames: {},
+    ideaCategoryNames: {},
     notionUrl: "",
     now: { cardId: null, subId: null, updatedAt: 0, updatedBy: "" },
-    sectionUpdatedAt: { sequences: {}, categoryNames: {}, notionUrl: 0, sceneNotes: 0, now: 0 },
+    sectionUpdatedAt: { sequences: {}, categoryNames: {}, ideaCategoryNames: {}, notionUrl: 0, sceneNotes: 0, now: 0 },
     conversionReport: null,
     ...(overrides || {})
   };
@@ -8713,6 +8734,7 @@ function normalizeState(input) {
     sequenceMeta: safeObject(src.sequenceMeta),
     sceneNotes: normalizeSceneNotes(src.sceneNotes),
     categoryNames: safeObject(src.categoryNames),
+    ideaCategoryNames: safeObject(src.ideaCategoryNames),
     notionUrl: String(src.notionUrl || ""),
     now: { ...createDefaultState().now, ...(src.now || {}), cardId: asId(src.now && src.now.cardId), subId: asId(src.now && src.now.subId) },
     sectionUpdatedAt,
@@ -8765,6 +8787,9 @@ function mergeStates(localInput, remoteInput) {
   const catMerge = mergeSectionObject(local.categoryNames, remote.categoryNames, local.sectionUpdatedAt.categoryNames, remote.sectionUpdatedAt.categoryNames);
   merged.categoryNames = catMerge.values;
   merged.sectionUpdatedAt.categoryNames = catMerge.times;
+  const ideaCatMerge = mergeSectionObject(local.ideaCategoryNames, remote.ideaCategoryNames, local.sectionUpdatedAt.ideaCategoryNames, remote.sectionUpdatedAt.ideaCategoryNames);
+  merged.ideaCategoryNames = ideaCatMerge.values;
+  merged.sectionUpdatedAt.ideaCategoryNames = ideaCatMerge.times;
   merged.sceneNotes = mergeArraysById(local.sceneNotes, remote.sceneNotes, (s, i) => ({ ...(s || {}), id: asId(s && s.id) || ("scene-note-sequence-" + i), updatedAt: Number(s && s.updatedAt || 0), scenes: safeArray(s && s.scenes) }));
   const localNotionTime = Number(local.sectionUpdatedAt.notionUrl || 0);
   const remoteNotionTime = Number(remote.sectionUpdatedAt.notionUrl || 0);
@@ -8920,7 +8945,7 @@ function rebaseEditorState(parts, baseInput, preferMine) {
   COORDINATED_COLLECTIONS.forEach(key => {
     rebased[key] = rebaseRecordCollection(base[key], parts[key], latest[key], key, conflicts, preferMine);
   });
-  ["sequences", "categoryNames"].forEach(key => {
+  ["sequences", "categoryNames", "ideaCategoryNames"].forEach(key => {
     rebased[key] = { ...latest[key] };
     Object.keys(parts[key] || {}).forEach(field => {
       if (sameSavedValue(parts[key][field], base[key][field])) return;
@@ -8952,6 +8977,7 @@ function buildPersistedState(parts) {
   if (state.notionUrl !== previous.notionUrl) state.sectionUpdatedAt.notionUrl = nowStamp();
   Object.keys(state.sequences || {}).forEach(key => { if ((previous.sequences || {})[key] !== state.sequences[key]) state.sectionUpdatedAt.sequences[key] = nowStamp(); });
   Object.keys(state.categoryNames || {}).forEach(key => { if ((previous.categoryNames || {})[key] !== state.categoryNames[key]) state.sectionUpdatedAt.categoryNames[key] = nowStamp(); });
+  Object.keys(state.ideaCategoryNames || {}).forEach(key => { if ((previous.ideaCategoryNames || {})[key] !== state.ideaCategoryNames[key]) state.sectionUpdatedAt.ideaCategoryNames[key] = nowStamp(); });
   if (stableStringify(state.now) !== stableStringify(previous.now)) state.sectionUpdatedAt.now = nowStamp();
   return normalizeState(state);
 }
@@ -11264,6 +11290,7 @@ function SettingsTab({
   sceneNotes,
   categoryNames,
   setCategoryNames,
+  setIdeaCategoryNames,
   setSongs,
   setScenes,
   setNotecards,
@@ -11342,6 +11369,7 @@ function SettingsTab({
       setSequences(normalized.sequences);
       setSceneNotes(normalized.sceneNotes);
       setCategoryNames(normalized.categoryNames);
+      setIdeaCategoryNames(normalized.ideaCategoryNames);
       setNotionUrl(normalized.notionUrl);
       setDraft(normalized.notionUrl);
       setNowState(normalized.now);
@@ -12151,13 +12179,13 @@ function companionIdeaSearchText(card) {
   ].join(" ");
 }
 
-function companionIdeaType(card) {
+function companionIdeaType(card, ideaTypes) {
   const value = String(card && card.ideaType || "");
-  return COMPANION_IDEA_TYPES.some(type => type.id === value) ? value : "";
+  return ideaTypes.some(type => type.id === value) ? value : "";
 }
 
-function companionIdeaTypeLabel(card) {
-  const type = COMPANION_IDEA_TYPES.find(item => item.id === companionIdeaType(card));
+function companionIdeaTypeLabel(card, ideaTypes) {
+  const type = ideaTypes.find(item => item.id === companionIdeaType(card, ideaTypes));
   return type ? type.label : "Unsorted";
 }
 
@@ -12630,7 +12658,7 @@ function CompanionSceneList({ scenes, setScenes, notecards, setNotecards, openNo
   </section>;
 }
 
-function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequences, setSequences, showToast, syncLabel, syncError }) {
+function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequences, setSequences, ideaCategoryNames, setIdeaCategoryNames, showToast, syncLabel, syncError }) {
   const [sequenceFilter, setSequenceFilter] = React.useState(() => {
     const stored = localStorage.getItem("pickme_companion_sequence_focus");
     return SEQUENCE_ORDER.includes(stored) ? stored : "AUTO";
@@ -12641,6 +12669,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const [sequenceView, setSequenceView] = React.useState("pick");
   const [ideaSearch, setIdeaSearch] = React.useState("");
   const [ideaTypeFilters, setIdeaTypeFilters] = React.useState(() => [...IDEA_FILTER_TYPES]);
+  const [categoryNameDrafts, setCategoryNameDrafts] = React.useState({});
+  const [newCategoryName, setNewCategoryName] = React.useState("");
   const [ideaLayout, setIdeaLayout] = React.useState(() => localStorage.getItem("pickme_ideas_layout") === "board" ? "board" : "list");
   const [dropIdeaId, setDropIdeaId] = React.useState(null);
   const draggedIdeaId = React.useRef(null);
@@ -12679,6 +12709,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const ideaCards = companionCards.filter(card =>
     !activeSequenceOrder.includes(card.sequence) && !card.notecardScene && !asId(card.id).startsWith("scene-from-")
   ).sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  const ideaTypes = companionIdeaTypes(ideaCategoryNames, ideaCards);
+  const ideaFilterTypes = [...ideaTypes.map(type => type.id), "unsorted"];
   const orderedIdeaCards = ideaLayout === "board" ? [...ideaCards].sort((a, b) => {
     const aOrder = a.ideaBoardOrder === null || a.ideaBoardOrder === undefined ? null : Number(a.ideaBoardOrder);
     const bOrder = b.ideaBoardOrder === null || b.ideaBoardOrder === undefined ? null : Number(b.ideaBoardOrder);
@@ -12726,7 +12758,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const canReorderMobileTable = APP_BUILD === "PWA" && tableSort === "sequence" && tableSortDirection === "asc" &&
     tableStatus === "all" && !tableSearch.trim();
   const filteredIdeaCards = orderedIdeaCards.filter(card =>
-    ideaTypeFilters.includes(companionIdeaType(card) || "unsorted") &&
+    ideaTypeFilters.includes(companionIdeaType(card, ideaTypes) || "unsorted") &&
     companionSearchMatches(companionIdeaSearchText(card), ideaSearch)
   );
   const toggleIdeaTypeFilter = type => {
@@ -12734,6 +12766,26 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     setIdeaTypeFilters(next);
     setDraftIdeaType(next.length === 1 && next[0] !== "unsorted" ? next[0] : "");
     setActiveId(null);
+  };
+  const categoryNameIsValid = (value, id) => {
+    const clean = String(value || "").trim().replace(/\s+/g, " ");
+    return !!clean && !ideaTypes.some(type => type.id !== id && type.label.toLocaleLowerCase() === clean.toLocaleLowerCase());
+  };
+  const saveCategoryName = id => {
+    const clean = String(categoryNameDrafts[id] || "").trim().replace(/\s+/g, " ");
+    if (!categoryNameIsValid(clean, id)) return;
+    setIdeaCategoryNames(prev => ({ ...prev, [id]:clean }));
+    setCategoryNameDrafts(prev => { const next = { ...prev }; delete next[id]; return next; });
+    if (showToast) showToast("Idea category renamed");
+  };
+  const addIdeaCategory = () => {
+    const clean = newCategoryName.trim().replace(/\s+/g, " ");
+    if (!categoryNameIsValid(clean, null)) return;
+    const id = "idea-custom-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
+    setIdeaCategoryNames(prev => ({ ...prev, [id]:clean }));
+    setIdeaTypeFilters(prev => [...prev, id]);
+    setNewCategoryName("");
+    if (showToast) showToast("Idea category added");
   };
   const activeIdeaCard = activeId ? ideaCards.find(card => asId(card.id) === asId(activeId)) : null;
   const triageCards = activeIdeaCard && !filteredIdeaCards.some(card => asId(card.id) === asId(activeIdeaCard.id))
@@ -12792,6 +12844,21 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   }, [companionMode]);
 
   React.useEffect(() => { saveUiPreference("pickme_ideas_layout", ideaLayout); }, [ideaLayout]);
+  React.useEffect(() => {
+    setIdeaTypeFilters(prev => {
+      const missing = ideaFilterTypes.filter(id => !prev.includes(id));
+      return missing.length ? [...prev, ...missing] : prev;
+    });
+  }, [ideaFilterTypes.join("|")]);
+  React.useEffect(() => {
+    if (!isIdeasMode || !activeId) return;
+    const closeOnOutsideClick = event => {
+      if (event.target.closest(".companion-unplaced-card.is-active, .companion-unplaced-card-main")) return;
+      setActiveId(null);
+    };
+    document.addEventListener("click", closeOnOutsideClick);
+    return () => document.removeEventListener("click", closeOnOutsideClick);
+  }, [isIdeasMode, activeId]);
 
   React.useEffect(() => {
     saveUiPreference("pickme_companion_sequence_view", sequenceView);
@@ -13380,7 +13447,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                   <select className="companion-select companion-idea-type-select" value={draftIdeaType}
                     onChange={e => setDraftIdeaType(e.target.value)} aria-label="New idea type">
                     <option value="">Unsorted</option>
-                    {COMPANION_IDEA_TYPES.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
+                    {ideaTypes.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
                   </select>
                 </label>
                 <label className="companion-picker-field">
@@ -13408,19 +13475,19 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
               />
               <details className="companion-idea-filter">
                 <summary aria-label="Filter ideas by category">
-                  {ideaTypeFilters.length === IDEA_FILTER_TYPES.length ? "All ideas" :
+                  {ideaFilterTypes.every(id => ideaTypeFilters.includes(id)) ? "All ideas" :
                     ideaTypeFilters.length === 0 ? "No categories" :
-                    ideaTypeFilters.length === 1 ? (COMPANION_IDEA_TYPES.find(type => type.id === ideaTypeFilters[0])?.label || "Unsorted") :
+                    ideaTypeFilters.length === 1 ? (ideaTypes.find(type => type.id === ideaTypeFilters[0])?.label || "Unsorted") :
                     ideaTypeFilters.length + " categories"}
                 </summary>
                 <div className="companion-idea-filter-options">
-                  <label><input type="checkbox" checked={ideaTypeFilters.length === IDEA_FILTER_TYPES.length}
+                  <label><input type="checkbox" checked={ideaFilterTypes.every(id => ideaTypeFilters.includes(id))}
                     onChange={() => {
-                      setIdeaTypeFilters(ideaTypeFilters.length === IDEA_FILTER_TYPES.length ? [] : [...IDEA_FILTER_TYPES]);
+                      setIdeaTypeFilters(ideaFilterTypes.every(id => ideaTypeFilters.includes(id)) ? [] : [...ideaFilterTypes]);
                       setDraftIdeaType("");
                       setActiveId(null);
                     }} />All ideas</label>
-                  {COMPANION_IDEA_TYPES.map(type => (
+                  {ideaTypes.map(type => (
                     <label key={type.id}><input type="checkbox" checked={ideaTypeFilters.includes(type.id)}
                       onChange={() => toggleIdeaTypeFilter(type.id)} />{type.label}</label>
                   ))}
@@ -13433,6 +13500,27 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
               <button type="button" className={ideaLayout === "list" ? "is-active" : ""} aria-pressed={ideaLayout === "list"} onClick={() => setIdeaLayout("list")}>List</button>
               <button type="button" className={ideaLayout === "board" ? "is-active" : ""} aria-pressed={ideaLayout === "board"} onClick={() => setIdeaLayout("board")}>Board</button>
             </div>
+            <details className="companion-category-panel">
+              <summary>Edit categories</summary>
+              <div className="companion-category-rows">
+                {ideaTypes.map(type => {
+                  const draft = Object.prototype.hasOwnProperty.call(categoryNameDrafts, type.id) ? categoryNameDrafts[type.id] : type.label;
+                  return <div className="companion-category-row" key={type.id}>
+                    <input value={draft} maxLength={60} aria-label={"Rename " + type.label}
+                      onChange={event => setCategoryNameDrafts(prev => ({ ...prev, [type.id]:event.target.value }))}
+                      onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); saveCategoryName(type.id); } }} />
+                    <button type="button" disabled={!categoryNameIsValid(draft, type.id) || draft.trim().replace(/\s+/g, " ") === type.label}
+                      onClick={() => saveCategoryName(type.id)}>Save</button>
+                  </div>;
+                })}
+                <div className="companion-category-row">
+                  <input value={newCategoryName} maxLength={60} placeholder="New category" aria-label="New category name"
+                    onChange={event => setNewCategoryName(event.target.value)}
+                    onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addIdeaCategory(); } }} />
+                  <button type="button" disabled={!categoryNameIsValid(newCategoryName, null)} onClick={addIdeaCategory}>Add</button>
+                </div>
+              </div>
+            </details>
             <div className={"companion-unplaced-list" + (ideaLayout === "board" ? " is-board" : "")}>
               {triageCards.length === 0 && <div className="companion-empty-note">No ideas match this view.</div>}
               {triageCards.map(card => {
@@ -13444,7 +13532,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                     onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDropIdeaId(null); }}
                     onDrop={event => { if (!draggedIdeaId.current) return; event.preventDefault(); reorderIdeas(draggedIdeaId.current, card.id); draggedIdeaId.current = null; setDropIdeaId(null); }}>
                     <button type="button" className="companion-unplaced-card-main" onClick={() => setActiveId(active ? null : card.id)}>
-                      {companionIdeaType(card) && <span className="companion-unplaced-type">{companionIdeaTypeLabel(card)}</span>}
+                      {companionIdeaType(card, ideaTypes) && <span className="companion-unplaced-type">{companionIdeaTypeLabel(card, ideaTypes)}</span>}
                       <span className="companion-unplaced-title">{card.title || "Untitled"}</span>
                       {snippet && <span className="companion-unplaced-snippet">{snippet}</span>}
                     </button>
@@ -13475,10 +13563,10 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                           </label>
                           <label className="companion-idea-edit-field">
                             <span>Idea type</span>
-                            <select className="companion-select companion-idea-type-select" value={companionIdeaType(card)}
+                            <select className="companion-select companion-idea-type-select" value={companionIdeaType(card, ideaTypes)}
                               onChange={e => patchCard(card.id, { ideaType:e.target.value })} aria-label="Idea type">
                               <option value="">Unsorted</option>
-                              {COMPANION_IDEA_TYPES.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
+                              {ideaTypes.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
                             </select>
                           </label>
                           <label className="companion-idea-edit-field">
@@ -14571,6 +14659,7 @@ function App() {
     if (p && p.categoryNames) return p.categoryNames;
     return { next:"Next", later:"Later", completed:"Completed", cut:"Cut", maybe:"Maybe" };
   });
+  const [ideaCategoryNames, setIdeaCategoryNames] = useState(() => loadCanonicalStateFromStorage().ideaCategoryNames);
   // ── Consolidated save: single source of truth, auto-push ──
   React.useLayoutEffect(() => {
     if (_isFirstRender.current) {
@@ -14581,7 +14670,7 @@ function App() {
       _skipPushRef.current = false;
       return;
     }
-    const parts = { songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, now:nowState, conversionReport };
+    const parts = { songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, ideaCategoryNames, notionUrl, now:nowState, conversionReport };
     const result = rebaseEditorState(parts, lastAppliedStateRef.current, false);
     if (result.conflicts.length) {
       conflictDraftRef.current = parts;
@@ -14600,7 +14689,7 @@ function App() {
       if (DBX.isConnected()) window.dispatchEvent(new CustomEvent("dbxSyncStatus", { detail:"pending" }));
       scheduleDropboxPush();
     }
-  }, [songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, nowState, conversionReport]); // eslint-disable-line
+  }, [songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, ideaCategoryNames, notionUrl, nowState, conversionReport]); // eslint-disable-line
 
   // ── Listen for dbxSyncStatus events (from auto-push/pull) ───────────────
   React.useEffect(() => {
@@ -14632,6 +14721,7 @@ function App() {
       setSequences(d.sequences);
       setSceneNotes(d.sceneNotes);
       setCategoryNames(d.categoryNames || {});
+      setIdeaCategoryNames(d.ideaCategoryNames || {});
       setNotionUrl(d.notionUrl);
       setNowState(d.now);
       setConversionReport(d.conversionReport);
@@ -14711,7 +14801,7 @@ function App() {
     pendingWindowStateRef.current = null;
   };
   const getCoordinatedState = () => {
-    const parts = { songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, now:nowState, conversionReport };
+    const parts = { songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, ideaCategoryNames, notionUrl, now:nowState, conversionReport };
     const result = rebaseEditorState(parts, lastAppliedStateRef.current, false);
     if (!result.conflicts.length) return result.state;
     conflictDraftRef.current = parts;
@@ -14721,7 +14811,7 @@ function App() {
     return null;
   };
   const markCoordinatedStateSaved = state => {
-    lastAppliedStateRef.current = normalizeState({ ...state, songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, notionUrl, now:nowState, conversionReport });
+    lastAppliedStateRef.current = normalizeState({ ...state, songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, ideaCategoryNames, notionUrl, now:nowState, conversionReport });
   };
 
   const completePendingUpdate = (downloadConfirmed) => {
@@ -14743,6 +14833,7 @@ function App() {
       setSequences(migrated.sequences);
       setSceneNotes(migrated.sceneNotes);
       setCategoryNames(migrated.categoryNames);
+      setIdeaCategoryNames(migrated.ideaCategoryNames);
       setNotionUrl(migrated.notionUrl || notionUrl);
       setNowState(migrated.now);
       setConversionReport(migrated.conversionReport);
@@ -14763,6 +14854,7 @@ function App() {
       setSequences(migrated.sequences);
       setSceneNotes(migrated.sceneNotes);
       setCategoryNames(migrated.categoryNames);
+      setIdeaCategoryNames(migrated.ideaCategoryNames);
       setNotionUrl(migrated.notionUrl || notionUrl);
       setNowState(migrated.now);
       setConversionReport(migrated.conversionReport);
@@ -14934,7 +15026,7 @@ function App() {
           {syncLabel}
         </div>
         {activeTab === "companion" && (
-          <ScriptCompanionTab scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards} sequences={sequences} setSequences={setSequences} showToast={showToast} syncLabel={syncLabel} syncError={syncError} />
+          <ScriptCompanionTab scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards} sequences={sequences} setSequences={setSequences} ideaCategoryNames={ideaCategoryNames} setIdeaCategoryNames={setIdeaCategoryNames} showToast={showToast} syncLabel={syncLabel} syncError={syncError} />
         )}
         {activeTab === "script" && (
           <ScriptRailTab scenes={scenes} setScenes={setScenes} nowState={nowState} setNowState={setNowState} />
@@ -14964,7 +15056,7 @@ function App() {
           <SceneNotesTab sceneNotes={sceneNotes} setSceneNotes={setSceneNotes} sequences={sequences} setSequences={setSequences} showToast={showToast} />
         )}
         {activeTab === "settings" && (
-          <SettingsTab notionUrl={notionUrl} setNotionUrl={setNotionUrl} songs={songs} scenes={scenes} notecards={notecards} notes={notes} sequences={sequences} sceneNotes={sceneNotes} categoryNames={categoryNames} setCategoryNames={setCategoryNames} setSongs={setSongs} setScenes={setScenes} setNotecards={setNotecards} setNotes={setNotes} setSequences={setSequences} setSceneNotes={setSceneNotes} nowState={nowState} setNowState={setNowState} conversionReport={conversionReport} setConversionReport={setConversionReport} lastSynced={lastSynced} setPendingUpdate={setPendingUpdate} showToast={showToast} showAdvancedTabs={showAdvancedTabs} setShowAdvancedTabs={setShowAdvancedTabs} getCoordinatedState={getCoordinatedState} markCoordinatedStateSaved={markCoordinatedStateSaved} />
+          <SettingsTab notionUrl={notionUrl} setNotionUrl={setNotionUrl} songs={songs} scenes={scenes} notecards={notecards} notes={notes} sequences={sequences} sceneNotes={sceneNotes} categoryNames={categoryNames} setCategoryNames={setCategoryNames} setIdeaCategoryNames={setIdeaCategoryNames} setSongs={setSongs} setScenes={setScenes} setNotecards={setNotecards} setNotes={setNotes} setSequences={setSequences} setSceneNotes={setSceneNotes} nowState={nowState} setNowState={setNowState} conversionReport={conversionReport} setConversionReport={setConversionReport} lastSynced={lastSynced} setPendingUpdate={setPendingUpdate} showToast={showToast} showAdvancedTabs={showAdvancedTabs} setShowAdvancedTabs={setShowAdvancedTabs} getCoordinatedState={getCoordinatedState} markCoordinatedStateSaved={markCoordinatedStateSaved} />
         )}
       </div>
 
@@ -15005,7 +15097,7 @@ readSnapshot().then(snapshot => {
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20261003b').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20261003c').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
