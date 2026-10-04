@@ -5407,7 +5407,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.46";
+const APP_VERSION = "1.2.47";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12471,7 +12471,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
       {focusedId ? <button type="button" className="notecard-back" onClick={() => setFocusedId(null)}>← Notecards</button> : <h2>Notecards</h2>}
       <div className="notecards-meta">
         <div role="status" className={"notecards-sync-status" + (syncError ? " is-error" : "")}>{syncLabel}</div>
-        {!focusedId && <span className="notecards-count" aria-label={uncheckedCount + " unchecked notecards"}>{uncheckedCount} {uncheckedCount === 1 ? "notecard" : "notecards"}</span>}
+        <span className="notecards-count" aria-label={uncheckedCount + " unchecked notecards"}>{uncheckedCount} {uncheckedCount === 1 ? "notecard" : "notecards"}</span>
       </div>
     </div>
     {!focusedId && <div className="notecards-new">
@@ -14883,10 +14883,6 @@ function App() {
           </div>
         </div>
       )}
-      <div role="status" className="global-sync-status" style={{color:syncError ? "#000000" : "#C3578D",fontSize:"0.75rem",margin:"0 0 12px",textAlign:"right"}}>
-        {syncLabel}
-      </div>
-
       {showGlobalSequenceProgress && showSequenceBar && (
         <div className="progress-bar-container">
           {Object.keys(sequences).length > 0 ? (
@@ -14934,6 +14930,9 @@ function App() {
       )}
 
       <div className="card">
+        <div role="status" className="global-sync-status" style={{color:syncError ? "#000000" : "#C3578D",fontSize:"0.75rem",margin:"0 0 12px",textAlign:"right"}}>
+          {syncLabel}
+        </div>
         {activeTab === "companion" && (
           <ScriptCompanionTab scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards} sequences={sequences} setSequences={setSequences} showToast={showToast} syncLabel={syncLabel} syncError={syncError} />
         )}
@@ -15006,7 +15005,7 @@ readSnapshot().then(snapshot => {
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20261003a').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20261003b').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
