@@ -4093,6 +4093,16 @@
             font-weight: 800;
             -webkit-text-fill-color: #E668A7;
         }
+        .companion-idea-tags { min-width: 0; position: relative; }
+        .companion-idea-tags > summary { align-items: center; background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; cursor: pointer; display: flex; font-size: 0.88rem; justify-content: space-between; list-style: none; min-height: 44px; overflow-wrap: anywhere; padding: 10px 14px; }
+        .companion-idea-tags > summary::-webkit-details-marker { display: none; }
+        .companion-idea-tags > summary::after { color: #000000; content: "▾"; flex: none; margin-left: 12px; }
+        .companion-idea-tags[open] > summary::after { content: "▴"; }
+        .companion-idea-tags > summary:focus-visible { outline: 2px solid #E668A7; outline-offset: 2px; }
+        .companion-idea-tag-options { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; display: grid; gap: 2px; margin-top: 4px; max-height: min(280px, 45vh); overflow-y: auto; padding: 4px; -webkit-overflow-scrolling: touch; }
+        .companion-idea-tag-options label { align-items: center; color: #000000; cursor: pointer; display: flex; font-size: 0.88rem; gap: 10px; min-height: 44px; padding: 7px 10px; }
+        .companion-idea-tag-options label:hover { background: #FBE8F2; }
+        .companion-idea-tag-options input { accent-color: #C3578D; flex: none; height: 18px; width: 18px; }
 
         .companion-idea-filter { min-width: 0; position: relative; }
         .companion-idea-filter > summary {
@@ -5414,7 +5424,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.48";
+const APP_VERSION = "1.2.49";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -5455,13 +5465,17 @@ const COMPANION_IDEA_TYPES = [
   { id:"date_show", label:"Show Detail" }
 ];
 const IDEA_FILTER_TYPES = [...COMPANION_IDEA_TYPES.map(type => type.id), "unsorted"];
+function ideaTypeIdsFromRecord(card) {
+  const source = Array.isArray(card && card.ideaTypes) ? card.ideaTypes : [card && card.ideaType];
+  return [...new Set(source.filter(id => typeof id === "string").map(id => id.trim()).filter(Boolean))];
+}
 function companionIdeaTypes(names, scenes) {
   const labels = safeObject(names);
   const known = new Set(COMPANION_IDEA_TYPES.map(type => type.id));
   const types = COMPANION_IDEA_TYPES.map(type => ({
     id:type.id, label:String(labels[type.id] || type.label).trim() || type.label
   }));
-  [...Object.keys(labels), ...safeArray(scenes).map(card => String(card && card.ideaType || ""))].forEach(id => {
+  [...Object.keys(labels), ...safeArray(scenes).flatMap(ideaTypeIdsFromRecord)].forEach(id => {
     if (!id || known.has(id)) return;
     known.add(id);
     types.push({ id, label:String(labels[id] || id).trim() || id });
@@ -8633,6 +8647,7 @@ function normalizeCard(record, index) {
     title = "THE SPOT";
   }
   const updatedAt = Number(record && (record.updatedAt || record.lastModified || record.lastTouchedAt) || 0);
+  const ideaTypes = ideaTypeIdsFromRecord(record);
   return {
     id,
     legacyId,
@@ -8660,6 +8675,8 @@ function normalizeCard(record, index) {
     lastTouchedAt: Number(record && record.lastTouchedAt || updatedAt || 0),
     migratedTo: record && record.migratedTo !== undefined ? record.migratedTo : null,
     ...(record || {}),
+    ideaTypes,
+    ideaType:ideaTypes[0] || "",
     id,
     legacyId,
     title,
@@ -12179,14 +12196,29 @@ function companionIdeaSearchText(card) {
   ].join(" ");
 }
 
-function companionIdeaType(card, ideaTypes) {
-  const value = String(card && card.ideaType || "");
-  return ideaTypes.some(type => type.id === value) ? value : "";
+function companionIdeaTypeIds(card, ideaTypes) {
+  const available = new Set(ideaTypes.map(type => type.id));
+  return ideaTypeIdsFromRecord(card).filter(id => available.has(id));
 }
 
 function companionIdeaTypeLabel(card, ideaTypes) {
-  const type = ideaTypes.find(item => item.id === companionIdeaType(card, ideaTypes));
-  return type ? type.label : "Unsorted";
+  const ids = new Set(companionIdeaTypeIds(card, ideaTypes));
+  return ideaTypes.filter(type => ids.has(type.id)).map(type => type.label).join(" · ") || "Unsorted";
+}
+
+function IdeaCategoryPicker({ types, selected, onChange, label }) {
+  const selectedIds = new Set(selected);
+  const summary = types.filter(type => selectedIds.has(type.id)).map(type => type.label).join(" · ") || "Unsorted";
+  return <details className="companion-idea-tags">
+    <summary aria-label={label}>{summary}</summary>
+    <div className="companion-idea-tag-options">
+      {types.map(type => <label key={type.id}>
+        <input type="checkbox" checked={selectedIds.has(type.id)} aria-label={type.label}
+          onChange={() => onChange(selectedIds.has(type.id) ? selected.filter(id => id !== type.id) : [...selected, type.id])} />
+        {type.label}
+      </label>)}
+    </div>
+  </details>;
 }
 
 function tokenizeCompanionSearch(value) {
@@ -12688,7 +12720,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const [draftSceneTitle, setDraftSceneTitle] = React.useState("");
   const [draftIdeaTitle, setDraftIdeaTitle] = React.useState("");
   const [draftIdeaDetails, setDraftIdeaDetails] = React.useState("");
-  const [draftIdeaType, setDraftIdeaType] = React.useState("");
+  const [draftIdeaTypes, setDraftIdeaTypes] = React.useState([]);
   const newScenePanelRef = React.useRef(null);
   const sceneSwitcherRef = React.useRef(null);
   const quickSceneSwitcherRef = React.useRef(null);
@@ -12758,13 +12790,15 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const canReorderMobileTable = APP_BUILD === "PWA" && tableSort === "sequence" && tableSortDirection === "asc" &&
     tableStatus === "all" && !tableSearch.trim();
   const filteredIdeaCards = orderedIdeaCards.filter(card =>
-    ideaTypeFilters.includes(companionIdeaType(card, ideaTypes) || "unsorted") &&
+    (companionIdeaTypeIds(card, ideaTypes).length
+      ? companionIdeaTypeIds(card, ideaTypes).some(id => ideaTypeFilters.includes(id))
+      : ideaTypeFilters.includes("unsorted")) &&
     companionSearchMatches(companionIdeaSearchText(card), ideaSearch)
   );
   const toggleIdeaTypeFilter = type => {
     const next = ideaTypeFilters.includes(type) ? ideaTypeFilters.filter(item => item !== type) : [...ideaTypeFilters, type];
     setIdeaTypeFilters(next);
-    setDraftIdeaType(next.length === 1 && next[0] !== "unsorted" ? next[0] : "");
+    setDraftIdeaTypes(next.length === 1 && next[0] !== "unsorted" ? [next[0]] : []);
     setActiveId(null);
   };
   const categoryNameIsValid = (value, id) => {
@@ -13262,7 +13296,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const clearNewIdeaDraft = () => {
     setDraftIdeaTitle("");
     setDraftIdeaDetails("");
-    setDraftIdeaType("");
+    setDraftIdeaTypes([]);
     if (newIdeaPanelRef.current) newIdeaPanelRef.current.open = false;
   };
   const saveNewIdea = () => {
@@ -13274,7 +13308,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
       id,
       title,
       description:draftIdeaDetails.trim(),
-      ideaType:draftIdeaType,
+      ideaTypes:draftIdeaTypes,
+      ideaType:draftIdeaTypes[0] || "",
       category:null,
       kind:"SCENE",
       status:"todo",
@@ -13443,12 +13478,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                     placeholder="Idea name" aria-label="New idea name" />
                 </label>
                 <label className="companion-picker-field">
-                  <span className="companion-picker-label">Idea type</span>
-                  <select className="companion-select companion-idea-type-select" value={draftIdeaType}
-                    onChange={e => setDraftIdeaType(e.target.value)} aria-label="New idea type">
-                    <option value="">Unsorted</option>
-                    {ideaTypes.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
-                  </select>
+                  <span className="companion-picker-label">Categories</span>
+                  <IdeaCategoryPicker types={ideaTypes} selected={draftIdeaTypes} onChange={setDraftIdeaTypes} label="New idea categories" />
                 </label>
                 <label className="companion-picker-field">
                   <span className="companion-picker-label">Details</span>
@@ -13484,7 +13515,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                   <label><input type="checkbox" checked={ideaFilterTypes.every(id => ideaTypeFilters.includes(id))}
                     onChange={() => {
                       setIdeaTypeFilters(ideaFilterTypes.every(id => ideaTypeFilters.includes(id)) ? [] : [...ideaFilterTypes]);
-                      setDraftIdeaType("");
+                      setDraftIdeaTypes([]);
                       setActiveId(null);
                     }} />All ideas</label>
                   {ideaTypes.map(type => (
@@ -13532,7 +13563,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                     onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDropIdeaId(null); }}
                     onDrop={event => { if (!draggedIdeaId.current) return; event.preventDefault(); reorderIdeas(draggedIdeaId.current, card.id); draggedIdeaId.current = null; setDropIdeaId(null); }}>
                     <button type="button" className="companion-unplaced-card-main" onClick={() => setActiveId(active ? null : card.id)}>
-                      {companionIdeaType(card, ideaTypes) && <span className="companion-unplaced-type">{companionIdeaTypeLabel(card, ideaTypes)}</span>}
+                      {companionIdeaTypeIds(card, ideaTypes).length > 0 && <span className="companion-unplaced-type">{companionIdeaTypeLabel(card, ideaTypes)}</span>}
                       <span className="companion-unplaced-title">{card.title || "Untitled"}</span>
                       {snippet && <span className="companion-unplaced-snippet">{snippet}</span>}
                     </button>
@@ -13562,12 +13593,9 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                             />
                           </label>
                           <label className="companion-idea-edit-field">
-                            <span>Idea type</span>
-                            <select className="companion-select companion-idea-type-select" value={companionIdeaType(card, ideaTypes)}
-                              onChange={e => patchCard(card.id, { ideaType:e.target.value })} aria-label="Idea type">
-                              <option value="">Unsorted</option>
-                              {ideaTypes.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
-                            </select>
+                            <span>Categories</span>
+                            <IdeaCategoryPicker types={ideaTypes} selected={companionIdeaTypeIds(card, ideaTypes)}
+                              onChange={ids => patchCard(card.id, { ideaTypes:ids, ideaType:ids[0] || "" })} label="Idea categories" />
                           </label>
                           <label className="companion-idea-edit-field">
                             <span>Details</span>
@@ -15097,7 +15125,7 @@ readSnapshot().then(snapshot => {
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20261003c').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20261003d').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
