@@ -3459,6 +3459,8 @@
         }
         .notecard.is-complete .notecard-details textarea { color: #C3578D !important; -webkit-text-fill-color: #C3578D !important; }
         .notecard-add-change button:disabled { cursor: default; opacity: 0.4; }
+        .notecard-to-idea { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 800; margin-top: 20px; min-height: 44px; padding: 9px 12px; text-transform: uppercase; }
+        .notecard-to-idea:hover { background: #FBE8F2; }
         .notecard-empty { color: #000000; font-size: 0.82rem; padding: 24px 0; }
         .notecard-open { display: none; color: #E668A7; font-size: 1.25rem; }
         .companion-scene-list { padding: 24px 4px 8px; }
@@ -4317,6 +4319,8 @@
             line-height: 1.1;
             text-transform: uppercase;
         }
+        .companion-idea-scene-changes { display: grid; gap: 8px; }
+        .companion-idea-scene-changes textarea { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; font: inherit; line-height: 1.45; min-height: 72px; padding: 10px; resize: vertical; width: 100%; }
 
         .companion-idea-detail-text {
             line-height: 1.45;
@@ -5424,7 +5428,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.49";
+const APP_VERSION = "1.2.50";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -11346,7 +11350,10 @@ function SettingsTab({
   const archivedSceneCards = archiveBuckets.archivedCards.filter(card => card.kind === "SCENE" || card.kind === "TWEAK");
   const archivedTaskRows = archiveBuckets.archivedTaskRows;
   const settingsSceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
-  const archivedNotecards = safeArray(notecards).filter(card => card.archived || settingsSceneById.get(asId(card.sourceSceneId))?.archived);
+  const archivedNotecards = safeArray(notecards).filter(card => {
+    const scene = settingsSceneById.get(asId(card.sourceSceneId));
+    return !scene?.ideaCard && (card.archived || scene?.archived);
+  });
   const restoreArchivedScene = (id) => {
     setScenes(prev => safeArray(prev).map(card => asId(card.id) === asId(id) ? touchRecord(normalizeCard(card, 0), restoreFields()) : card));
     setNotecards(previous => safeArray(previous).map(card => asId(card.sourceSceneId) === asId(id) ? touchRecord(card, restoreFields()) : card));
@@ -12192,7 +12199,8 @@ function companionIdeaSearchText(card) {
     card && card.title,
     card && card.description,
     card && card.openQuestions,
-    companionSnippet(card)
+    companionSnippet(card),
+    ...safeArray(card && card.changes).filter(change => !change.archived).map(change => change.text)
   ].join(" ");
 }
 
@@ -12312,7 +12320,7 @@ function ideaBucketLabel(bucketId) {
 }
 
 function companionSnippet(card) {
-  const isSequenced = card && SEQUENCE_ORDER.includes(card.sequence);
+  const isSequenced = card && (SEQUENCE_ORDER.includes(card.sequence) || card.ideaCard);
   const cleaned = cleanCompanionDisplayText(card && (
     card.description ||
     card.openQuestions ||
@@ -12335,7 +12343,7 @@ function reorderSceneNotecards(orderedSceneIds, notecards, setNotecards, setScen
 
 function seedSceneNotecards(scenes, setNotecards) {
   const eligible = sortSceneCards(safeArray(scenes).filter(scene =>
-    !scene.archived && !scene.maybe && ["SCENE", "TWEAK"].includes(scene.kind) &&
+    !scene.archived && !scene.ideaCard && !scene.maybe && ["SCENE", "TWEAK"].includes(scene.kind) &&
     (scene.sequence || scene.notecardScene || asId(scene.id).startsWith("scene-from-"))
   ));
   setNotecards(previous => {
@@ -12349,7 +12357,7 @@ function seedSceneNotecards(scenes, setNotecards) {
   });
 }
 
-function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showToast, focusedId, setFocusedId, syncLabel, syncError }) {
+function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showToast, focusedId, setFocusedId, onTurnIntoIdea, syncLabel, syncError }) {
   const [newTitle, setNewTitle] = React.useState("");
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
@@ -12408,7 +12416,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   const sceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
   const visible = safeArray(notecards).map(meta => {
     const scene = sceneById.get(asId(meta.sourceSceneId));
-    return scene ? { ...meta, title:scene.title, sequence:scene.sequence, notes:scene.openQuestions || "", changes:scene.changes, done:normalizeStatus(scene.status) === "done", archived:!!scene.archived } : null;
+    return scene && !scene.ideaCard ? { ...meta, title:scene.title, sequence:scene.sequence, notes:scene.openQuestions || "", changes:scene.changes, done:normalizeStatus(scene.status) === "done", archived:!!scene.archived } : null;
   }).filter(card => card && !card.archived)
     .sort((a, b) => Number(a.order || 0) - Number(b.order || 0) || String(a.title || "").localeCompare(String(b.title || "")));
   const patchScene = (id, update) => setScenes(previous => safeArray(previous).map(scene =>
@@ -12614,6 +12622,11 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
           <button type="button" disabled={!String(changeDrafts[card.id] || "").trim()} onClick={() => addChange(card)} aria-label={"Save notecard change to " + card.title}>+</button>
         </div>
         </details>
+        {focusedId && <button type="button" className="notecard-to-idea" onClick={() => {
+          commitTitle(card);
+          if (String(changeDrafts[card.id] || "").trim()) addChange(card);
+          onTurnIntoIdea(card);
+        }}>Turn into idea</button>}
       </article>)}
     </div> : <div className="notecard-empty">{focusedId ? "This scene is no longer available." : "No notecards yet."}</div>}
   </section>;
@@ -12628,7 +12641,7 @@ function CompanionSceneList({ scenes, setScenes, notecards, setNotecards, openNo
   const sceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
   const ordered = safeArray(notecards).map(meta => {
     const scene = sceneById.get(asId(meta.sourceSceneId));
-    return scene && !scene.archived ? { meta, scene } : null;
+    return scene && !scene.archived && !scene.ideaCard ? { meta, scene } : null;
   }).filter(Boolean).sort((a, b) => Number(a.meta.order || 0) - Number(b.meta.order || 0));
   const visible = ordered.filter(({ scene }) =>
     (status === "all" || (status === "todo" ? ["todo", "drafted"].includes(normalizeStatus(scene.status)) : normalizeStatus(scene.status) === status)) &&
@@ -12739,8 +12752,9 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const companionCards = sortSceneCards(state.scenes.filter(card => !card.archived && (card.kind === "SCENE" || card.kind === "TWEAK")));
   const sequencedCards = companionCards.filter(card => activeSequenceOrder.includes(card.sequence) && !card.maybe);
   const ideaCards = companionCards.filter(card =>
-    !activeSequenceOrder.includes(card.sequence) && !card.notecardScene && !asId(card.id).startsWith("scene-from-")
-  ).sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+    !activeSequenceOrder.includes(card.sequence) && !card.notecardScene &&
+    (card.ideaCard || !asId(card.id).startsWith("scene-from-"))
+  ).sort((a, b) => Number(b.ideaConvertedAt || b.createdAt || 0) - Number(a.ideaConvertedAt || a.createdAt || 0));
   const ideaTypes = companionIdeaTypes(ideaCategoryNames, ideaCards);
   const ideaFilterTypes = [...ideaTypes.map(type => type.id), "unsorted"];
   const orderedIdeaCards = ideaLayout === "board" ? [...ideaCards].sort((a, b) => {
@@ -12749,7 +12763,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     if (Number.isFinite(aOrder) && Number.isFinite(bOrder)) return aOrder - bOrder;
     if (Number.isFinite(aOrder)) return 1;
     if (Number.isFinite(bOrder)) return -1;
-    return Number(b.createdAt || 0) - Number(a.createdAt || 0);
+    return Number(b.ideaConvertedAt || b.createdAt || 0) - Number(a.ideaConvertedAt || a.createdAt || 0);
   }) : ideaCards;
   const counts = {};
   activeSequenceOrder.forEach(seq => counts[seq] = 0);
@@ -13143,9 +13157,10 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     if (!id || (!hasForcedText && !Object.prototype.hasOwnProperty.call(ideaDetailDrafts, id))) return;
     const text = String(hasForcedText ? forcedText : (ideaDetailDrafts[id] || "")).trim();
     clearIdeaDetailTimer(id);
+    const card = ideaCards.find(item => asId(item.id) === asId(id));
     patchCard(id, {
-      description:text,
-      openQuestions:"",
+      description:card && card.ideaCard ? "" : text,
+      openQuestions:card && card.ideaCard ? text : "",
       rippleEffects:"",
       storyThreads:""
     });
@@ -13160,7 +13175,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const queueIdeaDetailDraft = (cardId, value) => {
     setIdeaDetailDrafts(prev => ({ ...prev, [cardId]:value }));
     clearIdeaDetailTimer(cardId);
-    patchCard(cardId, { description:value, openQuestions:"", rippleEffects:"", storyThreads:"" });
+    const card = ideaCards.find(item => asId(item.id) === asId(cardId));
+    patchCard(cardId, { description:card && card.ideaCard ? "" : value, openQuestions:card && card.ideaCard ? value : "", rippleEffects:"", storyThreads:"" });
   };
   const archiveSceneCard = cardId => {
     if (!cardId) return;
@@ -13256,7 +13272,11 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     const details = String(ideaDetailDraftValueFor(card) || "").trim();
     clearIdeaDetailTimer(id);
     setScenes(previous => safeArray(previous).map(scene => asId(scene.id) === id
-      ? touchRecord(normalizeCard(scene, 0), {
+      ? touchRecord(normalizeCard(scene, 0), scene.ideaCard ? {
+          title, ideaCard:false, notecardScene:scene.ideaReturnNotecardScene !== undefined ? !!scene.ideaReturnNotecardScene : true,
+          sequence:asId(scene.ideaReturnSequence), ideaReturnSequence:null, ideaReturnNotecardScene:null,
+          kind:scene.ideaReturnKind || "SCENE", ideaReturnKind:null
+        } : {
           title, description:details, openQuestions:details, rippleEffects:"", storyThreads:"",
           kind:"SCENE", notecardScene:true, status:"todo", sequence:null
         }) : scene));
@@ -13277,6 +13297,20 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     patchCard(cardId, archiveFields());
     setActiveId(null);
     if (showToast) showToast("Idea archived");
+  };
+  const turnNotecardIntoIdea = card => {
+    const id = asId(card.sourceSceneId);
+    if (!id || !scenes.some(scene => asId(scene.id) === id)) return;
+    setScenes(previous => safeArray(previous).map(scene => asId(scene.id) === id
+      ? touchRecord(normalizeCard(scene, 0), {
+          ideaCard:true, ideaReturnSequence:scene.sequence || null,
+          ideaReturnNotecardScene:!!scene.notecardScene, ideaReturnKind:scene.kind,
+          notecardScene:false, ideaConvertedAt:nowStamp(), sequence:null
+        }) : scene));
+    setFocusedNotecardId(null);
+    setCompanionMode("ideas");
+    setActiveId(id);
+    if (showToast) showToast("Moved to Ideas");
   };
   const reorderIdeas = (sourceId, targetId) => {
     const ids = orderedIdeaCards.map(card => asId(card.id));
@@ -13608,6 +13642,14 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                               placeholder="Add idea details"
                             />
                           </label>
+                          {card.ideaCard && safeArray(card.changes).some(change => !change.archived) &&
+                            <div className="companion-idea-edit-field companion-idea-scene-changes">
+                              <span>Scene changes</span>
+                              {safeArray(card.changes).filter(change => !change.archived).map(change =>
+                                <textarea key={change.id} value={change.text || ""} rows={2}
+                                  onChange={event => patchCard(card.id, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, { text:event.target.value }) : item) }))}
+                                  aria-label={"Scene change in " + (card.title || "idea")} />)}
+                            </div>}
                         </div>
                         <div className="companion-unplaced-action-row">
                           <button type="button" className="companion-assign-button" onClick={() => turnIdeaIntoNotecard(card)}>Turn into notecard</button>
@@ -13636,7 +13678,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
       </div>
 
       {isNotecardsMode && <NotecardsWorkspace scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards}
-        showToast={showToast} focusedId={focusedNotecardId} setFocusedId={setFocusedNotecardId} syncLabel={syncLabel} syncError={syncError} />}
+        showToast={showToast} focusedId={focusedNotecardId} setFocusedId={setFocusedNotecardId} onTurnIntoIdea={turnNotecardIntoIdea} syncLabel={syncLabel} syncError={syncError} />}
       {isSceneListMode && <CompanionSceneList scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards}
         openNotecard={id => { setFocusedNotecardId(id); setCompanionMode("notecards"); }} />}
 
@@ -15125,7 +15167,7 @@ readSnapshot().then(snapshot => {
 </script>
 <script>
   if (document.body.classList.contains('pwa-build') && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js?v=20261003d').then(registration => registration.update()).catch(() => {});
+    navigator.serviceWorker.register('service-worker.js?v=20261003e').then(registration => registration.update()).catch(() => {});
   }
 </script>
 </body>
