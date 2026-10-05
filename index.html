@@ -5428,7 +5428,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.55";
+const APP_VERSION = "1.2.56";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -8291,8 +8291,25 @@ function isLegacyUnsequencedSceneList(scenes) {
 }
 function backupLegacyUnsequencedSceneList(savedState) {
   try {
-    const key = "pickme_backup_legacy_unsequenced_scene_list_" + Date.now();
-    localStorage.setItem(key, JSON.stringify(savedState || {}));
+    const prefix = "pickme_backup_legacy_unsequenced_scene_list_";
+    const serialized = JSON.stringify(savedState || {});
+    const comparable = { ...safeObject(savedState) };
+    delete comparable.appVersion;
+    delete comparable.lastModified;
+    const signature = stableStringify(comparable);
+    for (let index = 0; index < localStorage.length; index++) {
+      const key = localStorage.key(index);
+      if (!key || !key.startsWith(prefix)) continue;
+      const previous = localStorage.getItem(key);
+      if (previous === serialized) return;
+      try {
+        const priorComparable = { ...safeObject(JSON.parse(previous)) };
+        delete priorComparable.appVersion;
+        delete priorComparable.lastModified;
+        if (stableStringify(priorComparable) === signature) return;
+      } catch (error) {}
+    }
+    localStorage.setItem(prefix + Date.now() + "-" + Math.random().toString(36).slice(2), serialized);
   } catch(e) {}
 }
 function getSceneCardsForSavedState(savedState) {
