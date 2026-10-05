@@ -5428,7 +5428,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.50";
+const APP_VERSION = "1.2.51";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -8840,11 +8840,11 @@ function openSnapshotDb() {
   });
 }
 
-async function readSnapshot() {
+async function readSnapshot(key = "canonical") {
   const db = await openSnapshotDb();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction("state", "readonly");
-    const request = transaction.objectStore("state").get("canonical");
+    const request = transaction.objectStore("state").get(key);
     request.onsuccess = () => resolve(request.result || null);
     request.onerror = () => reject(request.error);
     transaction.oncomplete = () => db.close();
@@ -8852,15 +8852,61 @@ async function readSnapshot() {
   });
 }
 
-async function writeSnapshot(state) {
+async function writeSnapshot(state, key = "canonical") {
   const db = await openSnapshotDb();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction("state", "readwrite");
-    transaction.objectStore("state").put(state, "canonical");
+    transaction.objectStore("state").put(state, key);
     transaction.oncomplete = () => { db.close(); resolve(); };
     transaction.onerror = () => { db.close(); reject(transaction.error); };
     transaction.onabort = () => { db.close(); reject(transaction.error); };
   });
+}
+
+async function deleteSnapshot(key) {
+  const db = await openSnapshotDb();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction("state", "readwrite");
+    transaction.objectStore("state").delete(key);
+    transaction.oncomplete = () => { db.close(); resolve(); };
+    transaction.onerror = () => { db.close(); reject(transaction.error); };
+    transaction.onabort = () => { db.close(); reject(transaction.error); };
+  });
+}
+
+async function readSnapshotsWithPrefix(prefix) {
+  const db = await openSnapshotDb();
+  return new Promise((resolve, reject) => {
+    const drafts = [];
+    const transaction = db.transaction("state", "readonly");
+    const request = transaction.objectStore("state").openCursor();
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (!cursor) return;
+      if (String(cursor.key).startsWith(prefix)) drafts.push({ key:String(cursor.key), state:cursor.value });
+      cursor.continue();
+    };
+    transaction.oncomplete = () => { db.close(); resolve(drafts); };
+    transaction.onerror = () => { db.close(); reject(transaction.error); };
+  });
+}
+
+async function migrateLegacyConflictDrafts() {
+  const keys = [];
+  for (let index = 0; index < localStorage.length; index++) {
+    const key = localStorage.key(index);
+    if (key && key.startsWith("pickme_window_conflict_draft_")) keys.push(key);
+  }
+  for (const key of keys) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(key));
+      if (!saved || !saved.state) continue;
+      await writeSnapshot(saved.state, "legacy-conflict-" + key);
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn("Older edit draft was left in browser storage:", error);
+    }
+  }
 }
 
 function queueSnapshot(state, required) {
@@ -8904,7 +8950,13 @@ function touchChangedCollection(nextArray, previousArray, prefix) {
     return { ...record, updatedAt: record.updatedAt || prev.updatedAt || 0, updatedBy: record.updatedBy || prev.updatedBy || "" };
   });
 }
-const WINDOW_CONFLICT_BACKUP_KEY = "pickme_window_conflict_draft_" + Math.random().toString(36).slice(2);
+const WINDOW_CONFLICT_ID_KEY = "pickme_window_conflict_id";
+let windowConflictId = "window-" + Math.random().toString(36).slice(2);
+try {
+  windowConflictId = sessionStorage.getItem(WINDOW_CONFLICT_ID_KEY) || windowConflictId;
+  sessionStorage.setItem(WINDOW_CONFLICT_ID_KEY, windowConflictId);
+} catch (error) {}
+const WINDOW_CONFLICT_BACKUP_KEY = "conflict-" + windowConflictId;
 const COORDINATED_COLLECTIONS = ["songs", "scenes", "notecards", "notes", "sceneNotes"];
 const RECORD_METADATA_FIELDS = new Set(["createdAt", "updatedAt", "updatedBy", "lastTouchedAt", "archivedAt", "deletedAt"]);
 function sameSavedValue(left, right) { return stableStringify(left) === stableStringify(right); }
@@ -8961,6 +9013,8 @@ function rebaseEditedRecord(before, edited, latest, path, conflicts, preferMine)
 function rebaseEditorState(parts, baseInput, preferMine) {
   const base = normalizeState(baseInput);
   const latest = loadCanonicalStateFromStorage();
+  const externalChanges = COORDINATED_COLLECTIONS.some(key => !sameSavedValue(base[key], latest[key])) ||
+    ["sequences", "categoryNames", "ideaCategoryNames", "notionUrl", "now", "conversionReport"].some(key => !sameSavedValue(base[key], latest[key]));
   const conflicts = [];
   const rebased = {};
   COORDINATED_COLLECTIONS.forEach(key => {
@@ -8985,7 +9039,7 @@ function rebaseEditorState(parts, baseInput, preferMine) {
     }
     rebased[key] = parts[key];
   });
-  return { state:conflicts.length && !preferMine ? null : buildPersistedState(rebased), conflicts };
+  return { state:conflicts.length && !preferMine ? null : buildPersistedState(rebased), conflicts, externalChanges };
 }
 function buildPersistedState(parts) {
   const previous = loadCanonicalStateFromStorage();
@@ -14663,7 +14717,20 @@ function App() {
   const lastAppliedStateRef = React.useRef(loadCanonicalStateFromStorage());
   const pendingWindowStateRef = React.useRef(null);
   const conflictDraftRef = React.useRef(null);
+  const conflictSnapshotQueueRef = React.useRef(Promise.resolve());
   const [windowConflict, setWindowConflict] = useState(null);
+  const [recoveryDrafts, setRecoveryDrafts] = useState([]);
+  const [conflictBackupError, setConflictBackupError] = useState(false);
+  React.useEffect(() => {
+    migrateLegacyConflictDrafts()
+      .then(() => Promise.all([readSnapshot(WINDOW_CONFLICT_BACKUP_KEY), readSnapshotsWithPrefix("legacy-conflict-")]))
+      .then(([current, legacy]) => {
+        if (!conflictDraftRef.current) setRecoveryDrafts([
+          ...(current ? [{ key:WINDOW_CONFLICT_BACKUP_KEY, state:current }] : []),
+          ...legacy
+        ]);
+      }).catch(error => console.warn("Previous edit drafts could not be read:", error));
+  }, []);
   const [pendingUpdate, setPendingUpdate] = useState(() => getPendingUpdateState());
   const [duplicateReview, setDuplicateReview] = useState(null);
   const [conversionReport, setConversionReport] = useState(() => loadCanonicalStateFromStorage().conversionReport);
@@ -14730,6 +14797,17 @@ function App() {
     return { next:"Next", later:"Later", completed:"Completed", cut:"Cut", maybe:"Maybe" };
   });
   const [ideaCategoryNames, setIdeaCategoryNames] = useState(() => loadCanonicalStateFromStorage().ideaCategoryNames);
+  const preserveConflictDraft = parts => {
+    conflictDraftRef.current = parts;
+    const draft = normalizeState({ ...loadCanonicalStateFromStorage(), ...parts });
+    conflictSnapshotQueueRef.current = conflictSnapshotQueueRef.current.catch(() => {}).then(() => writeSnapshot(draft, WINDOW_CONFLICT_BACKUP_KEY));
+    conflictSnapshotQueueRef.current
+      .then(() => setConflictBackupError(false))
+      .catch(error => {
+        console.warn("Automatic edit draft backup could not be saved:", error);
+        setConflictBackupError(true);
+      });
+  };
   // ── Consolidated save: single source of truth, auto-push ──
   React.useLayoutEffect(() => {
     if (_isFirstRender.current) {
@@ -14743,14 +14821,13 @@ function App() {
     const parts = { songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, ideaCategoryNames, notionUrl, now:nowState, conversionReport };
     const result = rebaseEditorState(parts, lastAppliedStateRef.current, false);
     if (result.conflicts.length) {
-      conflictDraftRef.current = parts;
+      preserveConflictDraft(parts);
       setWindowConflict(result.conflicts);
-      try { localStorage.setItem(WINDOW_CONFLICT_BACKUP_KEY, JSON.stringify({ savedAt:nowStamp(), state:normalizeState({ ...loadCanonicalStateFromStorage(), ...parts }) })); }
-      catch (error) { window.dispatchEvent(new CustomEvent("pickme_storage_error")); }
       return;
     }
     const state = saveCanonicalState(result.state);
-    lastAppliedStateRef.current = normalizeState({ ...state, ...parts });
+    lastAppliedStateRef.current = state;
+    if (result.externalChanges) applyIncomingState(state);
     if (windowConflict) setWindowConflict(null);
     window.dispatchEvent(new Event("notesUpdated"));
     if (window.__pickmeSkipNextDropboxPush) {
@@ -14851,8 +14928,7 @@ function App() {
   }, [applyIncomingState]);
 
   const downloadConflictDraft = () => {
-    const raw = localStorage.getItem(WINDOW_CONFLICT_BACKUP_KEY);
-    const draft = raw ? JSON.parse(raw).state : normalizeState({ ...loadCanonicalStateFromStorage(), ...(conflictDraftRef.current || {}) });
+    const draft = normalizeState({ ...loadCanonicalStateFromStorage(), ...(conflictDraftRef.current || {}) });
     downloadJsonFile(draft, "pickme_window_conflict_draft_" + Date.now() + ".json");
   };
   const resolveWindowConflict = keepMine => {
@@ -14868,20 +14944,21 @@ function App() {
       setWindowConflict(null);
       applyIncomingState(loadCanonicalStateFromStorage());
     }
+    conflictSnapshotQueueRef.current = conflictSnapshotQueueRef.current.catch(() => {}).then(() => deleteSnapshot(WINDOW_CONFLICT_BACKUP_KEY));
+    conflictSnapshotQueueRef.current.catch(error => console.warn("Edit draft cleanup failed:", error));
+    setConflictBackupError(false);
     pendingWindowStateRef.current = null;
   };
   const getCoordinatedState = () => {
     const parts = { songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, ideaCategoryNames, notionUrl, now:nowState, conversionReport };
     const result = rebaseEditorState(parts, lastAppliedStateRef.current, false);
     if (!result.conflicts.length) return result.state;
-    conflictDraftRef.current = parts;
+    preserveConflictDraft(parts);
     setWindowConflict(result.conflicts);
-    try { localStorage.setItem(WINDOW_CONFLICT_BACKUP_KEY, JSON.stringify({ savedAt:nowStamp(), state:normalizeState({ ...loadCanonicalStateFromStorage(), ...parts }) })); }
-    catch (error) { window.dispatchEvent(new CustomEvent("pickme_storage_error")); }
     return null;
   };
   const markCoordinatedStateSaved = state => {
-    lastAppliedStateRef.current = normalizeState({ ...state, songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, ideaCategoryNames, notionUrl, now:nowState, conversionReport });
+    lastAppliedStateRef.current = normalizeState(state);
   };
 
   const completePendingUpdate = (downloadConfirmed) => {
@@ -15031,13 +15108,27 @@ function App() {
         <div role="alert" style={{background:"#fff",border:"1px solid #111",padding:"12px 16px",marginBottom:"16px",color:"#111"}}>
           This browser could not save your latest changes. Keep this page open and download a backup now.
           <button type="button" className="btn btn-secondary" style={{marginLeft:"12px"}}
-            onClick={() => downloadJsonFile(loadCanonicalStateFromStorage(), exportFilename())}>Download backup</button>
+            onClick={() => downloadJsonFile(normalizeState({ ...loadCanonicalStateFromStorage(), ...(conflictDraftRef.current || {}) }), exportFilename())}>Download backup</button>
+        </div>
+      )}
+
+      {recoveryDrafts.length > 0 && !windowConflict && (
+        <div role="alert" style={{background:"#FFFFFF",border:"2px solid #C3578D",padding:"14px 16px",marginBottom:"16px",color:"#000000"}}>
+          {recoveryDrafts.length} unsaved edit draft{recoveryDrafts.length === 1 ? "" : "s"} from an earlier session. Download each before dismissing it.
+          {recoveryDrafts.map((draft, index) => <div key={draft.key} style={{display:"flex",flexWrap:"wrap",gap:"8px",marginTop:"10px"}}>
+            <button type="button" className="btn btn-secondary" onClick={() => downloadJsonFile(draft.state, "pickme_recovered_draft_" + (index + 1) + "_" + Date.now() + ".json")}>Download draft {index + 1}</button>
+            <button type="button" className="btn btn-secondary" onClick={() => {
+              setRecoveryDrafts(previous => previous.filter(item => item.key !== draft.key));
+              deleteSnapshot(draft.key).catch(error => console.warn("Edit draft cleanup failed:", error));
+            }}>Dismiss {index + 1}</button>
+          </div>)}
         </div>
       )}
 
       {windowConflict && (
         <div role="alert" style={{background:"#FFFFFF",border:"2px solid #C3578D",padding:"14px 16px",marginBottom:"16px",color:"#000000"}}>
-          <strong>EDIT CONFLICT</strong> Another window changed {windowConflict[0]}. Your edit is still here and has not overwritten it.
+          <strong>EDIT CONFLICT</strong> A newer saved version changed {windowConflict[0]}. It may have come from Dropbox or another window. Your edit is still here and has not overwritten it.
+          {conflictBackupError && <div>Automatic draft backup failed. Download your draft before leaving this page.</div>}
           <div style={{display:"flex",flexWrap:"wrap",gap:"8px",marginTop:"10px"}}>
             <button type="button" className="btn btn-secondary" onClick={downloadConflictDraft}>Download my draft</button>
             <button type="button" className="btn btn-secondary" onClick={() => resolveWindowConflict(true)}>Keep my edit</button>
