@@ -5428,7 +5428,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.52";
+const APP_VERSION = "1.2.54";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -9066,6 +9066,11 @@ function buildPersistedState(parts) {
 const PICKME_WINDOW_ID = "window-" + Math.random().toString(36).slice(2);
 let pickmeWindowChannel = null;
 try { if (window.BroadcastChannel) pickmeWindowChannel = new BroadcastChannel("pickme-writers-assistant-state"); } catch (error) {}
+function withStateWriteLock(work) {
+  return navigator.locks && navigator.locks.request
+    ? navigator.locks.request("pickme-state-write", { mode:"exclusive" }, work)
+    : Promise.resolve().then(work);
+}
 function saveCanonicalState(state, options) {
   const normalized = normalizeState(state);
   let snapshotRequired = false;
@@ -9527,16 +9532,25 @@ async function syncWithDropbox(localState, attempt) {
         document.addEventListener("focusout", onBlur);
       });
     }
-    // Edits made while the download was in flight must be included in this merge.
-    const current = loadCanonicalStateFromStorage();
     let rev = download && download.rev ? download.rev : null;
     let remote = null;
     if (download && download.text) {
       try { remote = JSON.parse(download.text); } catch(e) { console.warn("Dropbox data could not be read:", e); }
     }
-    let merged = remote ? mergeStates(current, remote) : current;
-    merged = preserveUnversionedNotionUrl(merged, DEFAULT_NOTION_URL);
-    merged = saveCanonicalState(merged);
+    const syncResult = await withStateWriteLock(() => {
+      const current = loadCanonicalStateFromStorage();
+      if (remote && sameSavedValue(current, normalizeState(remote))) return { unchanged:true };
+      let merged = remote ? mergeStates(current, remote) : current;
+      merged = preserveUnversionedNotionUrl(merged, DEFAULT_NOTION_URL);
+      return { merged:saveCanonicalState(merged) };
+    });
+    if (syncResult.unchanged) {
+      const syncedAt = nowStamp();
+      saveUiPreference(LAST_SYNCED_KEY, String(syncedAt));
+      window.dispatchEvent(new CustomEvent("dbxSyncStatus", { detail:"idle", syncedAt }));
+      return true;
+    }
+    const merged = syncResult.merged;
     window.dispatchEvent(new CustomEvent("pickme_state_updated", { detail: merged }));
     try {
       const uploaded = await DBX.uploadSmart(JSON.stringify(merged, null, 2), rev, download && download.path ? download.path : null);
@@ -14740,6 +14754,8 @@ function App() {
   const _skipPushRef = React.useRef(false);
   const _isFirstRender = React.useRef(true);
   const lastAppliedStateRef = React.useRef(loadCanonicalStateFromStorage());
+  const saveGenerationRef = React.useRef(0);
+  const pendingLocalSaveRef = React.useRef(false);
   const pendingWindowStateRef = React.useRef(null);
   const conflictDraftRef = React.useRef(null);
   const conflictSnapshotQueueRef = React.useRef(Promise.resolve());
@@ -14844,23 +14860,36 @@ function App() {
       return;
     }
     const parts = { songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, ideaCategoryNames, notionUrl, now:nowState, conversionReport };
-    const result = rebaseEditorState(parts, lastAppliedStateRef.current, false);
-    if (result.conflicts.length) {
+    const generation = ++saveGenerationRef.current;
+    pendingLocalSaveRef.current = true;
+    withStateWriteLock(() => {
+      if (generation !== saveGenerationRef.current) return null;
+      const result = rebaseEditorState(parts, lastAppliedStateRef.current, false);
+      return result.conflicts.length ? { result } : { result, state:saveCanonicalState(result.state) };
+    }).then(outcome => {
+      if (!outcome || generation !== saveGenerationRef.current) return;
+      pendingLocalSaveRef.current = false;
+      if (outcome.result.conflicts.length) {
+        preserveConflictDraft(parts);
+        setWindowConflict(outcome.result.conflicts);
+        return;
+      }
+      lastAppliedStateRef.current = outcome.state;
+      if (outcome.result.externalChanges) applyIncomingState(outcome.state);
+      if (windowConflict) setWindowConflict(null);
+      window.dispatchEvent(new Event("notesUpdated"));
+      if (window.__pickmeSkipNextDropboxPush) window.__pickmeSkipNextDropboxPush = false;
+      else {
+        if (DBX.isConnected()) window.dispatchEvent(new CustomEvent("dbxSyncStatus", { detail:"pending" }));
+        scheduleDropboxPush();
+      }
+    }).catch(error => {
+      if (generation !== saveGenerationRef.current) return;
+      pendingLocalSaveRef.current = false;
+      console.error("Browser save failed:", error);
       preserveConflictDraft(parts);
-      setWindowConflict(result.conflicts);
-      return;
-    }
-    const state = saveCanonicalState(result.state);
-    lastAppliedStateRef.current = state;
-    if (result.externalChanges) applyIncomingState(state);
-    if (windowConflict) setWindowConflict(null);
-    window.dispatchEvent(new Event("notesUpdated"));
-    if (window.__pickmeSkipNextDropboxPush) {
-      window.__pickmeSkipNextDropboxPush = false;
-    } else {
-      if (DBX.isConnected()) window.dispatchEvent(new CustomEvent("dbxSyncStatus", { detail:"pending" }));
-      scheduleDropboxPush();
-    }
+      window.dispatchEvent(new CustomEvent("pickme_storage_error"));
+    });
   }, [songs, scenes, notecards, notes, sequences, sceneNotes, categoryNames, ideaCategoryNames, notionUrl, nowState, conversionReport]); // eslint-disable-line
 
   // ── Listen for dbxSyncStatus events (from auto-push/pull) ───────────────
@@ -14903,7 +14932,7 @@ function App() {
 
   React.useEffect(() => {
     const fromDropbox = event => {
-      if (conflictDraftRef.current) { pendingWindowStateRef.current = event.detail; return; }
+      if (conflictDraftRef.current || pendingLocalSaveRef.current) { pendingWindowStateRef.current = event.detail; return; }
       applyIncomingState(event.detail);
     };
     window.addEventListener("pickme_state_updated", fromDropbox);
@@ -14914,12 +14943,10 @@ function App() {
     const hasActiveEdit = () => document.activeElement && document.activeElement.matches("input, textarea, [contenteditable='true']");
     const receive = input => {
       if (!input) return;
-      const incoming = normalizeState(input);
       const saved = loadCanonicalStateFromStorage();
-      const newest = Number(incoming.lastModified || 0) > Number(saved.lastModified || 0) ? incoming : saved;
-      if (newest === incoming && !sameSavedValue(incoming, saved)) saveCanonicalState(incoming, { quiet:true });
+      const newest = saved;
       if (sameSavedValue(newest, lastAppliedStateRef.current)) return;
-      if (hasActiveEdit() || conflictDraftRef.current) { pendingWindowStateRef.current = newest; return; }
+      if (hasActiveEdit() || conflictDraftRef.current || pendingLocalSaveRef.current) { pendingWindowStateRef.current = newest; return; }
       applyIncomingState(newest);
     };
     const onStorage = event => {
@@ -14930,7 +14957,7 @@ function App() {
       if (event.data && event.data.from !== PICKME_WINDOW_ID) receive(event.data.state);
     };
     const onFocusOut = () => setTimeout(() => {
-      if (hasActiveEdit() || conflictDraftRef.current || !pendingWindowStateRef.current) return;
+      if (hasActiveEdit() || conflictDraftRef.current || pendingLocalSaveRef.current || !pendingWindowStateRef.current) return;
       const pending = pendingWindowStateRef.current;
       pendingWindowStateRef.current = null;
       receive(pending);
@@ -14956,10 +14983,13 @@ function App() {
     const draft = normalizeState({ ...loadCanonicalStateFromStorage(), ...(conflictDraftRef.current || {}) });
     downloadJsonFile(draft, "pickme_window_conflict_draft_" + Date.now() + ".json");
   };
-  const resolveWindowConflict = keepMine => {
+  const resolveWindowConflict = async keepMine => {
     if (keepMine && conflictDraftRef.current) {
-      const result = rebaseEditorState(conflictDraftRef.current, lastAppliedStateRef.current, true);
-      const saved = saveCanonicalState(result.state);
+      const draft = conflictDraftRef.current;
+      const saved = await withStateWriteLock(() => {
+        const result = rebaseEditorState(draft, lastAppliedStateRef.current, true);
+        return saveCanonicalState(result.state);
+      });
       conflictDraftRef.current = null;
       setWindowConflict(null);
       applyIncomingState(saved);
