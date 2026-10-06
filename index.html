@@ -5428,7 +5428,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.56";
+const APP_VERSION = "1.2.57";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12631,7 +12631,8 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
     if (showToast) showToast(copied ? "Bullets copied" : "Could not copy bullets");
   };
   const displayed = focusedId ? (focused ? [focused] : []) : visible;
-  const uncheckedCount = visible.filter(card => !card.done).length;
+  const openCount = visible.filter(card => !card.done).length;
+  const completedCount = visible.length - openCount;
   const archiveCard = card => {
     patchScene(card.sourceSceneId, archiveFields());
     setNotecards(previous => safeArray(previous).map(item => asId(item.id) === asId(card.id) ? touchRecord(item, archiveFields()) : item));
@@ -12643,7 +12644,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
       {focusedId ? <button type="button" className="notecard-back" onClick={() => setFocusedId(null)}>← Notecards</button> : <h2>Notecards</h2>}
       <div className="notecards-meta">
         <div role="status" className={"notecards-sync-status" + (syncError ? " is-error" : "")}>{syncLabel}</div>
-        <span className="notecards-count" aria-label={uncheckedCount + " unchecked notecards"}>{uncheckedCount} {uncheckedCount === 1 ? "notecard" : "notecards"}</span>
+        <span className="notecards-count">{openCount} open, {completedCount} completed</span>
       </div>
     </div>
     {!focusedId && <div className="notecards-new">
