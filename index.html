@@ -150,8 +150,8 @@
 
         /* PROGRESS BAR HEADER */
         .progress-bar-container {
-            background: rgba(243, 126, 179, 0.08);
-            border: 1px solid rgba(243, 126, 179, 0.2);
+            background: #FFF7FB;
+            border: 1px solid #F2D9E6;
             border-radius: 4px;
             padding: 12px 16px;
             margin-bottom: 20px;
@@ -2647,6 +2647,7 @@
             padding: 9px 10px;
             width: 100%;
         }
+        .progress-edit-field output { color: var(--neon-pink); display: block; font-size: 1rem; font-weight: 800; min-height: 42px; padding: 9px 0; }
 
         /* COMPANION MENU FLOW 20260817A */
         .companion-notebook {
@@ -3310,7 +3311,7 @@
         .notecards-workspace.is-focused .notecard-add-change input { font-size: 1.05rem; line-height: 1.55; }
         .notecard-change-row.is-done textarea { color: #C3578D !important; -webkit-text-fill-color: #C3578D !important; text-decoration: line-through; }
         .notecard-change-check { align-items: flex-start; cursor: pointer; display: inline-flex; flex: 0 0 26px; justify-content: center; margin: 0 !important; padding-top: 4px; }
-        .notecard input.notecard-change-done { appearance: none !important; background: #FFFFFF !important; border: 1.5px solid #C3578D !important; border-radius: 3px !important; box-sizing: border-box !important; cursor: pointer; flex: 0 0 18px; height: 18px !important; margin: 0 !important; min-height: 0 !important; padding: 0 !important; position: relative; width: 18px !important; }
+        .notecard input.notecard-change-done { appearance: none !important; background: #FFFFFF !important; border: 1.5px solid #C3578D !important; border-radius: 3px !important; box-sizing: border-box !important; cursor: pointer; flex: 0 0 18px; height: 18px !important; margin: 0 !important; min-height: 0 !important; padding: 0 !important; position: relative; transition: none !important; width: 18px !important; }
         .notecard input.notecard-change-done:checked { background: #C3578D !important; }
         .notecard-change-done:checked::after { border-bottom: 2px solid #FFFFFF; border-right: 2px solid #FFFFFF; content: ""; height: 8px; left: 5px; position: absolute; top: 2px; transform: rotate(45deg); width: 4px; }
         .notecards-new {
@@ -3357,7 +3358,7 @@
         .notecard.is-drop-target { outline: 2px solid #E668A7; outline-offset: 2px; }
         .notecard-top { align-items: center; display: flex; gap: 10px; margin-bottom: 12px; }
         .notecard-actions { align-items: center; display: flex; flex: 0 0 auto; gap: 4px; margin-left: auto; }
-        .notecard-drag { align-items: center; color: #000000; cursor: grab; display: inline-flex; flex: 0 0 30px; font-size: 1.15rem; height: 30px; justify-content: center; }
+        .notecard-drag { align-items: center; color: #E5A5C4; cursor: grab; display: inline-flex; flex: 0 0 30px; font-size: 1.15rem; height: 30px; justify-content: center; }
         .notecard-drag:active { cursor: grabbing; }
         .notecard input.notecard-complete { appearance: none !important; background: #FFFFFF !important; border: 1.5px solid #F2C8DC !important; border-radius: 3px !important; box-sizing: border-box !important; cursor: pointer; flex: 0 0 15px; height: 15px !important; margin: 0 !important; min-height: 0 !important; padding: 0 !important; position: relative; width: 15px !important; }
         .notecard input.notecard-complete:checked { background: #F2C8DC !important; }
@@ -3400,8 +3401,9 @@
         }
         .notecard-archive-stack { align-items: center; display: flex; flex: 0 0 30px; flex-direction: column; }
         body:not(.pwa-build) .notecards-workspace.is-focused .notecard { position: relative; }
-        body:not(.pwa-build) .notecards-workspace.is-focused .notecard-top { align-items: flex-start; margin-bottom: 8px; padding-right: 42px; }
+        body:not(.pwa-build) .notecards-workspace.is-focused .notecard-top { align-items: flex-start; margin-bottom: 8px; padding-right: 112px; }
         body:not(.pwa-build) .notecards-workspace.is-focused .notecard-actions { align-items: center; flex-direction: column; flex-wrap: nowrap; gap: 0; position: absolute; right: 28px; top: 20px; }
+        body:not(.pwa-build) .notecards-workspace.is-focused .card-table-corner { position: absolute; right: 38px; top: 0; }
         body:not(.pwa-build) .notecards-workspace.is-focused .notecard-details { padding-right: 42px; }
         body:not(.pwa-build) .notecards-workspace.is-focused .notecard-complete-label,
         body:not(.pwa-build) .notecards-workspace.is-focused .notecard-icon-button { flex: 0 0 30px; height: 30px; width: 30px; }
@@ -3469,8 +3471,7 @@
         .companion-scene-list-tools { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(180px, 230px); margin-bottom: 18px; }
         .companion-scene-list-tools input,
         .companion-scene-list-tools select { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; box-sizing: border-box; color: #000000; font: inherit; min-height: 44px; min-width: 0; padding: 8px 14px; width: 100%; }
-        .companion-scene-list .companion-scene-list-tools select,
-        .companion-scene-list .companion-scene-list-status {
+        .companion-scene-list .companion-scene-list-tools select {
             -webkit-appearance: none;
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%231C1410' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
@@ -3485,10 +3486,11 @@
         .companion-scene-list-row.is-drop-target { outline: 2px solid #E668A7; outline-offset: 2px; }
         .companion-notebook .companion-scene-list-title { background: none; border: 0; color: #000000; cursor: pointer; font: inherit; font-size: 0.9rem; font-weight: 800; min-height: 44px; min-width: 0; overflow-wrap: anywhere; padding: 6px 4px; text-align: left; text-transform: uppercase; }
         .companion-scene-list-title:hover { color: #C3578D; }
-        .companion-scene-list-status { background-color: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.76rem; font-weight: 800; min-height: 44px; min-width: 0; padding: 8px 52px 8px 12px; text-transform: uppercase; width: 100%; }
+        .companion-scene-list-status { align-items: center; color: #C3578D; display: flex; font-size: 0.76rem; font-weight: 800; min-height: 44px; min-width: 0; text-transform: uppercase; }
+        .companion-scene-list-status.is-not-set { color: #777777; }
         .companion-scene-list-order { align-items: center; display: flex; justify-content: end; }
         .companion-scene-list-order button { display: none; }
-        .companion-scene-list-drag { align-items: center; color: #000000; cursor: grab; display: inline-flex; font-size: 1.18rem; height: 44px; justify-content: center; width: 44px; }
+        .companion-scene-list-drag { align-items: center; color: #E5A5C4; cursor: grab; display: inline-flex; font-size: 1.18rem; height: 44px; justify-content: center; width: 44px; }
         .companion-scene-list-drag:active { cursor: grabbing; }
         @media (max-width: 760px) {
             .notecards-grid { grid-template-columns: minmax(0, 1fr); }
@@ -4074,10 +4076,28 @@
         .companion-new-idea-panel > summary::-webkit-details-marker { display: none; }
 
         .companion-new-idea-fields {
+            background: #FFFFFF;
+            border: 1px solid #F1BBD6;
+            border-radius: 6px;
             display: grid;
-            gap: 12px;
-            padding: 14px 0 8px;
+            gap: 16px;
+            margin-top: 8px;
+            padding: 18px;
         }
+        .companion-new-idea-identity {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr);
+        }
+        .companion-new-idea-fields > .card-table-editor,
+        .companion-idea-edit-fields > .card-table-editor { margin-top: 0; }
+        .companion-new-idea-fields > .companion-picker-field { max-width: 900px; }
+        .companion-new-idea-fields .companion-idea-detail-text { min-height: 116px; }
+        @media (max-width: 760px) {
+            .companion-new-idea-identity { grid-template-columns: minmax(0, 1fr); }
+            .companion-new-idea-fields { padding: 14px; }
+        }
+        body.pwa-build .companion-new-idea-identity { grid-template-columns: minmax(0, 1fr); }
 
         .companion-idea-tools {
             align-items: start;
@@ -4162,10 +4182,15 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
+            justify-content: flex-end;
+            padding-top: 4px;
         }
 
         .companion-new-idea-actions .companion-add-button,
         .companion-new-idea-actions .companion-table-open { min-width: 110px; }
+        body.pwa-build .companion-new-idea-actions { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+        body.pwa-build .companion-new-idea-actions .companion-add-button,
+        body.pwa-build .companion-new-idea-actions .companion-table-open { justify-content: center; min-width: 0; text-align: center; width: 100%; }
 
         .companion-triage-tabs {
             display: grid;
@@ -4222,7 +4247,7 @@
         .companion-unplaced-list.is-board .companion-unplaced-card.is-active .companion-unplaced-card-main { height: auto; min-height: 68px; }
         .companion-unplaced-list.is-board .companion-unplaced-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; overflow-wrap: anywhere; }
         .companion-unplaced-list.is-board .companion-unplaced-snippet { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; overflow-wrap: anywhere; }
-        .companion-idea-drag { color: #000000; cursor: grab; font-size: 1rem; line-height: 1; padding: 8px; position: absolute; right: 2px; top: 2px; user-select: none; }
+        .companion-idea-drag { color: #E5A5C4; cursor: grab; font-size: 1rem; line-height: 1; padding: 8px; position: absolute; right: 2px; top: 2px; user-select: none; }
         .companion-idea-drag:active { cursor: grabbing; }
         .companion-idea-mobile-order { display: none; }
         body.pwa-build .companion-unplaced-list.is-board .companion-unplaced-card { margin-bottom: 0; }
@@ -4230,6 +4255,7 @@
         body.pwa-build .companion-unplaced-list.is-board .companion-unplaced-card-main { padding-bottom: 48px; }
         body.pwa-build .companion-unplaced-list.is-board .companion-unplaced-card.is-active .companion-unplaced-card-main { padding-bottom: 14px; }
         body.pwa-build .companion-unplaced-list.is-board .companion-unplaced-card:not(.is-active) .companion-unplaced-snippet { display: none; }
+        body.pwa-build .companion-unplaced-list.is-board .companion-unplaced-card.has-table:not(.is-active) .companion-unplaced-snippet { display: -webkit-box; }
         body.pwa-build .companion-idea-drag { display: none; }
         body.pwa-build .companion-idea-mobile-order { bottom: 4px; display: flex; gap: 2px; position: absolute; right: 4px; }
         body.pwa-build .companion-idea-mobile-order button { background: transparent; border: 0; color: #E668A7; cursor: pointer; font-size: 1.1rem; height: 44px; width: 44px; }
@@ -4243,9 +4269,10 @@
         }
 
         .companion-unplaced-card.is-active {
-            background: var(--companion-active);
-            border-color: #ea258d;
+            background: #FFFFFF;
+            border-color: #E668A7;
         }
+        .companion-unplaced-card.is-active .companion-unplaced-card-main { background: #FFF3F9; }
 
         .companion-unplaced-card-main {
             background: transparent;
@@ -4297,14 +4324,24 @@
         .companion-unplaced-actions {
             border-top: 1px solid var(--companion-line);
             display: grid;
-            gap: 10px;
-            padding: 10px;
+            gap: 16px;
+            padding: 18px;
         }
 
         .companion-idea-edit-fields {
             display: grid;
-            gap: 10px;
+            gap: 16px;
+            grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr);
         }
+        .companion-idea-edit-fields > .is-wide,
+        .companion-idea-edit-fields > .card-table-editor,
+        .companion-idea-edit-fields > .card-table-add { grid-column: 1 / -1; }
+        .companion-idea-edit-fields > .card-table-add { justify-self: start; }
+        @media (max-width: 760px) {
+            .companion-idea-edit-fields { grid-template-columns: minmax(0, 1fr); }
+            .companion-unplaced-actions { padding: 14px; }
+        }
+        body.pwa-build .companion-idea-edit-fields { grid-template-columns: minmax(0, 1fr); }
 
         .companion-idea-edit-field {
             display: grid;
@@ -4890,7 +4927,7 @@
         }
 
         body.pwa-build .companion-main-menu {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         body.pwa-build .companion-notebook .companion-menu-choice,
@@ -5237,6 +5274,351 @@
             line-height: 1.45;
         }
 
+        .card-table-editor { min-width: 0; }
+        .card-table-heading { align-items: baseline; display: flex; gap: 12px; justify-content: space-between; }
+        .card-table-heading h3 { color: #E668A7; font-size: 0.78rem; font-weight: 800; margin: 0; text-transform: uppercase; }
+        .card-table-heading span, .card-table-preview { color: #C3578D; font-size: 0.74rem; font-weight: 700; }
+        .card-table-scroll { max-width: 100%; overflow-x: auto; }
+        .card-table-editor table { border-collapse: collapse; table-layout: fixed; width: 100%; }
+        .card-table-editor th, .card-table-editor td { border-bottom: 1px solid var(--companion-line); padding: 6px; vertical-align: top; }
+        .card-table-editor .card-table-check-heading, .card-table-editor .card-table-check-cell { text-align: center; width: 48px; }
+        .card-table-editor .card-table-row-actions { text-align: right; width: 36px; }
+        .card-table-editor .card-table-column-heading { align-items: center; display: flex; gap: 4px; }
+        .card-table-editor input:not([type="checkbox"]), .card-table-editor textarea { background: #FFFFFF !important; border: 1px solid var(--companion-line) !important; border-radius: 4px !important; box-sizing: border-box; color: #000000 !important; font: inherit; min-width: 0; padding: 7px 8px !important; width: 100%; }
+        .card-table-editor textarea { line-height: 1.4; min-height: 58px; resize: vertical; }
+        .card-table-editor input:not([type="checkbox"]) { font-size: 0.72rem; font-weight: 800; min-height: 36px; }
+        .card-table-editor input[type="checkbox"] { accent-color: #C3578D; cursor: pointer; height: 18px; margin: 8px 0 0; width: 18px; }
+        .card-table-editor tr.is-done textarea { color: #C3578D !important; text-decoration: line-through; }
+        .card-table-editor button, .card-table-add, .card-table-restore button { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; cursor: pointer; font: inherit; font-size: 0.7rem; font-weight: 800; min-height: 36px; padding: 6px 10px; text-transform: uppercase; }
+        .card-table-corner { background: transparent; border: 0; color: #F2C8DC; cursor: pointer; flex: 0 0 auto; font: inherit; font-size: 0.68rem; font-weight: 800; min-height: 30px; padding: 4px; text-transform: uppercase; white-space: nowrap; }
+        .card-table-corner:hover, .card-table-corner:focus-visible { color: #C3578D; }
+        .card-table-editor button:disabled { cursor: default; opacity: 0.35; }
+        .card-table-editor .card-table-column-heading button, .card-table-editor .card-table-row-actions button { border: 0; color: #C3578D; font-size: 1rem; padding: 0; width: 28px; }
+        .card-table-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .card-table-format { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 360px; }
+        .card-table-format button { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 800; min-height: 44px; text-transform: uppercase; }
+        .card-table-format button.is-active { background: #F7C6E1; border-color: #E668A7; }
+        .card-table-preview { margin-top: 12px; text-transform: uppercase; }
+        .notecard-table-preview { min-width: 0; }
+        .notecard-table-preview table { border-collapse: collapse; table-layout: fixed; width: 100%; }
+        .notecard-table-preview th, .notecard-table-preview td { min-width: 0; overflow: hidden; padding: 5px 8px 5px 0; text-align: left; vertical-align: top; }
+        .notecard-table-preview th { color: #C3578D; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; }
+        .notecard-table-preview td { border-top: 1px solid #F3E4EB; color: #000000; font-size: 0.76rem; line-height: 1.35; }
+        .notecard-table-preview th span, .notecard-table-preview td span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+        .notecard-table-preview tr.is-done td { color: #C3578D; text-decoration: line-through; }
+        body:not(.pwa-build) .card-table-editor { margin-top: 18px; }
+        body:not(.pwa-build) .notecards-workspace.is-focused .card-table-heading { padding-right: 58px; }
+        body:not(.pwa-build) .card-table-scroll { margin-top: 10px; }
+        body:not(.pwa-build) .card-table-editor table { min-width: 480px; }
+        body:not(.pwa-build) .card-table-editor th:not(.card-table-check-heading):not(.card-table-row-actions) { min-width: 170px; }
+        body:not(.pwa-build) .card-table-add { margin-top: 18px; }
+        body.pwa-build .card-table-editor { margin-top: 16px; }
+        body.pwa-build .card-table-scroll { margin-top: 10px; }
+        body.pwa-build .card-table-editor table { min-width: 420px; }
+        body.pwa-build .card-table-editor th:not(.card-table-check-heading):not(.card-table-row-actions) { min-width: 160px; }
+        body.pwa-build .card-table-editor textarea { min-height: 72px; }
+        body.pwa-build .card-table-editor button, body.pwa-build .card-table-add { min-height: 44px; }
+        body.pwa-build .card-table-add { margin-top: 16px; }
+        body.pwa-build .card-table-format { max-width: none; }
+        .companion-new-idea-fields > .card-table-editor,
+        .companion-idea-edit-fields > .card-table-editor { margin-top: 0; }
+        .companion-unplaced-tools.is-creating > .companion-idea-tools,
+        .companion-unplaced-tools.is-creating > .companion-ideas-view-toggle,
+        .companion-unplaced-tools.is-creating > .companion-category-panel,
+        .companion-unplaced-tools.is-creating > .companion-unplaced-list,
+        .companion-unplaced-tools.is-editing > .companion-new-idea-panel,
+        .companion-unplaced-tools.is-editing > .companion-idea-tools,
+        .companion-unplaced-tools.is-editing > .companion-ideas-view-toggle,
+        .companion-unplaced-tools.is-editing > .companion-category-panel { display: none; }
+        .companion-unplaced-tools.is-creating > .companion-new-idea-panel,
+        .companion-unplaced-tools.is-editing > .companion-unplaced-list,
+        .companion-unplaced-tools.is-editing > .idea-focus-back { margin-left: auto; margin-right: auto; max-width: 900px; width: 100%; }
+        .companion-unplaced-tools.is-editing > .companion-unplaced-list { display: block; max-height: none; overflow: visible; padding-right: 0; }
+        .companion-unplaced-tools.is-editing .companion-unplaced-card:not(.is-active) { display: none; }
+        .companion-unplaced-tools.is-editing .companion-unplaced-card.is-active { aspect-ratio: auto; width: 100%; }
+        .companion-unplaced-tools.is-creating .companion-new-idea-panel > summary { display: none; }
+        .companion-unplaced-tools.is-creating .companion-new-idea-fields { margin-top: 0; }
+        .idea-focus-surface, .companion-unplaced-card.is-active { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 6px; }
+        .companion-unplaced-card.is-active { padding: 24px; }
+        .companion-unplaced-card.is-active .companion-unplaced-actions { border: 0; gap: 18px; padding: 0; }
+        .companion-unplaced-tools.is-creating .companion-new-idea-fields { gap: 18px; padding: 24px; }
+        .idea-focus-toolbar { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+        .idea-focus-back { background: transparent; border: 0; color: #000000; cursor: pointer; display: block; font: inherit; font-size: 0.78rem; font-weight: 800; min-height: 36px; padding: 4px 0; text-align: left; text-transform: uppercase; }
+        .idea-focus-toolbar .card-table-format { flex: 0 0 auto; grid-template-columns: repeat(2, 76px); max-width: none; }
+        .idea-focus-toolbar .card-table-format button { min-height: 36px; }
+        .idea-focus-header { align-items: start; display: flex; gap: 12px; margin-bottom: 14px; }
+        .idea-focus-actions { align-items: center; display: flex; flex: 0 0 auto; gap: 8px; margin-left: auto; }
+        .idea-notes > summary { font-size: 1rem; }
+        .idea-notes[open] > summary { margin-bottom: 18px; }
+        .idea-notes { min-width: 0; }
+        .idea-notes .notecard-change-row { margin-bottom: 14px; }
+        .idea-notes .notecard-change-row textarea, .idea-notes .notecard-add-change input { font-size: 1.05rem; line-height: 1.55; }
+        .idea-notes .notecard-change-row.is-done textarea { color: #C3578D !important; text-decoration: line-through; }
+        .idea-focus-surface input.notecard-change-done, .companion-unplaced-card.is-active input.notecard-change-done { appearance: none !important; background: #FFFFFF !important; border: 1.5px solid #C3578D !important; border-radius: 3px !important; box-sizing: border-box !important; cursor: pointer; flex: 0 0 18px; height: 18px !important; margin: 0 !important; min-height: 0 !important; padding: 0 !important; position: relative; transition: none !important; width: 18px !important; }
+        .idea-focus-surface input.notecard-change-done:checked, .companion-unplaced-card.is-active input.notecard-change-done:checked { background: #C3578D !important; }
+        .idea-focus-title { background: transparent; border: 0; border-bottom: 1px solid transparent; border-radius: 0; color: #000000; flex: 1; font: inherit; font-size: 1.22rem; font-weight: 800; line-height: 1.25; min-height: 44px; min-width: 0; padding: 4px 0; text-transform: uppercase; width: 100%; }
+        .idea-focus-title:focus { border-bottom-color: #E668A7; outline: none; }
+        .idea-focus-category { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+        .idea-focus-category > span { color: #C3578D; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; }
+        .idea-focus-category .companion-idea-tags { min-width: 160px; }
+        .idea-focus-category .companion-idea-tags > summary { border-color: #F1BBD6; min-height: 36px; padding: 6px 10px; }
+        .idea-focus-text { background: transparent; border: 0; border-bottom: 1px solid var(--companion-line); border-radius: 0; box-sizing: border-box; color: #000000; display: block; font: inherit; font-size: 1rem; line-height: 1.55; min-height: 150px; padding: 8px 0; resize: vertical; width: 100%; }
+        .idea-focus-text:focus { border-bottom-color: #E668A7; outline: none; }
+        .idea-focus-extra > summary { color: #C3578D; cursor: pointer; font-size: 0.72rem; font-weight: 800; padding: 8px 0; text-transform: uppercase; }
+        .idea-focus-extra textarea { background: #FFFFFF; border: 0; border-bottom: 1px solid var(--companion-line); box-sizing: border-box; display: block; font: inherit; line-height: 1.5; min-height: 70px; padding: 8px 0; width: 100%; }
+        .idea-focus-extra .idea-focus-text { min-height: 100px; }
+        .companion-unplaced-card.is-active .card-table-add { justify-self: start; margin-top: 0; }
+        .companion-unplaced-card.is-active .companion-unplaced-action-row { border-top: 1px solid var(--companion-line); padding-top: 16px; }
+        .idea-table-editor { border-top: 1px solid var(--companion-line); min-width: 0; padding-top: 14px; }
+        .idea-table-heading { align-items: center; color: #C3578D; display: flex; font-size: 0.72rem; font-weight: 800; justify-content: space-between; margin-bottom: 6px; text-transform: uppercase; }
+        .idea-table-row { align-items: start; border-bottom: 1px solid var(--companion-line); display: grid; gap: 10px; grid-template-columns: 22px minmax(0, 1fr) 30px; padding: 10px 0; }
+        .idea-table-check { align-items: center; display: flex; height: 36px; justify-content: center; }
+        .idea-table-check input { accent-color: #C3578D; cursor: pointer; height: 18px; margin: 0; width: 18px; }
+        .idea-table-cells { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); min-width: 0; }
+        .idea-table-cells label { display: grid; gap: 4px; min-width: 0; }
+        .idea-table-cells span { color: #C3578D; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
+        .idea-table-cells textarea { background: transparent; border: 0; border-bottom: 1px solid #F1BBD6; border-radius: 0; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.92rem; line-height: 1.4; min-height: 42px; min-width: 0; padding: 3px 0; resize: vertical; width: 100%; }
+        .idea-table-cells textarea:focus { border-bottom-color: #E668A7; outline: none; }
+        .idea-table-row.is-done textarea { color: #C3578D; text-decoration: line-through; }
+        .idea-table-remove { background: transparent; border: 0; color: #C3578D; cursor: pointer; font: inherit; font-size: 1.1rem; height: 36px; padding: 0; width: 30px; }
+        .idea-table-footer { margin-top: 12px; }
+        .idea-table-column-list > button { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 800; min-height: 36px; padding: 6px 12px; text-transform: uppercase; }
+        .table-footer-controls { align-items: center; display: flex; flex-wrap: wrap; gap: 8px 18px; max-width: none; }
+        .table-footer-controls > button, .table-footer-controls > .idea-table-columns > summary {
+            align-items: center; background: transparent !important; border: 0 !important; border-radius: 0; box-sizing: border-box;
+            color: #C3578D !important; cursor: pointer; display: inline-flex; font: inherit; font-size: 0.72rem; font-weight: 800;
+            height: auto !important; justify-content: flex-start; line-height: 1.2; min-height: 36px !important;
+            padding: 4px 2px !important; text-align: left; text-transform: uppercase; white-space: nowrap;
+            width: auto; -webkit-text-fill-color: #C3578D !important;
+        }
+        .table-footer-controls > button:hover, .table-footer-controls > .idea-table-columns > summary:hover { color: #E668A7 !important; -webkit-text-fill-color: #E668A7 !important; }
+        .table-footer-controls > button:focus-visible, .table-footer-controls > .idea-table-columns > summary:focus-visible { outline: 2px solid #E668A7; outline-offset: 2px; }
+        .table-footer-controls > .idea-table-columns > summary { list-style: none; }
+        .table-footer-controls > .idea-table-columns > summary::-webkit-details-marker { display: none; }
+        .table-footer-controls > .idea-table-columns > summary::before { content: "▸"; margin-right: 5px; }
+        .table-footer-controls > .idea-table-columns[open] > summary::before { content: "▾"; }
+        .table-footer-controls > .idea-table-columns { min-width: 0; }
+        .table-footer-controls .idea-table-column-list { min-width: 180px; }
+        .idea-table-column-list { display: grid; gap: 8px; margin-top: 8px; }
+        .idea-table-column { align-items: center; display: flex; gap: 8px; }
+        .idea-table-column input { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; flex: 1; font: inherit; min-height: 36px; min-width: 0; padding: 6px 10px; }
+        .idea-table-column button { background: transparent; border: 0; color: #C3578D; cursor: pointer; font: inherit; font-size: 1.1rem; min-height: 36px; width: 36px; }
+        .idea-table-column button:disabled { opacity: 0.35; }
+        .idea-table-column-list > button { justify-self: start; }
+        @media (max-width: 760px) {
+            .companion-unplaced-card.is-active { padding: 16px; }
+            .companion-unplaced-tools.is-creating .companion-new-idea-fields { padding: 16px; }
+            .idea-focus-title { font-size: 1.05rem; }
+            .idea-notes .notecard-change-row button, .idea-notes .notecard-add-change button { min-height: 44px; min-width: 44px; }
+            .idea-table-cells { grid-template-columns: minmax(0, 1fr); }
+            .idea-table-row { gap: 8px; }
+            .idea-table-remove { min-height: 44px; }
+        }
+        @media (max-width: 600px) {
+            .table-footer-controls { gap: 4px 8px; }
+            .table-footer-controls > .idea-table-columns[open] { flex-basis: 100%; order: 3; }
+            .table-footer-controls > .idea-table-columns[open] .idea-table-column-list { max-width: 320px; }
+            body.pwa-build .table-footer-controls > button, body.pwa-build .table-footer-controls > .idea-table-columns > summary { font-size: 0.66rem !important; min-height: 44px !important; }
+        }
+        body.pwa-build .companion-unplaced-tools.is-creating .companion-new-idea-actions { display: block; }
+        body.pwa-build .companion-unplaced-tools.is-creating .companion-new-idea-actions .companion-add-button { min-height: 44px; width: 100%; }
+        body.pwa-build .table-footer-controls > button, body.pwa-build .table-footer-controls > .idea-table-columns > summary { min-height: 44px !important; }
+        body.pwa-build .idea-focus-toolbar .card-table-format { grid-template-columns: repeat(2, 70px); }
+        body.pwa-build .idea-focus-back,
+        body.pwa-build .idea-focus-toolbar .card-table-format button,
+        body.pwa-build .idea-focus-category .companion-idea-tags > summary,
+        body.pwa-build .idea-table-column button,
+        body.pwa-build .idea-table-column-list > button,
+        body.pwa-build .idea-focus-header .companion-archive-button { min-height: 44px; }
+        body.pwa-build .card-table-corner { color: #F2C8DC; font-size: 0.68rem; min-height: 44px; -webkit-text-fill-color: #F2C8DC; }
+        body.pwa-build .card-table-corner:hover, body.pwa-build .card-table-corner:focus-visible { color: #C3578D; -webkit-text-fill-color: #C3578D; }
+        .companion-notebook .companion-unplaced-tools input.idea-focus-title {
+            background: #FFFFFF !important;
+            border: 0 !important;
+            border-bottom: 1px solid transparent !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            padding: 4px 0 !important;
+        }
+        .companion-notebook .companion-unplaced-tools input.idea-focus-title:focus { border-bottom-color: #E668A7 !important; }
+        .companion-notebook .companion-unplaced-tools textarea.idea-focus-text,
+        .companion-notebook .companion-unplaced-tools .idea-table-cells textarea,
+        .companion-notebook .companion-unplaced-tools .idea-focus-extra textarea {
+            background: #FFFFFF !important;
+            border: 0 !important;
+            border-bottom: 1px solid #F1BBD6 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            padding: 6px 0 !important;
+        }
+        .companion-notebook .companion-unplaced-tools textarea.idea-focus-text:focus,
+        .companion-notebook .companion-unplaced-tools .idea-table-cells textarea:focus { border-bottom-color: #E668A7 !important; }
+        .companion-notebook .companion-unplaced-tools .idea-table-column input {
+            border: 1px solid #F1BBD6 !important;
+            border-radius: 4px !important;
+            box-shadow: none !important;
+            padding: 6px 10px !important;
+        }
+        .companion-notebook .companion-unplaced-tools .idea-focus-back { background: transparent !important; color: #000000 !important; }
+        .companion-notebook .companion-unplaced-tools .idea-focus-header .companion-archive-button { color: #F2C8DC !important; }
+
+        .notecards-progress-toggle { color: #F2C8DC; max-width: min(280px, calc(100vw - 60px)); text-align: left; width: 280px; }
+        .notecards-progress-toggle > summary { color: #F2C8DC; cursor: pointer; font-size: 0.76rem; font-weight: 800; list-style-position: inside; padding: 3px 0; text-align: right; text-transform: uppercase; }
+        .notecards-progress-toggle[open] > summary { margin-bottom: 7px; }
+        .notecards-script-progress { color: #C77C9F; display: grid; font-size: 0.76rem; font-weight: 800; gap: 4px; text-align: right; }
+        .notecards-script-progress .companion-progress-meter { background: #F8ECF2; height: 6px; margin: 0; }
+        .notecards-script-progress .companion-progress-meter > span { background: #DCA2BF; }
+        .companion-progress-mini { min-width: 0; text-align: left; }
+        .companion-progress-select-wrap { position: relative; }
+        .companion-progress-select-wrap select { appearance: none; background: #FFFFFF; border: 1px solid #F1BBD6 !important; border-radius: 4px !important; box-shadow: none !important; color: #000000; cursor: pointer; font: inherit; font-size: 0.78rem; min-height: 40px; padding: 7px 34px 7px 10px; text-overflow: ellipsis; width: 100%; }
+        .companion-progress-select-wrap span { color: #C3578D; font-size: 1.1rem; pointer-events: none; position: absolute; right: 12px; top: 50%; transform: translateY(-58%); }
+        .companion-progress-mini table { border-collapse: collapse; margin-top: 10px; table-layout: fixed; width: 100%; }
+        .companion-progress-mini th, .companion-progress-mini td { border-bottom: 1px solid #F1DCE5; padding: 6px 3px; text-align: left; vertical-align: top; width: 33.333%; }
+        .companion-progress-mini th { color: #C3578D; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; }
+        .companion-progress-mini td { color: #000000; font-size: 0.76rem; overflow-wrap: anywhere; }
+        .notecard-progress-side { margin-bottom: 18px; max-width: 300px; min-width: 0; }
+        .notecard-progress-side h3 { color: #F2C8DC; font-size: 0.76rem; font-weight: 800; margin: 0 0 10px; text-transform: uppercase; }
+        @media (min-width: 1100px) {
+            body:not(.pwa-build) .notecards-workspace.is-focused { column-gap: 24px; display: grid; grid-template-columns: 220px minmax(0, 1fr); max-width: 1220px; }
+            body:not(.pwa-build) .notecards-workspace.is-focused .notecards-toolbar { grid-column: 2; grid-row: 1; }
+            body:not(.pwa-build) .notecards-workspace.is-focused .notecard-progress-side { grid-column: 1; grid-row: 2; margin-top: 4px; }
+            body:not(.pwa-build) .notecards-workspace.is-focused .notecards-grid,
+            body:not(.pwa-build) .notecards-workspace.is-focused .notecard-empty { grid-column: 2; grid-row: 2; }
+        }
+
+        .companion-progress-workspace { min-width: 0; padding: 24px 4px 8px; }
+        .companion-progress-head { align-items: baseline; display: flex; justify-content: space-between; margin-bottom: 14px; }
+        .companion-progress-head h2 { color: #E668A7; font-size: 1rem; font-weight: 900; margin: 0; text-transform: uppercase; }
+        .companion-progress-head span { color: #C3578D; font-size: 0.76rem; font-weight: 700; }
+        .companion-script-total { border-bottom: 1px solid var(--companion-line); margin-bottom: 20px; padding-bottom: 18px; }
+        .companion-script-progress-label { color: #000000; display: block; font-size: 1rem; font-weight: 800; line-height: 1.4; }
+        .companion-script-total > .companion-progress-meter { background: #F8ECF2; height: 7px; margin-top: 9px; }
+        .companion-script-total > .companion-progress-meter > span { background: #DCA2BF; }
+        .companion-script-page-settings { margin-top: 10px; }
+        .companion-script-page-settings > summary { color: #C3578D; cursor: pointer; font-size: 0.72rem; font-weight: 800; list-style-position: inside; }
+        .companion-script-page-fields { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 12px; max-width: 350px; }
+        .companion-script-page-fields label { color: #C3578D; display: grid; font-size: 0.7rem; font-weight: 800; gap: 6px; min-width: 0; text-transform: uppercase; }
+        .companion-script-goal-field { color: #C3578D; display: grid; font-size: 0.7rem; font-weight: 800; gap: 6px; min-width: 0; text-transform: uppercase; }
+        .companion-script-goal-field output { align-items: center; color: #000000; display: flex; font-size: 0.85rem; min-height: 40px; padding: 7px 0; }
+        .companion-script-page-fields input { background: #FFFFFF; border: 1px solid #F1BBD6; border-radius: 4px; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.85rem; min-height: 40px; min-width: 0; padding: 7px 9px; width: 100%; }
+        .companion-progress-tools { margin-bottom: 16px; }
+        .companion-progress-add { display: flex; gap: 8px; margin-top: 18px; max-width: 540px; }
+        .companion-progress-add input, .companion-progress-filters select,
+        .companion-progress-scene-filter > summary { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.8rem; min-height: 42px; padding: 8px 10px; }
+        .companion-progress-add input { flex: 1; min-width: 0; }
+        .companion-progress-add button { background: #F7C6E1; border: 1px solid #E668A7; border-radius: 4px; color: #000000; cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 800; min-height: 42px; padding: 8px 10px; text-transform: uppercase; white-space: nowrap; -webkit-text-fill-color: #000000; }
+        .companion-progress-add button:disabled { cursor: default; opacity: 0.45; }
+        .companion-progress-filters { align-items: stretch; display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(155px, 220px)); justify-content: end; }
+        .companion-progress-filters select { cursor: pointer; height: 44px; padding-right: 38px; width: 100%; }
+        .companion-progress-scene-filter { min-width: 0; position: relative; }
+        .companion-progress-scene-filter > summary { align-items: center; cursor: pointer; display: flex; height: 44px; list-style: none; overflow: hidden; padding-right: 38px; text-overflow: ellipsis; white-space: nowrap; }
+        .companion-progress-scene-filter > summary::-webkit-details-marker { display: none; }
+        .companion-progress-scene-filter > summary::after { color: #C3578D; content: "⌄"; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
+        .companion-progress-filter-options { background: #FFFFFF; border: 1px solid var(--companion-line); box-shadow: 0 8px 18px rgba(0,0,0,0.08); box-sizing: border-box; display: grid; left: 0; max-height: 260px; min-width: 100%; overflow-y: auto; padding: 5px; position: absolute; top: calc(100% + 4px); width: max-content; z-index: 8; }
+        .companion-progress-filter-options label { align-items: center; cursor: pointer; display: flex; gap: 8px; font-size: 0.78rem; min-height: 36px; overflow-wrap: anywhere; padding: 6px 8px; }
+        .companion-progress-filter-options input { accent-color: #C3578D; flex: 0 0 16px; height: 16px; margin: 0; min-height: 0; width: 16px; }
+        .companion-progress-table-wrap { max-width: 100%; overflow-x: auto; }
+        .companion-progress-table { border-collapse: collapse; table-layout: fixed; width: 100%; }
+        .companion-progress-table th, .companion-progress-table td { border-bottom: 1px solid var(--companion-line); padding: 10px 14px; text-align: left; vertical-align: middle; }
+        .companion-progress-table th { color: #C3578D; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+        .companion-progress-table th:first-child { width: 50%; }
+        .companion-progress-table th:nth-child(2), .companion-progress-table th:nth-child(3) { width: 14%; }
+        .companion-progress-table th:nth-child(4) { width: 22%; }
+        .companion-progress-table tfoot th, .companion-progress-table tfoot td { border-bottom: 0; border-top: 2px solid #F1BBD6; font-weight: 800; }
+        .companion-progress-table tfoot td:nth-child(3) { font-size: 0.96rem; white-space: nowrap; }
+        .companion-progress-table input[type="number"] { appearance: textfield; background: #FFFFFF; border: 1px solid #E1D5DB; border-radius: 4px; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.84rem; min-height: 40px; min-width: 0; padding: 6px 4px; width: 100%; }
+        .companion-progress-table input[type="number"]::-webkit-inner-spin-button,
+        .companion-progress-table input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .companion-progress-table tr.is-drop-target { background: #FFF4FA; }
+        .companion-progress-scene-cell { align-items: center; display: flex; gap: 8px; min-width: 0; }
+        .companion-progress-drag { align-items: center; color: #E5A5C4; cursor: grab; display: inline-flex; flex: 0 0 26px; font-size: 1.05rem; height: 34px; justify-content: center; user-select: none; }
+        .companion-progress-drag:active { cursor: grabbing; }
+        .companion-progress-drag:focus-visible { outline: 2px solid #E5A5C4; outline-offset: 2px; }
+        .companion-progress-mobile-order { display: none; }
+        .companion-progress-title-input { background: #FFFFFF; border: 0; border-bottom: 1px solid #F1BBD6; color: #000000; flex: 1; font: inherit; font-size: 0.82rem; font-weight: 800; min-height: 38px; min-width: 0; padding: 5px 0; text-transform: uppercase; }
+        .companion-progress-archive { background: transparent; border: 0; color: #F2C8DC; cursor: pointer; flex: 0 0 32px; height: 32px; padding: 6px; -webkit-text-fill-color: #F2C8DC; }
+        .companion-progress-difference { color: #000000; font-size: 0.82rem; font-weight: 800; white-space: nowrap; }
+        .companion-progress-meter { background: #F5E7ED; display: block; height: 5px; margin-top: 6px; overflow: hidden; width: 100%; }
+        .companion-progress-meter > span { background: #C3578D; display: block; height: 100%; }
+        .companion-progress-empty { color: #777777; font-size: 0.85rem; padding: 18px 0; }
+        .companion-progress-workspace .companion-script-page-fields input,
+        .companion-progress-workspace .companion-progress-add input,
+        .companion-progress-workspace .companion-progress-filters select {
+            border: 1px solid #F1BBD6 !important;
+            border-radius: 4px !important;
+            box-shadow: none !important;
+        }
+        .companion-progress-workspace .companion-progress-table input[type="number"],
+        .companion-progress-workspace .companion-progress-title-input {
+            background: transparent !important;
+            border: 0 !important;
+            border-bottom: 1px solid #F1BBD6 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+        .companion-progress-workspace .companion-progress-table input[type="number"] {
+            padding: 6px 0;
+        }
+        .companion-progress-workspace input:focus,
+        .companion-progress-workspace select:focus {
+            border-color: #C3578D !important;
+            box-shadow: 0 0 0 2px #F9E0ED !important;
+            outline: none;
+        }
+        .companion-progress-workspace .companion-progress-table input[type="number"]:focus,
+        .companion-progress-workspace .companion-progress-title-input:focus {
+            border-bottom-color: #C3578D !important;
+            box-shadow: none !important;
+            outline: 2px solid #F9E0ED;
+            outline-offset: 2px;
+        }
+        .companion-progress-workspace .companion-progress-table input[type="number"]:focus {
+            border-bottom-width: 2px !important;
+            outline: none;
+        }
+        .companion-progress-workspace .companion-progress-change-filter select {
+            appearance: none;
+            padding-right: 38px;
+        }
+        .companion-progress-workspace .companion-progress-change-filter span { right: 14px; }
+        .companion-progress-workspace .companion-progress-scene-filter > summary {
+            border-color: #F1BBD6;
+            padding-right: 38px;
+        }
+        .companion-progress-workspace .companion-progress-scene-filter > summary::after { right: 14px; }
+        .companion-progress-workspace .companion-progress-filter-options { border-color: #F1BBD6; }
+        .companion-progress-workspace .companion-progress-filter-options input[type="checkbox"] {
+            border: 1px solid #F1BBD6 !important;
+            border-radius: 3px !important;
+            box-shadow: none !important;
+        }
+        @media (max-width: 760px) {
+            .companion-script-page-fields input { min-height: 44px; }
+            .companion-progress-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .companion-progress-filter-options { max-width: calc(100vw - 60px); width: 100%; }
+            .companion-progress-add button, .companion-progress-filters select,
+            .companion-progress-scene-filter > summary, .companion-progress-select-wrap select { min-height: 44px; }
+            .companion-progress-table-wrap { overflow: visible; }
+            .companion-progress-table, .companion-progress-table tbody, .companion-progress-table tfoot { display: block; width: 100%; }
+            .companion-progress-table thead { display: none; }
+            .companion-progress-table tr { border-bottom: 1px solid var(--companion-line); display: grid; gap: 8px; grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.2fr); padding: 12px 0; }
+            .companion-progress-table td { border: 0; display: block; min-width: 0; padding: 0; width: 100%; }
+            .companion-progress-table td:first-child { grid-column: 1 / -1; }
+            .companion-progress-table td[data-label]:not(:first-child)::before { color: #C3578D; content: attr(data-label); display: block; font-size: 0.66rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
+            .companion-progress-table tfoot tr { align-items: center; border-bottom: 0; border-top: 2px solid #F1BBD6; grid-template-columns: minmax(0, 1fr) auto; }
+            .companion-progress-table tfoot th, .companion-progress-table tfoot td { border-top: 0; }
+            .companion-progress-table tfoot th:first-child { grid-column: 1; white-space: nowrap; width: auto; }
+            .companion-progress-table tfoot td:nth-child(2), .companion-progress-table tfoot td:nth-child(4) { display: none; }
+            .companion-progress-table tfoot td:nth-child(3) { grid-column: 2; text-align: right; }
+            .companion-progress-table input[type="number"] { min-height: 44px; }
+            .companion-progress-title-input { font-size: 0.84rem; }
+            .companion-progress-drag { display: none; }
+            .companion-progress-mobile-order { align-items: center; display: inline-flex; flex: 0 0 auto; }
+            .companion-progress-mobile-order button { background: transparent; border: 0; color: #D990B4; cursor: pointer; font-size: 1.1rem; height: 36px; padding: 0; width: 28px; -webkit-text-fill-color: #D990B4; }
+            .companion-progress-mobile-order button:disabled { cursor: default; opacity: 0.35; }
+            .notecard-progress-side { max-width: 100%; }
+        }
+
     </style>
     <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
     <link rel="apple-touch-icon" sizes="192x192" href="icon.png">
@@ -5428,7 +5810,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.57";
+const APP_VERSION = "1.2.75";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -5532,8 +5914,7 @@ function getTotalPagesDone(source) {
   return getStoredNumber(source, '_pageCurrent', getSequencePagesDone(source));
 }
 function getTotalPageGoal(source) {
-  const fallback = getActiveSequenceOrder(source).reduce((sum, seq) => sum + getSequencePageTarget(source, seq), 0) || 117;
-  return getStoredNumber(source, '_pageGoal', fallback);
+  return companionTotalPageGoal(source);
 }
 
 // ─── SCRIPT COMPANION PRELOAD (7/16/26) ───────────────────────────────
@@ -11444,14 +11825,27 @@ function SettingsTab({
   const archivedScenesRef = useRef(null);
   const archivedTasksRef = useRef(null);
   const archivedNotecardsRef = useRef(null);
+  const archivedTableRowsRef = useRef(null);
+  const archivedTableColumnsRef = useRef(null);
+  const archivedProgressScenesRef = useRef(null);
   React.useLayoutEffect(() => {
     if (archivedScenesRef.current) archivedScenesRef.current.open = false;
     if (archivedTasksRef.current) archivedTasksRef.current.open = false;
     if (archivedNotecardsRef.current) archivedNotecardsRef.current.open = false;
+    if (archivedTableRowsRef.current) archivedTableRowsRef.current.open = false;
+    if (archivedTableColumnsRef.current) archivedTableColumnsRef.current.open = false;
+    if (archivedProgressScenesRef.current) archivedProgressScenesRef.current.open = false;
   }, []);
   const archiveBuckets = collectArchiveBuckets(scenes);
   const archivedSceneCards = archiveBuckets.archivedCards.filter(card => card.kind === "SCENE" || card.kind === "TWEAK");
-  const archivedTaskRows = archiveBuckets.archivedTaskRows;
+  const archivedTaskRows = archiveBuckets.archivedTaskRows.filter(({ change }) => !change.movedToTable);
+  const archivedTableRows = safeArray(scenes).flatMap(card => safeArray(card.cardTable && card.cardTable.rows)
+    .filter(row => row.archived).map(row => ({ card, row })));
+  const archivedTableColumns = safeArray(scenes).flatMap(card => safeArray(card.cardTable && card.cardTable.columns)
+    .filter(column => column.archived).map(column => ({ card, column })));
+  const archivedProgressScenes = Object.entries(sequences || {}).filter(([key, value]) =>
+    key.startsWith(COMPANION_PROGRESS_EXTRA_PREFIX) && value && typeof value === "object" && value.archived)
+    .map(([key, value]) => ({ id:key.slice(COMPANION_PROGRESS_EXTRA_PREFIX.length), title:String(value.title || "Untitled") }));
   const settingsSceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
   const archivedNotecards = safeArray(notecards).filter(card => {
     const scene = settingsSceneById.get(asId(card.sourceSceneId));
@@ -11476,6 +11870,23 @@ function SettingsTab({
     if (sourceId) setScenes(previous => safeArray(previous).map(scene => asId(scene.id) === sourceId ? touchRecord(normalizeCard(scene, 0), restoreFields()) : scene));
     setNotecards(previous => safeArray(previous).map(card => asId(card.id) === asId(id) ? touchRecord(card, restoreFields()) : card));
     if (showToast) showToast("Notecard restored");
+  };
+  const restoreArchivedTablePart = (cardId, partId, field) => {
+    setScenes(previous => safeArray(previous).map(card => {
+      if (asId(card.id) !== asId(cardId) || !card.cardTable) return card;
+      return touchRecord(normalizeCard(card, 0), { cardTable:{
+        ...card.cardTable,
+        [field]:safeArray(card.cardTable[field]).map(item => asId(item.id) === asId(partId)
+          ? touchRecord(item, restoreFields()) : item)
+      } });
+    }));
+    if (showToast) showToast(field === "rows" ? "Table row restored" : "Table column restored");
+  };
+  const restoreArchivedProgressScene = id => {
+    setSequences(previous => ({ ...(previous || {}), [COMPANION_PROGRESS_EXTRA_PREFIX + id]:{
+      ...previous[COMPANION_PROGRESS_EXTRA_PREFIX + id], archived:false
+    } }));
+    if (showToast) showToast("Progress scene restored");
   };
 
   useEffect(() => {
@@ -11637,8 +12048,8 @@ function SettingsTab({
       </div>
       <div className="settings-block">
         <div className="settings-block-title">Archived Companion Items</div>
-        <div className="settings-muted-copy">Archived scenes, rewrite tasks, and notecards live here.</div>
-        {!archivedSceneCards.length && !archivedTaskRows.length && !archivedNotecards.length && <div style={{fontSize:"0.9em",color:"var(--text-light)"}}>Nothing archived yet.</div>}
+        <div className="settings-muted-copy">Archived scenes, tasks, notecards, progress scenes, and table content live here.</div>
+        {!archivedSceneCards.length && !archivedTaskRows.length && !archivedNotecards.length && !archivedTableRows.length && !archivedTableColumns.length && !archivedProgressScenes.length && <div style={{fontSize:"0.9em",color:"var(--text-light)"}}>Nothing archived yet.</div>}
         {archivedSceneCards.length > 0 && (
           <details ref={archivedScenesRef} style={{marginBottom:"12px"}}>
             <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Archived scenes ({archivedSceneCards.length})</summary>
@@ -11668,6 +12079,17 @@ function SettingsTab({
             </div>
           </details>
         )}
+        {archivedProgressScenes.length > 0 && (
+          <details ref={archivedProgressScenesRef} style={{marginBottom:"12px"}}>
+            <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Archived progress scenes ({archivedProgressScenes.length})</summary>
+            <div className="settings-archive-list">
+              {archivedProgressScenes.map(scene => <div key={scene.id} className="settings-archive-row">
+                <div className="settings-archive-title">{scene.title}</div>
+                <button className="btn btn-secondary" onClick={() => restoreArchivedProgressScene(scene.id)}>Restore</button>
+              </div>)}
+            </div>
+          </details>
+        )}
         {archivedNotecards.length > 0 && (
           <details ref={archivedNotecardsRef} style={{marginBottom:"12px"}}>
             <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Archived notecards ({archivedNotecards.length})</summary>
@@ -11677,6 +12099,26 @@ function SettingsTab({
                 <button className="btn btn-secondary" onClick={() => restoreArchivedNotecard(card.id)}>Restore</button>
               </div>)}
             </div>
+          </details>
+        )}
+        {archivedTableRows.length > 0 && (
+          <details ref={archivedTableRowsRef} style={{marginBottom:"12px"}}>
+            <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Removed table rows ({archivedTableRows.length})</summary>
+            <div className="settings-archive-list">{archivedTableRows.map(({ card, row }) => <div key={card.id + "-" + row.id} className="settings-archive-row is-task">
+              <div><div className="settings-archive-kicker">{card.title || "Untitled"}</div>
+                <div className="settings-archive-copy">{Object.values(row.cells || {}).map(value => String(value || "").trim()).filter(Boolean).join(" · ") || "Empty row"}</div></div>
+              <button className="btn btn-secondary" onClick={() => restoreArchivedTablePart(card.id, row.id, "rows")}>Restore</button>
+            </div>)}</div>
+          </details>
+        )}
+        {archivedTableColumns.length > 0 && (
+          <details ref={archivedTableColumnsRef} style={{marginBottom:"12px"}}>
+            <summary style={{cursor:"pointer",fontWeight:800,color:"var(--neon-pink)",fontSize:"0.82em",letterSpacing:"0.06em",textTransform:"uppercase"}}>Removed table columns ({archivedTableColumns.length})</summary>
+            <div className="settings-archive-list">{archivedTableColumns.map(({ card, column }) => <div key={card.id + "-" + column.id} className="settings-archive-row is-task">
+              <div><div className="settings-archive-kicker">{card.title || "Untitled"}</div>
+                <div className="settings-archive-copy">{column.label || "Untitled column"}</div></div>
+              <button className="btn btn-secondary" onClick={() => restoreArchivedTablePart(card.id, column.id, "columns")}>Restore</button>
+            </div>)}</div>
           </details>
         )}
       </div>
@@ -12299,13 +12741,160 @@ function companionCardSearchText(card) {
 }
 
 function companionIdeaSearchText(card) {
+  const table = card && card.cardTable;
   return [
     card && card.title,
     card && card.description,
     card && card.openQuestions,
     companionSnippet(card),
-    ...safeArray(card && card.changes).filter(change => !change.archived).map(change => change.text)
+    ...safeArray(card && card.changes).filter(change => !change.archived).map(change => change.text),
+    ...safeArray(table && table.columns).map(column => column.label),
+    ...safeArray(table && table.rows).flatMap(row => Object.values(row && row.cells || {}))
   ].join(" ");
+}
+
+function newCardTableId(prefix) {
+  return prefix + "-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
+}
+
+function newCardTable(initialText = "") {
+  const first = newCardTableId("column");
+  const second = newCardTableId("column");
+  return {
+    columns:[{ id:first, label:"Item" }, { id:second, label:"Details" }],
+    rows:[{ id:newCardTableId("row"), cells:{ [first]:initialText, [second]:"" }, done:false }]
+  };
+}
+
+function cardNotesForTable(card, idea = false) {
+  if (idea) return ideaNoteRows(card).filter(note => String(note.text || "").trim());
+  const changes = safeArray(card && card.changes).filter(change => !change.archived && String(change.text || "").trim());
+  const extra = String(card && card.openQuestions || "").trim();
+  return extra ? [...changes, { text:extra, done:false }] : changes;
+}
+
+function addNotesToCardTable(table, notes) {
+  const base = table || newCardTable();
+  const firstColumn = safeArray(base.columns).find(column => !column.archived)?.id;
+  if (!firstColumn) return base;
+  const converted = safeArray(notes).filter(note => String(note.text || "").trim()).map(note => ({
+    id:newCardTableId("row"), cells:{ [firstColumn]:String(note.text).trim() }, done:!!note.done
+  }));
+  if (!converted.length) return base;
+  const rows = safeArray(base.rows);
+  const isEmptyStarter = rows.length === 1 && !rows[0].archived && !rows[0].done &&
+    !Object.values(rows[0].cells || {}).some(value => String(value || "").trim());
+  return { ...base, rows:[...(isEmptyStarter ? [] : rows), ...converted] };
+}
+
+function tableOnlyCardPatch(card, idea = false, pendingText = "") {
+  const notes = cardNotesForTable(card, idea);
+  const pending = String(pendingText || "").trim();
+  if (pending) notes.push({ text:pending, done:false });
+  if (card.cardTable && !notes.length) return null;
+  return {
+    cardTable:addNotesToCardTable(card.cardTable, notes),
+    changes:safeArray(card.changes).map(change => !change.archived && (idea ? !change.maybe : true)
+      ? touchRecord(change, archiveFields({ movedToTable:true })) : change),
+    ...(idea ? { description:"" } : {}), openQuestions:"", rippleEffects:"", storyThreads:""
+  };
+}
+
+function CardTableEditor({ table, onChange, simple = false }) {
+  const columns = safeArray(table && table.columns);
+  const rows = safeArray(table && table.rows);
+  const visibleColumns = columns.filter(column => !column.archived);
+  const visibleRows = rows.filter(row => !row.archived);
+  const update = change => onChange(current => {
+    const base = current && typeof current === "object" ? current : newCardTable();
+    return change(base);
+  });
+  if (simple) return <section className="idea-table-editor" aria-label="Card table" onClick={event => event.stopPropagation()}>
+    <div className="idea-table-heading"><span>Table</span><span>{visibleRows.filter(row => row.done).length}/{visibleRows.length} checked</span></div>
+    {visibleRows.map((row, index) => <div className={"idea-table-row" + (row.done ? " is-done" : "")} key={row.id}>
+      <label className="idea-table-check" title="Mark row complete">
+        <input type="checkbox" checked={!!row.done} onChange={event => update(current => ({ ...current, rows:safeArray(current.rows).map(item => item.id === row.id ? { ...item, done:event.target.checked } : item) }))}
+          aria-label={"Check table row " + (index + 1)} />
+      </label>
+      <div className="idea-table-cells">{visibleColumns.map((column, columnIndex) => <label key={column.id}>
+        <span>{column.label || "Column " + (columnIndex + 1)}</span>
+        <textarea rows={2} value={String(row.cells && row.cells[column.id] || "")}
+          onChange={event => update(current => ({ ...current, rows:safeArray(current.rows).map(item => item.id === row.id ? { ...item, cells:{ ...item.cells, [column.id]:event.target.value } } : item) }))}
+          aria-label={"Row " + (index + 1) + " " + (column.label || "column")} />
+      </label>)}</div>
+      <button type="button" className="idea-table-remove" onClick={() => update(current => ({ ...current, rows:safeArray(current.rows).map(item => item.id === row.id ? { ...item, ...archiveFields() } : item) }))}
+        title="Remove row" aria-label={"Remove table row " + (index + 1)}>−</button>
+    </div>)}
+    <div className="idea-table-footer table-footer-controls">
+      <button type="button" onClick={() => update(current => ({ ...current, rows:[...safeArray(current.rows), { id:newCardTableId("row"), cells:{}, done:false }] }))}>+ Row</button>
+      <details className="idea-table-columns">
+        <summary>Columns</summary>
+        <div className="idea-table-column-list">
+          {visibleColumns.map((column, index) => <div className="idea-table-column" key={column.id}>
+            <input value={column.label || ""} onChange={event => update(current => ({ ...current, columns:safeArray(current.columns).map(item => item.id === column.id ? { ...item, label:event.target.value } : item) }))}
+              aria-label={"Column " + (index + 1) + " label"} placeholder="Column name" />
+            <button type="button" disabled={visibleColumns.length < 2} onClick={() => update(current => ({ ...current, columns:safeArray(current.columns).map(item => item.id === column.id ? { ...item, ...archiveFields() } : item) }))}
+              title="Remove column" aria-label={"Remove column " + (column.label || index + 1)}>−</button>
+          </div>)}
+        </div>
+      </details>
+      <button type="button" onClick={() => update(current => ({ ...current, columns:[...safeArray(current.columns), { id:newCardTableId("column"), label:"Column " + (safeArray(current.columns).length + 1) }] }))}>+ Column</button>
+    </div>
+  </section>;
+  return <section className="card-table-editor" aria-label="Card table" onClick={event => event.stopPropagation()}>
+    <div className="card-table-heading"><h3>Table</h3><span>{visibleRows.filter(row => row.done).length}/{visibleRows.length} checked</span></div>
+    <div className="card-table-scroll"><table style={{ minWidth:(visibleColumns.length * 175 + 84) + "px" }}>
+      <thead><tr><th scope="col" className="card-table-check-heading">Done</th>
+        {visibleColumns.map((column, index) => <th scope="col" key={column.id}><div className="card-table-column-heading">
+          <input value={column.label || ""} onChange={event => update(current => ({ ...current, columns:safeArray(current.columns).map(item => item.id === column.id ? { ...item, label:event.target.value } : item) }))}
+            aria-label={"Column " + (index + 1) + " label"} placeholder="Column name" />
+          <button type="button" disabled={visibleColumns.length < 2} onClick={() => update(current => ({ ...current, columns:safeArray(current.columns).map(item => item.id === column.id ? { ...item, ...archiveFields() } : item) }))}
+            title="Remove column" aria-label={"Remove column " + (column.label || index + 1)}>−</button>
+        </div></th>)}<th scope="col" className="card-table-row-actions" aria-label="Row actions"></th></tr></thead>
+      <tbody>{visibleRows.map((row, index) => <tr key={row.id} className={row.done ? "is-done" : ""}>
+        <td className="card-table-check-cell"><input type="checkbox" checked={!!row.done} onChange={event => update(current => ({ ...current, rows:safeArray(current.rows).map(item => item.id === row.id ? { ...item, done:event.target.checked } : item) }))}
+          aria-label={"Check table row " + (index + 1)} /></td>
+        {visibleColumns.map(column => <td key={column.id}><textarea rows={2} value={String(row.cells && row.cells[column.id] || "")}
+          onChange={event => update(current => ({ ...current, rows:safeArray(current.rows).map(item => item.id === row.id ? { ...item, cells:{ ...item.cells, [column.id]:event.target.value } } : item) }))}
+          aria-label={"Row " + (index + 1) + " " + (column.label || "column")} /></td>)}
+        <td className="card-table-row-actions"><button type="button" onClick={() => update(current => ({ ...current, rows:safeArray(current.rows).map(item => item.id === row.id ? { ...item, ...archiveFields() } : item) }))}
+          title="Remove row" aria-label={"Remove table row " + (index + 1)}>−</button></td>
+      </tr>)}</tbody>
+    </table></div>
+    <div className="card-table-actions table-footer-controls">
+      <button type="button" onClick={() => update(current => ({ ...current, rows:[...safeArray(current.rows), { id:newCardTableId("row"), cells:{}, done:false }] }))}>+ Row</button>
+      <details className="idea-table-columns">
+        <summary>Columns</summary>
+        <div className="idea-table-column-list">
+          {visibleColumns.map((column, index) => <div className="idea-table-column" key={column.id}>
+            <input value={column.label || ""} onChange={event => update(current => ({ ...current, columns:safeArray(current.columns).map(item => item.id === column.id ? { ...item, label:event.target.value } : item) }))}
+              aria-label={"Column " + (index + 1) + " label"} placeholder="Column name" />
+            <button type="button" disabled={visibleColumns.length < 2} onClick={() => update(current => ({ ...current, columns:safeArray(current.columns).map(item => item.id === column.id ? { ...item, ...archiveFields() } : item) }))}
+              title="Remove column" aria-label={"Remove column " + (column.label || index + 1)}>−</button>
+          </div>)}
+        </div>
+      </details>
+      <button type="button" onClick={() => update(current => ({ ...current, columns:[...safeArray(current.columns), { id:newCardTableId("column"), label:"Column " + (safeArray(current.columns).length + 1) }] }))}>+ Column</button>
+    </div>
+  </section>;
+}
+
+function NotecardTablePreview({ table }) {
+  const visibleColumns = safeArray(table && table.columns).filter(column => column && !column.archived);
+  const visibleRows = safeArray(table && table.rows).filter(row => row && !row.archived);
+  const filledColumns = visibleColumns.filter(column => visibleRows.some(row => String(row.cells && row.cells[column.id] || "").trim()));
+  const selectedIds = new Set([...filledColumns, ...visibleColumns.filter(column => !filledColumns.includes(column))].slice(0, 3).map(column => column.id));
+  const columns = visibleColumns.filter(column => selectedIds.has(column.id));
+  if (!columns.length) return null;
+  const rows = visibleRows.filter(row => columns.some(column => String(row.cells && row.cells[column.id] || "").trim())).slice(0, 2);
+  return <div className="notecard-table-preview">
+    <table aria-label="Table preview">
+      <thead><tr>{columns.map((column, index) => <th scope="col" key={column.id}><span>{column.label || "Column " + (index + 1)}</span></th>)}</tr></thead>
+      <tbody>{rows.map(row => <tr key={row.id} className={row.done ? "is-done" : ""}>
+        {columns.map(column => <td key={column.id}><span>{String(row.cells && row.cells[column.id] || "")}</span></td>)}
+      </tr>)}</tbody>
+    </table>
+  </div>;
 }
 
 function companionIdeaTypeIds(card, ideaTypes) {
@@ -12395,6 +12984,35 @@ function companionIdeaDetailsText(card) {
   return chunks.join("\n\n");
 }
 
+function ideaLegacyNoteLines(card) {
+  const existing = new Set(safeArray(card && card.changes).filter(change => !change.archived)
+    .map(change => normalizeComparableText(change.text)));
+  const seenFields = new Set(existing);
+  return [card && card.description, card && card.openQuestions, card && card.rippleEffects, card && card.storyThreads]
+    .flatMap(value => {
+      const text = String(value || "").trim();
+      const key = normalizeComparableText(text);
+      if (!key || seenFields.has(key)) return [];
+      seenFields.add(key);
+      return text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    });
+}
+
+function ideaNoteRows(card) {
+  const rows = safeArray(card && card.changes).filter(change => !change.archived && !change.maybe);
+  return [...rows, ...ideaLegacyNoteLines(card).map((text, index) => ({ id:"idea-legacy-" + asId(card.id) + "-" + index, text, done:false }))];
+}
+
+function materializeIdeaNotes(card) {
+  const changes = safeArray(card.changes);
+  return {
+    changes:[...changes, ...ideaLegacyNoteLines(card).map((text, index) => touchRecord(normalizeChange({
+      id:"idea-legacy-" + asId(card.id) + "-" + index, text, source:"COMPANION_USER", isRewriteTask:true
+    }, changes.length + index, card.id)))],
+    description:"", openQuestions:"", rippleEffects:"", storyThreads:""
+  };
+}
+
 function normalizeIdeaBucket(value) {
   const raw = String(value || "").trim().toLowerCase();
   if (!raw || raw === "all") return "all";
@@ -12424,13 +13042,21 @@ function ideaBucketLabel(bucketId) {
 }
 
 function companionSnippet(card) {
-  const isSequenced = card && (SEQUENCE_ORDER.includes(card.sequence) || card.ideaCard);
-  const cleaned = cleanCompanionDisplayText(card && (
+  const table = card && card.cardTable;
+  const visibleColumns = safeArray(table && table.columns).filter(column => column && !column.archived).slice(0, 3);
+  const tablePreview = safeArray(table && table.rows)
+    .filter(row => row && !row.archived)
+    .map(row => visibleColumns.map((column, index) => {
+      const value = cleanCompanionDisplayText(row.cells && row.cells[column.id]);
+      return value ? (column.label || "Column " + (index + 1)) + ": " + value : "";
+    }).filter(Boolean).join(" · "))
+    .filter(Boolean).slice(0, 2).join(" / ");
+  const cleaned = tablePreview || (table && visibleColumns.map((column, index) => column.label || "Column " + (index + 1)).join(" · ")) || cleanCompanionDisplayText(card && (
     card.description ||
     card.openQuestions ||
     card.rippleEffects ||
     card.storyThreads ||
-    (isSequenced ? safeArray(card.changes)[0]?.text : "") ||
+    safeArray(card.changes).find(change => !change.archived && !change.maybe && String(change.text || "").trim())?.text ||
     ""
   ));
   return cleaned ? cleaned.slice(0, 190) + (cleaned.length > 190 ? "..." : "") : "";
@@ -12461,8 +13087,136 @@ function seedSceneNotecards(scenes, setNotecards) {
   });
 }
 
-function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showToast, focusedId, setFocusedId, onTurnIntoIdea, syncLabel, syncError }) {
+const COMPANION_PROGRESS_EXTRA_PREFIX = "_companionProgressExtra_";
+const COMPANION_PROGRESS_CURRENT_PREFIX = "_companionProgressCurrent_";
+const COMPANION_PROGRESS_GOAL_PREFIX = "_companionProgressGoal_";
+const COMPANION_PROGRESS_ORDER_KEY = "_companionProgressOrder";
+const COMPANION_PROGRESS_DRAFT_ONE_SCENES = [
+  "MEET AUTUMN", "THE ULTIMATUM", "NIGHT IN WITH AUTUMN + KIYA", "AUTUMN STUDY SESSION",
+  "AUTUMN'S AUDITION", "DOCTOR'S OFFICE", "PHOTOSHOOT", "TRAILER", "THE BIG NIGHT",
+  "PUSH #1 / BLAST FROM THE PAST", "TITTYGATE", "THE AUDIENCE #1", "THE FIREPIT",
+  "PUSH #2 / THE BOAT DATE", "PUSH #3 / FIRST CONFESSIONAL", "SPA SCENE", "MIC PACK MOMENT",
+  "AUTUMN MAKES THE BOYS KISS", "AUTUMN ON BOARD MONTAGE", "THE AUDIENCE #2",
+  "CHATEAU", "FRED 62", "FAN FAIR", "HAM LAKE", "SHE LIED Y'ALL / THE AUDIENCE #3",
+  "ETHAN'S EVERYWHERE", "DEBATE", "THE BETRAYAL", "AUTUMN'S SPIRAL",
+  "SAMUEL'S VISIT", "ETHAN'S SPIRAL", "THE CURB", "THE FUNERAL", "THE EULOGY",
+  "A GOOD MAN SAVANNAH", "THE PARKING LOT", "EPILOGUE"
+].map((title, index) => ({ id:"draft1-scene-" + String(index + 1).padStart(2, "0"), title }));
+const COMPANION_PROGRESS_DRAFT_ONE_IDS = new Set(COMPANION_PROGRESS_DRAFT_ONE_SCENES.map(scene => scene.id));
+
+function companionProgressRows(sequences) {
+  const stored = sequences || {};
+  const draftOne = COMPANION_PROGRESS_DRAFT_ONE_SCENES.map(scene => {
+    const saved = stored[COMPANION_PROGRESS_EXTRA_PREFIX + scene.id];
+    if (saved && saved.archived) return null;
+    return { id:scene.id, title:String(saved && saved.title || scene.title) };
+  }).filter(Boolean);
+  const extras = Object.entries(sequences || {}).filter(([key, value]) =>
+    key.startsWith(COMPANION_PROGRESS_EXTRA_PREFIX) && !COMPANION_PROGRESS_DRAFT_ONE_IDS.has(key.slice(COMPANION_PROGRESS_EXTRA_PREFIX.length)) &&
+    value && typeof value === "object" && !value.archived)
+    .map(([key, value]) => ({ id:key.slice(COMPANION_PROGRESS_EXTRA_PREFIX.length), title:String(value.title || "Untitled"),
+      createdAt:Number(value.createdAt || 0) }))
+    .sort((a, b) => a.createdAt - b.createdAt);
+  const combined = [...draftOne, ...extras];
+  const byId = new Map(combined.map(row => [row.id, row]));
+  const savedOrder = Array.isArray(stored[COMPANION_PROGRESS_ORDER_KEY]) ? stored[COMPANION_PROGRESS_ORDER_KEY] : [];
+  const orderedIds = new Set();
+  const ordered = savedOrder.map(id => byId.get(asId(id))).filter(row => {
+    if (!row || orderedIds.has(row.id)) return false;
+    orderedIds.add(row.id);
+    return true;
+  });
+  return [...ordered, ...combined.filter(row => !orderedIds.has(row.id))];
+}
+
+function companionProgressNumbers(row, sequences) {
+  const currentRaw = sequences && sequences[COMPANION_PROGRESS_CURRENT_PREFIX + row.id];
+  const goalRaw = sequences && sequences[COMPANION_PROGRESS_GOAL_PREFIX + row.id];
+  const parse = value => value === undefined || value === null || value === "" ? null : Number(value);
+  const current = parse(currentRaw);
+  const goal = parse(goalRaw);
+  return {
+    currentRaw:currentRaw === undefined || currentRaw === null ? "" : currentRaw,
+    goalRaw:goalRaw === undefined || goalRaw === null ? "" : goalRaw,
+    current:Number.isFinite(current) && current >= 0 ? current : null,
+    goal:Number.isFinite(goal) && goal >= 0 ? goal : null
+  };
+}
+
+function companionProgressSceneStatus(row, sequences) {
+  const { current, goal } = companionProgressNumbers(row, sequences);
+  if (current === null || goal === null) return "not-set";
+  return current === goal ? "complete" : "needs-edits";
+}
+
+function reorderCompanionProgressRows(rows, visibleRows, sourceId, targetId, setSequences) {
+  const visibleIds = visibleRows.map(row => row.id);
+  const from = visibleIds.indexOf(sourceId);
+  const to = visibleIds.indexOf(targetId);
+  if (from < 0 || to < 0 || from === to) return;
+  visibleIds.splice(to, 0, visibleIds.splice(from, 1)[0]);
+  const visibleSet = new Set(visibleIds);
+  let nextVisible = 0;
+  const order = rows.map(row => visibleSet.has(row.id) ? visibleIds[nextVisible++] : row.id);
+  setSequences(previous => ({ ...(previous || {}), [COMPANION_PROGRESS_ORDER_KEY]:order }));
+}
+
+function companionPageLabel(value) {
+  return value === null ? "—" : String(Number(value.toFixed(2)));
+}
+
+function companionPageDifference(current, goal) {
+  if (current === null || goal === null) return "—";
+  const difference = Number((goal - current).toFixed(2));
+  return (difference > 0 ? "+" : "") + companionPageLabel(difference) + (Math.abs(difference) === 1 ? " page" : " pages");
+}
+
+function companionTotalPageGoal(sequences) {
+  const total = companionProgressRows(sequences).reduce((sum, row) =>
+    sum + (companionProgressNumbers(row, sequences).goal ?? 0), 0);
+  return Number(total.toFixed(10));
+}
+
+function companionScriptProgress(sequences) {
+  const current = getStoredNumber(sequences, "_pageCurrent", null);
+  const goal = companionTotalPageGoal(sequences);
+  if (current === null || goal === null || goal <= 0) return { percent:null, label:"—", cuts:0, adds:0 };
+  // Rounded-up scene currents inflate cuts, so reconcile planned additions against the actual script length.
+  let plannedAdds = 0;
+  companionProgressRows(sequences).forEach(row => {
+    const values = companionProgressNumbers(row, sequences);
+    if (values.current === null || values.goal === null) return;
+    plannedAdds += Math.max(0, values.goal - values.current);
+  });
+  const netCut = Number((current - goal).toFixed(10));
+  const adds = Number(Math.max(plannedAdds, -netCut, 0).toFixed(10));
+  const cuts = Number((netCut + adds).toFixed(10));
+  const remaining = Number((cuts + adds).toFixed(2));
+  const percent = remaining === 0 ? 100 : current <= 0 ? 0 : Math.min(99, Math.max(0, Math.round(100 * (current - remaining) / current)));
+  const pageCount = (value, action) => companionPageLabel(value) + (value === 1 ? " page to be " : " pages to be ") + action;
+  const detail = remaining === 0 ? "" : " (" + pageCount(cuts, "cut") + ", " + pageCount(adds, "added") + ")";
+  return { percent, label:percent + "%" + detail, cuts, adds };
+}
+
+function CompanionProgressMini({ rows, sequences, selectedId, onSelect }) {
+  const selected = rows.find(row => row.id === selectedId);
+  const values = selected ? companionProgressNumbers(selected, sequences) : null;
+  return <div className="companion-progress-mini">
+    <div className="companion-progress-select-wrap"><select aria-label="Choose progress scene" value={selected ? selected.id : ""} onChange={event => onSelect(event.target.value)}>
+      <option value="">Choose scene</option>
+      {rows.map(row => <option key={row.id} value={row.id}>{row.title}</option>)}
+    </select><span aria-hidden="true">⌄</span></div>
+    {selected && <table aria-label={"Page progress for " + selected.title}>
+      <thead><tr><th scope="col">Current</th><th scope="col">Goal</th><th scope="col">Change</th></tr></thead>
+      <tbody><tr><td>{companionPageLabel(values.current)}</td><td>{companionPageLabel(values.goal)}</td>
+        <td>{companionPageDifference(values.current, values.goal)}</td></tr></tbody>
+    </table>}
+  </div>;
+}
+
+function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, sequences, showToast, focusedId, setFocusedId, onTurnIntoIdea, syncLabel, syncError }) {
   const [newTitle, setNewTitle] = React.useState("");
+  const [selectedProgressId, setSelectedProgressId] = React.useState("");
   const [titleDrafts, setTitleDrafts] = React.useState({});
   const [changeDrafts, setChangeDrafts] = React.useState({});
   const [dropTargetId, setDropTargetId] = React.useState(null);
@@ -12520,9 +13274,10 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   const sceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
   const visible = safeArray(notecards).map(meta => {
     const scene = sceneById.get(asId(meta.sourceSceneId));
-    return scene && !scene.ideaCard ? { ...meta, title:scene.title, sequence:scene.sequence, notes:scene.openQuestions || "", changes:scene.changes, done:normalizeStatus(scene.status) === "done", archived:!!scene.archived } : null;
+    return scene && !scene.ideaCard ? { ...meta, title:scene.title, sequence:scene.sequence, notes:scene.openQuestions || "", changes:scene.changes, cardTable:scene.cardTable, done:normalizeStatus(scene.status) === "done", archived:!!scene.archived } : null;
   }).filter(card => card && !card.archived)
     .sort((a, b) => Number(a.order || 0) - Number(b.order || 0) || String(a.title || "").localeCompare(String(b.title || "")));
+  const progressRows = companionProgressRows(sequences);
   const patchScene = (id, update) => setScenes(previous => safeArray(previous).map(scene =>
     asId(scene.id) === asId(id) ? touchRecord(normalizeCard(scene, 0), typeof update === "function" ? update(scene) : update) : scene
   ));
@@ -12605,10 +13360,24 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   };
 
   const focused = visible.find(card => asId(card.id) === asId(focusedId));
-  const focusedBullets = focused ? [
-    ...safeArray(focused.changes).filter(change => !change.archived).map(change => String(change.text || "").trim()),
-    String(focused.notes || "").trim()
-  ].filter(Boolean) : [];
+  React.useEffect(() => {
+    if (focused) setSelectedProgressId(asId(focused.sourceSceneId));
+  }, [focusedId]);
+  React.useEffect(() => {
+    if (!focused || !focused.cardTable) return;
+    const scene = sceneById.get(asId(focused.sourceSceneId));
+    if (!scene || !cardNotesForTable(scene).length) return;
+    setScenes(previous => safeArray(previous).map(item => {
+      if (asId(item.id) !== asId(scene.id)) return item;
+      const patch = tableOnlyCardPatch(item);
+      return patch ? touchRecord(normalizeCard(item, 0), patch) : item;
+    }));
+  }, [focusedId, focused && focused.cardTable, focused && focused.changes, focused && focused.notes]);
+  const focusedBullets = focused ? (focused.cardTable
+    ? safeArray(focused.cardTable.rows).filter(row => !row.archived).map(row => safeArray(focused.cardTable.columns)
+      .filter(column => !column.archived).map(column => String(row.cells && row.cells[column.id] || "").trim()).filter(Boolean).join(" - "))
+    : [...safeArray(focused.changes).filter(change => !change.archived).map(change => String(change.text || "").trim()), String(focused.notes || "").trim()]
+  ).filter(Boolean) : [];
   const copyFocusedBullets = async () => {
     if (!focusedBullets.length) return;
     const text = focusedBullets.map(item => "- " + item.replace(/^[\s\u2022-]+/, "").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/[\u2013\u2014\u2022]/g, "-").replace(/\u2026/g, "...").replace(/\u00a0/g, " ").replace(/\r\n?/g, "\n").replace(/\n/g, "\n  ")).join("\n");
@@ -12633,6 +13402,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   const displayed = focusedId ? (focused ? [focused] : []) : visible;
   const openCount = visible.filter(card => !card.done).length;
   const completedCount = visible.length - openCount;
+  const scriptProgress = companionScriptProgress(sequences);
   const archiveCard = card => {
     patchScene(card.sourceSceneId, archiveFields());
     setNotecards(previous => safeArray(previous).map(item => asId(item.id) === asId(card.id) ? touchRecord(item, archiveFields()) : item));
@@ -12645,8 +13415,19 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
       <div className="notecards-meta">
         <div role="status" className={"notecards-sync-status" + (syncError ? " is-error" : "")}>{syncLabel}</div>
         <span className="notecards-count">{openCount} open, {completedCount} completed</span>
+        {!focusedId && <details className="notecards-progress-toggle">
+          <summary>Progress</summary>
+          <div className="notecards-script-progress" aria-label="Whole script progress">
+            <span>{scriptProgress.label}</span>
+            <span className="companion-progress-meter" aria-hidden="true"><span style={{width:(scriptProgress.percent === null ? 0 : Math.min(100, scriptProgress.percent)) + "%"}} /></span>
+          </div>
+        </details>}
       </div>
     </div>
+    {focusedId && <aside className="notecard-progress-side" aria-label="Scene page progress">
+      <h3>Progress</h3>
+      <CompanionProgressMini rows={progressRows} sequences={sequences} selectedId={selectedProgressId} onSelect={setSelectedProgressId} />
+    </aside>}
     {!focusedId && <div className="notecards-new">
       <input value={newTitle} onChange={event => setNewTitle(event.target.value)}
         onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) createCard(); }}
@@ -12672,6 +13453,11 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
         <div className="notecard-actions">
           {!focusedId && <button type="button" className="notecard-icon-button notecard-open" onClick={() => setFocusedId(card.id)}
             title="Open notecard" aria-label={"Open notecard " + card.title}>{"\u2192"}</button>}
+          {focusedId && !card.cardTable && <button type="button" className="card-table-corner" onClick={() => {
+            patchScene(card.sourceSceneId, current => tableOnlyCardPatch(current, false, changeDrafts[card.id]));
+            setChangeDrafts(previous => ({ ...previous, [card.id]:"" }));
+          }}
+            title="Add table" aria-label={"Add table to " + card.title}>+ Table</button>}
           <label className="notecard-complete-label" title="Mark notecard complete">
             <input type="checkbox" className="notecard-complete" checked={!!card.done}
               onChange={event => patchScene(card.sourceSceneId, { status:event.target.checked ? "done" : "needs_edits" })} aria-label={"Mark notecard complete " + card.title} />
@@ -12695,7 +13481,10 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
             onDragEnd={() => { draggedId.current = null; setDropTargetId(null); }}>{"\u22EE\u22EE"}</span>
         </div>
         </div>
-        <details key={focusedId ? "focused-" + card.id : "board-" + card.id} className="notecard-details" ref={openFocusedDetails}>
+        {card.cardTable ? (focusedId
+          ? <CardTableEditor table={card.cardTable} onChange={change => patchScene(card.sourceSceneId, current => ({ cardTable:change(current.cardTable) }))} />
+          : <details className="notecard-details notecard-table-details"><summary>Details</summary><NotecardTablePreview table={card.cardTable} /></details>
+        ) : <details key={focusedId ? "focused-" + card.id : "board-" + card.id} className="notecard-details" ref={openFocusedDetails}>
           <summary>Notes</summary>
         <ul className="notecard-change-list">{safeArray(card.changes).filter(change => !change.archived).map(change => <li key={change.id} data-notecard-change-id={change.id}
           className={"notecard-change-row" + (change.done ? " is-done" : "") + (editingChangeId === change.id ? " is-editing" : "") + (dropChangeId === change.id ? " is-drop-target" : "")}
@@ -12726,7 +13515,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
             placeholder="Add note" aria-label={"Add notecard change to " + card.title} />
           <button type="button" disabled={!String(changeDrafts[card.id] || "").trim()} onClick={() => addChange(card)} aria-label={"Save notecard change to " + card.title}>+</button>
         </div>
-        </details>
+        </details>}
         {focusedId && <button type="button" className="notecard-to-idea" onClick={() => {
           commitTitle(card);
           if (String(changeDrafts[card.id] || "").trim()) addChange(card);
@@ -12737,36 +13526,18 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, showTo
   </section>;
 }
 
-function CompanionSceneList({ scenes, setScenes, notecards, setNotecards, openNotecard }) {
+function CompanionSceneList({ sequences, setSequences, openProgressScene }) {
   const [search, setSearch] = React.useState("");
   const [status, setStatus] = React.useState("all");
   const [dropId, setDropId] = React.useState(null);
   const draggedId = React.useRef(null);
-  React.useEffect(() => { seedSceneNotecards(scenes, setNotecards); }, [scenes, setNotecards]);
-  const sceneById = new Map(safeArray(scenes).map(scene => [asId(scene.id), scene]));
-  const ordered = safeArray(notecards).map(meta => {
-    const scene = sceneById.get(asId(meta.sourceSceneId));
-    return scene && !scene.archived && !scene.ideaCard ? { meta, scene } : null;
-  }).filter(Boolean).sort((a, b) => Number(a.meta.order || 0) - Number(b.meta.order || 0));
-  const visible = ordered.filter(({ scene }) =>
-    (status === "all" || (status === "todo" ? ["todo", "drafted"].includes(normalizeStatus(scene.status)) : normalizeStatus(scene.status) === status)) &&
-    companionSearchMatches(companionSceneSearchText(scene), search)
+  const ordered = companionProgressRows(sequences);
+  const visible = ordered.filter(row =>
+    (status === "all" || companionProgressSceneStatus(row, sequences) === status) &&
+    companionSearchMatches(row.title, search)
   );
-  const patchScene = (id, patch) => setScenes(previous => safeArray(previous).map(scene =>
-    asId(scene.id) === asId(id) ? touchRecord(normalizeCard(scene, 0), patch) : scene));
   const move = (sourceId, targetId) => {
-    const shown = visible.map(item => asId(item.scene.id));
-    const from = shown.indexOf(asId(sourceId));
-    const to = shown.indexOf(asId(targetId));
-    if (from < 0 || to < 0 || from === to) return;
-    shown.splice(to, 0, shown.splice(from, 1)[0]);
-    const shownSet = new Set(shown);
-    let nextShown = 0;
-    const ids = ordered.map(item => {
-      const id = asId(item.scene.id);
-      return shownSet.has(id) ? shown[nextShown++] : id;
-    });
-    reorderSceneNotecards(ids, notecards, setNotecards, setScenes);
+    reorderCompanionProgressRows(ordered, visible, sourceId, targetId, setSequences);
   };
   return <section className="companion-scene-list" aria-label="Scene List">
     <div className="companion-scene-list-heading">
@@ -12775,36 +13546,181 @@ function CompanionSceneList({ scenes, setScenes, notecards, setNotecards, openNo
     </div>
     <div className="companion-scene-list-tools">
       <input type="search" value={search} onChange={event => setSearch(event.target.value)}
-        placeholder="Search scenes, changes, notes" aria-label="Search scenes" />
+        placeholder="Search scenes" aria-label="Search scenes" />
       <select value={status} onChange={event => setStatus(event.target.value)} aria-label="Filter scenes by status">
         <option value="all">All statuses</option>
-        {COMPANION_STATUS_VALUES.map(value => <option key={value} value={value}>{companionSceneStatusLabel(value)}</option>)}
+        <option value="needs-edits">Needs edits</option>
+        <option value="complete">Complete</option>
+        <option value="not-set">Not set</option>
       </select>
     </div>
     {visible.length ? <div className="companion-scene-list-items">
-      {visible.map((item, index) => <div key={item.scene.id} className={"companion-scene-list-row" + (dropId === item.scene.id ? " is-drop-target" : "")}
-        data-scene-id={item.scene.id} onDoubleClick={() => openNotecard(item.meta.id)}
-        onDragOver={event => { if (draggedId.current && draggedId.current !== item.scene.id) { event.preventDefault(); setDropId(item.scene.id); } }}
+      {visible.map((row, index) => <div key={row.id} className={"companion-scene-list-row" + (dropId === row.id ? " is-drop-target" : "")}
+        data-progress-id={row.id} onDoubleClick={() => openProgressScene(row)}
+        onDragOver={event => { if (draggedId.current && draggedId.current !== row.id) { event.preventDefault(); setDropId(row.id); } }}
         onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDropId(null); }}
-        onDrop={event => { event.preventDefault(); if (draggedId.current) move(draggedId.current, item.scene.id); draggedId.current = null; setDropId(null); }}>
-        <button type="button" className="companion-scene-list-title" onClick={() => openNotecard(item.meta.id)}
-          aria-label={"Open notecard " + item.scene.title}>{item.scene.title || "Untitled scene"}</button>
-        <select className="companion-scene-list-status" value={COMPANION_STATUS_VALUES.includes(normalizeStatus(item.scene.status)) ? normalizeStatus(item.scene.status) : "todo"}
-          onChange={event => patchScene(item.scene.id, { status:event.target.value })} aria-label={"Status for " + item.scene.title}>
-          {COMPANION_STATUS_VALUES.map(value => <option key={value} value={value}>{companionSceneStatusLabel(value)}</option>)}
-        </select>
+        onDrop={event => { event.preventDefault(); if (draggedId.current) move(draggedId.current, row.id); draggedId.current = null; setDropId(null); }}>
+        <button type="button" className="companion-scene-list-title" onClick={() => openProgressScene(row)}
+          aria-label={"Open progress for " + row.title}>{row.title}</button>
+        <span className={"companion-scene-list-status is-" + companionProgressSceneStatus(row, sequences)}>{companionProgressSceneStatus(row, sequences) === "not-set" ? "Not set" : companionProgressSceneStatus(row, sequences) === "complete" ? "Complete" : "Needs edits"}</span>
         <div className="companion-scene-list-order">
-          <button type="button" disabled={index === 0} onClick={() => move(item.scene.id, visible[index - 1].scene.id)}
-            aria-label={"Move " + item.scene.title + " up"}>↑</button>
-          <button type="button" disabled={index === visible.length - 1} onClick={() => move(item.scene.id, visible[index + 1].scene.id)}
-            aria-label={"Move " + item.scene.title + " down"}>↓</button>
+          <button type="button" disabled={index === 0} onClick={() => move(row.id, visible[index - 1].id)}
+            aria-label={"Move " + row.title + " up"}>↑</button>
+          <button type="button" disabled={index === visible.length - 1} onClick={() => move(row.id, visible[index + 1].id)}
+            aria-label={"Move " + row.title + " down"}>↓</button>
           <span role="button" tabIndex="0" draggable="true" className="companion-scene-list-drag" title="Drag to reorder scene"
-            aria-label={"Drag to reorder " + item.scene.title}
-            onDragStart={event => { draggedId.current = item.scene.id; event.dataTransfer.setData("text/plain", item.scene.id); event.dataTransfer.effectAllowed = "move"; }}
-            onDragEnd={() => { draggedId.current = null; setDropId(null); }}>⋮⋮</span>
+            aria-label={"Drag to reorder " + row.title}
+            onDragStart={event => { draggedId.current = row.id; event.dataTransfer.setData("text/plain", row.id); event.dataTransfer.effectAllowed = "move"; }}
+            onDragEnd={() => { draggedId.current = null; setDropId(null); }}
+            onKeyDown={event => { if (event.key === "ArrowUp" || event.key === "ArrowDown") { event.preventDefault(); const next = visible[index + (event.key === "ArrowUp" ? -1 : 1)]; if (next) move(row.id, next.id); } }}>⋮⋮</span>
         </div>
       </div>)}
-    </div> : <div className="companion-empty-note">{ordered.length ? "No scenes match this view." : "No scenes yet. Create a notecard to begin."}</div>}
+    </div> : <div className="companion-empty-note">{ordered.length ? "No scenes match this view." : "No scenes yet. Add one in Progress."}</div>}
+  </section>;
+}
+
+function CompanionProgressWorkspace({ sequences, setSequences, showToast, initialSceneId }) {
+  const [newTitle, setNewTitle] = React.useState("");
+  const [titleDrafts, setTitleDrafts] = React.useState({});
+  const [differenceFilter, setDifferenceFilter] = React.useState("all");
+  const [selectedIds, setSelectedIds] = React.useState(initialSceneId ? [initialSceneId] : null);
+  const [dropId, setDropId] = React.useState(null);
+  const draggedId = React.useRef(null);
+  const rows = companionProgressRows(sequences);
+  const selectedSet = selectedIds === null ? null : new Set(selectedIds);
+  const shown = rows.filter(row => {
+    if (selectedSet && !selectedSet.has(row.id)) return false;
+    const values = companionProgressNumbers(row, sequences);
+    if (differenceFilter === "unset") return values.current === null || values.goal === null;
+    if (values.current === null || values.goal === null) return differenceFilter === "all";
+    const delta = values.goal - values.current;
+    return differenceFilter === "all" || (differenceFilter === "cut" && delta < 0) ||
+      (differenceFilter === "add" && delta > 0) || (differenceFilter === "target" && delta === 0);
+  });
+  const scriptCurrentRaw = sequences && sequences._pageCurrent !== undefined && sequences._pageCurrent !== null ? sequences._pageCurrent : "";
+  const scriptProgress = companionScriptProgress(sequences);
+  const totalPageGoal = companionTotalPageGoal(sequences);
+  const setScriptPageValue = (key, minimum, value) => {
+    if (value !== "" && (!Number.isFinite(Number(value)) || Number(value) < minimum)) return;
+    setSequences(previous => ({ ...(previous || {}), [key]:value }));
+  };
+  const setPageValue = (id, prefix, value) => {
+    if (value !== "" && (!Number.isFinite(Number(value)) || Number(value) < 0)) return;
+    setSequences(previous => ({ ...(previous || {}), [prefix + id]:value }));
+  };
+  const addScene = () => {
+    const title = newTitle.trim().replace(/\s+/g, " ");
+    if (!title) return;
+    if (rows.some(row => row.title.toLocaleLowerCase() === title.toLocaleLowerCase())) {
+      if (showToast) showToast("That scene is already in Progress");
+      return;
+    }
+    const id = newCardTableId("progress-scene");
+    setSequences(previous => ({ ...(previous || {}), [COMPANION_PROGRESS_EXTRA_PREFIX + id]:{
+      id, title, createdAt:nowStamp(), archived:false
+    } }));
+    setNewTitle("");
+    setDifferenceFilter("all");
+    setSelectedIds(null);
+  };
+  const commitTitle = row => {
+    if (!Object.prototype.hasOwnProperty.call(titleDrafts, row.id)) return;
+    const title = String(titleDrafts[row.id] || "").trim().replace(/\s+/g, " ");
+    if (title && !rows.some(other => other.id !== row.id && other.title.toLocaleLowerCase() === title.toLocaleLowerCase())) {
+      setSequences(previous => ({ ...(previous || {}), [COMPANION_PROGRESS_EXTRA_PREFIX + row.id]:{
+        ...(previous[COMPANION_PROGRESS_EXTRA_PREFIX + row.id] || {}), title
+      } }));
+    } else if (showToast) showToast(title ? "That scene name is already in use" : "Scene name cannot be blank");
+    setTitleDrafts(previous => { const next = { ...previous }; delete next[row.id]; return next; });
+  };
+  const toggleScene = id => {
+    const next = selectedIds === null ? rows.map(row => row.id) : selectedIds.slice();
+    const index = next.indexOf(id);
+    if (index >= 0) next.splice(index, 1);
+    else next.push(id);
+    setSelectedIds(next.length === rows.length ? null : next);
+  };
+  const toggleExtraArchived = (id, archived) => {
+    const scene = rows.find(row => row.id === id) || COMPANION_PROGRESS_DRAFT_ONE_SCENES.find(row => row.id === id);
+    setSequences(previous => ({ ...(previous || {}), [COMPANION_PROGRESS_EXTRA_PREFIX + id]:{
+      ...(previous[COMPANION_PROGRESS_EXTRA_PREFIX + id] || {}), id,
+      title:previous[COMPANION_PROGRESS_EXTRA_PREFIX + id]?.title || scene?.title || "Untitled", archived
+    } }));
+  };
+  const reorderRows = (sourceId, targetId) => {
+    reorderCompanionProgressRows(rows, shown, sourceId, targetId, setSequences);
+  };
+  const moveRow = (id, step) => {
+    const index = shown.findIndex(row => row.id === id);
+    if (index >= 0 && shown[index + step]) reorderRows(id, shown[index + step].id);
+  };
+  return <section className="companion-progress-workspace" aria-label="Companion progress">
+    <div className="companion-progress-head"><h2>Progress</h2><span>{shown.length} {shown.length === 1 ? "scene" : "scenes"}</span></div>
+    <div className="companion-script-total" aria-label="Whole script progress">
+      <strong className="companion-script-progress-label">{scriptProgress.label}</strong>
+      <span className="companion-progress-meter" aria-hidden="true"><span style={{width:(scriptProgress.percent === null ? 0 : scriptProgress.percent) + "%"}} /></span>
+      <details className="companion-script-page-settings">
+        <summary>{scriptCurrentRaw === "" ? "Set current pages" : "Current " + scriptCurrentRaw} · Goal {totalPageGoal}</summary>
+        <div className="companion-script-page-fields">
+          <label>Current pages<input type="number" min="0" step="any" inputMode="decimal" value={scriptCurrentRaw}
+            onChange={event => setScriptPageValue("_pageCurrent", 0, event.target.value)} aria-label="Whole script current pages" /></label>
+          <div className="companion-script-goal-field"><span>Page goal</span><output aria-label="Whole script page goal">{totalPageGoal}</output></div>
+        </div>
+      </details>
+    </div>
+    <div className="companion-progress-tools">
+      <div className="companion-progress-filters">
+        <details className="companion-progress-scene-filter"><summary>{selectedIds === null ? "All scenes" : selectedIds.length + " selected"}</summary>
+          <div className="companion-progress-filter-options">
+            <label><input type="checkbox" checked={selectedIds === null} onChange={() => setSelectedIds(selectedIds === null ? [] : null)} />All scenes</label>
+            {rows.map(row => <label key={row.id}><input type="checkbox" checked={selectedIds === null || selectedSet.has(row.id)} onChange={() => toggleScene(row.id)} />{row.title}</label>)}
+          </div>
+        </details>
+        <div className="companion-progress-select-wrap companion-progress-change-filter">
+          <select value={differenceFilter} onChange={event => setDifferenceFilter(event.target.value)} aria-label="Filter page difference">
+            <option value="all">All changes</option><option value="cut">Needs cuts</option><option value="add">Needs pages</option>
+            <option value="target">On target</option><option value="unset">Missing pages</option>
+          </select><span aria-hidden="true">⌄</span>
+        </div>
+      </div>
+    </div>
+    {shown.length ? <div className="companion-progress-table-wrap"><table className="companion-progress-table">
+      <thead><tr><th scope="col">Scene</th><th scope="col">Current</th><th scope="col">Goal</th><th scope="col">Change needed</th></tr></thead>
+      <tbody>{shown.map((row, rowIndex) => {
+        const values = companionProgressNumbers(row, sequences);
+        return <tr key={row.id} data-progress-id={row.id} className={dropId === row.id ? "is-drop-target" : ""}
+          onDragOver={event => { if (draggedId.current && draggedId.current !== row.id) { event.preventDefault(); setDropId(row.id); } }}
+          onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDropId(null); }}
+          onDrop={event => { event.preventDefault(); if (draggedId.current) reorderRows(draggedId.current, row.id); draggedId.current = null; setDropId(null); }}>
+          <td data-label="Scene"><div className="companion-progress-scene-cell">
+            <span className="companion-progress-drag" role="button" tabIndex="0" draggable="true"
+              title="Drag to reorder scene" aria-label={"Drag to reorder " + row.title}
+              onDragStart={event => { draggedId.current = row.id; event.dataTransfer.setData("text/plain", row.id); event.dataTransfer.effectAllowed = "move"; }}
+              onDragEnd={() => { draggedId.current = null; setDropId(null); }}
+              onKeyDown={event => { if (event.key === "ArrowUp" || event.key === "ArrowDown") { event.preventDefault(); moveRow(row.id, event.key === "ArrowUp" ? -1 : 1); } }}>{"\u22EE\u22EE"}</span>
+            <input className="companion-progress-title-input" value={Object.prototype.hasOwnProperty.call(titleDrafts, row.id) ? titleDrafts[row.id] : row.title}
+              onChange={event => setTitleDrafts(previous => ({ ...previous, [row.id]:event.target.value }))}
+              onBlur={() => commitTitle(row)} onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setTitleDrafts(previous => { const next = { ...previous }; delete next[row.id]; return next; }); }}
+              aria-label={"Progress scene title for " + row.title} />
+            <button type="button" className="companion-progress-archive" onClick={() => toggleExtraArchived(row.id, true)} title="Archive progress scene" aria-label={"Archive progress scene " + row.title}><ArchiveTrayIcon size={16} /></button>
+            <span className="companion-progress-mobile-order">
+              <button type="button" disabled={rowIndex === 0} onClick={() => moveRow(row.id, -1)} aria-label={"Move " + row.title + " up"}>↑</button>
+              <button type="button" disabled={rowIndex === shown.length - 1} onClick={() => moveRow(row.id, 1)} aria-label={"Move " + row.title + " down"}>↓</button>
+            </span>
+          </div></td>
+          <td data-label="Current"><input type="number" min="0" step="any" inputMode="decimal" value={values.currentRaw}
+            onChange={event => setPageValue(row.id, COMPANION_PROGRESS_CURRENT_PREFIX, event.target.value)} aria-label={"Current pages for " + row.title} /></td>
+          <td data-label="Goal"><input type="number" min="0" step="any" inputMode="decimal" value={values.goalRaw}
+            onChange={event => setPageValue(row.id, COMPANION_PROGRESS_GOAL_PREFIX, event.target.value)} aria-label={"Goal pages for " + row.title} /></td>
+          <td data-label="Change needed" className="companion-progress-difference">{companionPageDifference(values.current, values.goal)}</td>
+        </tr>;
+      })}</tbody>
+      <tfoot><tr><th scope="row">Total page goal</th><td></td><td aria-live="polite">{Number(totalPageGoal.toFixed(10)).toLocaleString("en-US", { maximumFractionDigits:10 })}</td><td></td></tr></tfoot>
+    </table></div> : <div className="companion-progress-empty">{rows.length ? "No scenes match this view." : "No scenes yet."}</div>}
+    <div className="companion-progress-add"><input value={newTitle} onChange={event => setNewTitle(event.target.value)}
+      onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) addScene(); }}
+      placeholder="New scene title" aria-label="New progress scene title" />
+      <button type="button" disabled={!newTitle.trim()} onClick={addScene}>+ Scene</button></div>
   </section>;
 }
 
@@ -12816,6 +13732,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const [activeId, setActiveId] = React.useState(null);
   const [companionMode, setCompanionMode] = React.useState("menu");
   const [focusedNotecardId, setFocusedNotecardId] = React.useState(null);
+  const [progressFocusSceneId, setProgressFocusSceneId] = React.useState(null);
   const [sequenceView, setSequenceView] = React.useState("pick");
   const [ideaSearch, setIdeaSearch] = React.useState("");
   const [ideaTypeFilters, setIdeaTypeFilters] = React.useState(() => [...IDEA_FILTER_TYPES]);
@@ -12838,7 +13755,12 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const [draftSceneTitle, setDraftSceneTitle] = React.useState("");
   const [draftIdeaTitle, setDraftIdeaTitle] = React.useState("");
   const [draftIdeaDetails, setDraftIdeaDetails] = React.useState("");
+  const [draftIdeaNotes, setDraftIdeaNotes] = React.useState([]);
+  const [ideaNoteDrafts, setIdeaNoteDrafts] = React.useState({});
   const [draftIdeaTypes, setDraftIdeaTypes] = React.useState([]);
+  const [draftIdeaHasTable, setDraftIdeaHasTable] = React.useState(false);
+  const [draftIdeaTable, setDraftIdeaTable] = React.useState(null);
+  const [isCreatingIdea, setIsCreatingIdea] = React.useState(false);
   const newScenePanelRef = React.useRef(null);
   const sceneSwitcherRef = React.useRef(null);
   const quickSceneSwitcherRef = React.useRef(null);
@@ -12883,6 +13805,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const isIdeasMode = companionMode === "ideas";
   const isNotecardsMode = companionMode === "notecards";
   const isSceneListMode = companionMode === "scene-list";
+  const isProgressMode = companionMode === "progress";
   const filtered = sequencedCards.filter(card => card.sequence === effectiveSequenceFilter);
   const tableStatusOrder = { done:0, needs_edits:1, todo:2, drafted:2, cut:3 };
   const sceneOrderIndex = new Map(sequencedCards.map((card, index) => [asId(card.id), index]));
@@ -12958,6 +13881,14 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     ? [activeIdeaCard, ...filteredIdeaCards]
     : filteredIdeaCards;
   const selected = isIdeasMode ? (triageCards.find(card => card.id === activeId) || null) : (isSequenceMode && sequenceView === "scene" ? (filtered.find(card => card.id === activeId) || null) : null);
+  React.useEffect(() => {
+    if (!isIdeasMode || !selected || !selected.cardTable || !cardNotesForTable(selected, true).length) return;
+    setScenes(previous => safeArray(previous).map(card => {
+      if (asId(card.id) !== asId(selected.id)) return card;
+      const patch = tableOnlyCardPatch(card, true);
+      return patch ? touchRecord(normalizeCard(card, 0), patch) : card;
+    }));
+  }, [isIdeasMode, activeId, selected && selected.cardTable, selected && selected.changes, selected && selected.openQuestions]);
   const selectedIsSequenced = !!(selected && activeSequenceOrder.includes(selected.sequence));
   const visibleChanges = selectedIsSequenced && !isIdeasMode ? safeArray(selected.changes)
     .filter(change => !change.archived && !change.maybe && !isCompanionReferenceChange(selected, change))
@@ -13065,6 +13996,25 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     }));
     requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
     requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+  };
+  const patchIdeaNotes = (id, update) => patchCard(id, current => {
+    const materialized = materializeIdeaNotes(current);
+    return { ...materialized, changes:update(materialized.changes) };
+  });
+  const newIdeaNote = text => touchRecord(normalizeChange({
+    id:"idea-note-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8)),
+    text, source:"COMPANION_USER", isRewriteTask:true
+  }, 0, "idea"));
+  const addIdeaNote = card => {
+    const text = String(ideaNoteDrafts[card.id] || "").trim();
+    if (!text) return;
+    patchIdeaNotes(card.id, changes => [...changes, newIdeaNote(text)]);
+    setIdeaNoteDrafts(previous => ({ ...previous, [card.id]:"" }));
+  };
+  const sizeIdeaNote = element => {
+    if (!element) return;
+    element.style.height = "auto";
+    element.style.height = element.scrollHeight + "px";
   };
 
   const patchSelected = patch => {
@@ -13387,17 +14337,22 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     const id = asId(card.id);
     const title = String(titleDraftValueFor(card) || "").trim().replace(/\s+/g, " ");
     if (!title) { if (showToast) showToast("Idea name cannot be blank"); return; }
-    const details = String(ideaDetailDraftValueFor(card) || "").trim();
+    const pendingNote = String(ideaNoteDrafts[id] || "").trim();
     clearIdeaDetailTimer(id);
-    setScenes(previous => safeArray(previous).map(scene => asId(scene.id) === id
-      ? touchRecord(normalizeCard(scene, 0), scene.ideaCard ? {
+    setScenes(previous => safeArray(previous).map(scene => {
+      if (asId(scene.id) !== id) return scene;
+      const materialized = materializeIdeaNotes(normalizeCard(scene, 0));
+      const changes = pendingNote ? [...materialized.changes, newIdeaNote(pendingNote)] : materialized.changes;
+      return touchRecord(normalizeCard(scene, 0), scene.ideaCard ? {
+          ...materialized, changes,
           title, ideaCard:false, notecardScene:scene.ideaReturnNotecardScene !== undefined ? !!scene.ideaReturnNotecardScene : true,
           sequence:asId(scene.ideaReturnSequence), ideaReturnSequence:null, ideaReturnNotecardScene:null,
           kind:scene.ideaReturnKind || "SCENE", ideaReturnKind:null
         } : {
-          title, description:details, openQuestions:details, rippleEffects:"", storyThreads:"",
+          ...materialized, changes, title,
           kind:"SCENE", notecardScene:true, status:"todo", sequence:null
-        }) : scene));
+        });
+    }));
     const existing = safeArray(notecards).find(meta => asId(meta.sourceSceneId) === id);
     const notecardId = existing ? existing.id : "notecard-idea-" + id;
     if (!existing) setNotecards(previous => [...safeArray(previous), touchRecord(normalizeNotecard({
@@ -13405,6 +14360,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     }, safeArray(previous).length))]);
     setTitleDrafts(previous => { const next = { ...previous }; delete next[id]; return next; });
     setIdeaDetailDrafts(previous => { const next = { ...previous }; delete next[id]; return next; });
+    setIdeaNoteDrafts(previous => { const next = { ...previous }; delete next[id]; return next; });
     setActiveId(null);
     setFocusedNotecardId(notecardId);
     setCompanionMode("notecards");
@@ -13448,7 +14404,11 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
   const clearNewIdeaDraft = () => {
     setDraftIdeaTitle("");
     setDraftIdeaDetails("");
+    setDraftIdeaNotes([]);
     setDraftIdeaTypes([]);
+    setDraftIdeaHasTable(false);
+    setDraftIdeaTable(null);
+    setIsCreatingIdea(false);
     if (newIdeaPanelRef.current) newIdeaPanelRef.current.open = false;
   };
   const saveNewIdea = () => {
@@ -13456,10 +14416,12 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     if (!title || !setScenes) return;
     const timestamp = Date.now();
     const id = "companion-idea-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : timestamp.toString(36) + "-" + Math.random().toString(36).slice(2, 8));
+    const pendingNote = draftIdeaDetails.trim();
+    const ideaNotes = pendingNote ? [...draftIdeaNotes, newIdeaNote(pendingNote)] : draftIdeaNotes;
     const card = normalizeCard({
       id,
       title,
-      description:draftIdeaDetails.trim(),
+      description:"",
       ideaTypes:draftIdeaTypes,
       ideaType:draftIdeaTypes[0] || "",
       category:null,
@@ -13467,7 +14429,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
       status:"todo",
       sequence:null,
       page:null,
-      changes:[],
+      changes:draftIdeaHasTable ? [] : ideaNotes,
+      ...(draftIdeaHasTable ? { cardTable:draftIdeaTable || newCardTable() } : {}),
       maybe:false,
       archived:false,
       source:"COMPANION_USER",
@@ -13600,6 +14563,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
             <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("ideas"); setActiveId(null); }}>Ideas</button>
             <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("notecards"); setFocusedNotecardId(null); setActiveId(null); }}>Notecards</button>
             <button type="button" className="companion-menu-choice" onClick={() => { setCompanionMode("scene-list"); setActiveId(null); }}>Scene List</button>
+            <button type="button" className="companion-menu-choice" onClick={() => { setProgressFocusSceneId(null); setCompanionMode("progress"); setActiveId(null); }}>Progress</button>
           </div>
         )}
 
@@ -13614,33 +14578,63 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
         )}
 
         {isIdeasMode && (
-          <div className="companion-unplaced-tools">
+          <div className={"companion-unplaced-tools" + (isCreatingIdea ? " is-creating" : "") + (selected ? " is-editing" : "")}>
             <div className="companion-picker-tabs companion-workspace-nav" aria-label="Ideas workspace">
               <button type="button" className="companion-picker-tab is-active">Ideas</button>
               <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setActiveId(null); }}>Menu</button>
             </div>
-            <details ref={newIdeaPanelRef} className="companion-new-idea-panel">
+            <details ref={newIdeaPanelRef} className="companion-new-idea-panel" onToggle={event => {
+              const open = event.currentTarget.open;
+              setIsCreatingIdea(open);
+              if (open) {
+                setActiveId(null);
+                requestAnimationFrame(() => newIdeaPanelRef.current?.querySelector(".idea-focus-title")?.focus());
+              }
+            }}>
               <summary>+ New idea</summary>
-              <div className="companion-new-idea-fields">
-                <label className="companion-picker-field">
-                  <span className="companion-picker-label">Idea name</span>
-                  <input className="companion-title-input is-idea" value={draftIdeaTitle}
+              <div className="companion-new-idea-fields idea-focus-surface">
+                <div className="idea-focus-toolbar">
+                  <button type="button" className="idea-focus-back" onClick={clearNewIdeaDraft}>← Ideas</button>
+                  {!draftIdeaHasTable && <button type="button" className="card-table-corner" onClick={() => {
+                    const notes = draftIdeaDetails.trim() ? [...draftIdeaNotes, newIdeaNote(draftIdeaDetails.trim())] : draftIdeaNotes;
+                    setDraftIdeaTable(addNotesToCardTable(draftIdeaTable, notes));
+                    setDraftIdeaNotes([]);
+                    setDraftIdeaDetails("");
+                    setDraftIdeaHasTable(true);
+                  }}>+ Table</button>}
+                </div>
+                <input className="idea-focus-title" value={draftIdeaTitle}
                     onChange={e => setDraftIdeaTitle(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); saveNewIdea(); } }}
-                    placeholder="Idea name" aria-label="New idea name" />
-                </label>
-                <label className="companion-picker-field">
-                  <span className="companion-picker-label">Categories</span>
+                    placeholder="Idea title" aria-label="New idea name" />
+                <div className="idea-focus-category"><span>Categories</span>
                   <IdeaCategoryPicker types={ideaTypes} selected={draftIdeaTypes} onChange={setDraftIdeaTypes} label="New idea categories" />
-                </label>
-                <label className="companion-picker-field">
-                  <span className="companion-picker-label">Details</span>
-                  <textarea className="companion-textarea companion-idea-detail-text" value={draftIdeaDetails}
-                    onChange={e => setDraftIdeaDetails(e.target.value)} placeholder="Add idea details" aria-label="New idea details" rows={4} />
-                </label>
+                </div>
+                {!draftIdeaHasTable && <details className="notecard-details idea-notes" open>
+                  <summary>Notes</summary>
+                  <ul className="notecard-change-list">{draftIdeaNotes.map(note => <li key={note.id} className={"notecard-change-row" + (note.done ? " is-done" : "")}>
+                    <label className="notecard-change-check" title="Mark idea note complete"><input type="checkbox" className="notecard-change-done" checked={!!note.done}
+                      onChange={event => setDraftIdeaNotes(previous => previous.map(item => item.id === note.id ? { ...item, done:event.target.checked } : item))}
+                      aria-label={"Mark idea note complete " + note.text} /></label>
+                    <textarea value={note.text} rows={1} ref={sizeIdeaNote} onChange={event => {
+                      sizeIdeaNote(event.target);
+                      setDraftIdeaNotes(previous => previous.map(item => item.id === note.id ? { ...item, text:event.target.value } : item));
+                    }} aria-label="Idea note" />
+                    <button type="button" className="notecard-icon-button" onClick={() => setDraftIdeaNotes(previous => previous.filter(item => item.id !== note.id))}
+                      title="Remove idea note" aria-label="Remove idea note">×</button>
+                  </li>)}</ul>
+                  <div className="notecard-add-change"><span className="notecard-bullet" aria-hidden="true">•</span>
+                    <input value={draftIdeaDetails} onChange={event => setDraftIdeaDetails(event.target.value)}
+                      onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                        event.preventDefault();
+                        if (draftIdeaDetails.trim()) { setDraftIdeaNotes(previous => [...previous, newIdeaNote(draftIdeaDetails.trim())]); setDraftIdeaDetails(""); }
+                      } }} placeholder="Add note" aria-label="Add idea note" />
+                    <button type="button" disabled={!draftIdeaDetails.trim()} onClick={() => { setDraftIdeaNotes(previous => [...previous, newIdeaNote(draftIdeaDetails.trim())]); setDraftIdeaDetails(""); }} aria-label="Save idea note">+</button>
+                  </div>
+                </details>}
+                {draftIdeaHasTable && <CardTableEditor simple table={draftIdeaTable} onChange={change => setDraftIdeaTable(current => change(current))} />}
                 <div className="companion-new-idea-actions">
                   <button type="button" className="companion-add-button" disabled={!draftIdeaTitle.trim()} onClick={saveNewIdea}>Save idea</button>
-                  <button type="button" className="companion-table-open" onClick={clearNewIdeaDraft}>Cancel</button>
                 </div>
               </div>
             </details>
@@ -13709,22 +14703,42 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                 </div>)}
               </div>
             </details>
+            {selected && <button type="button" className="idea-focus-back" onClick={() => {
+              commitTitleDraft(selected.id);
+              commitIdeaDetailDraft(selected.id, undefined, true);
+              setActiveId(null);
+            }}>← Ideas</button>}
             <div className={"companion-unplaced-list" + (ideaLayout === "board" ? " is-board" : "")}>
               {triageCards.length === 0 && <div className="companion-empty-note">No ideas match this view.</div>}
               {triageCards.map(card => {
                 const active = selected && selected.id === card.id;
                 const snippet = companionSnippet(card);
                 return (
-                  <article key={card.id} className={"companion-unplaced-card" + (active ? " is-active" : "") + (dropIdeaId === card.id ? " is-drop-target" : "")}
+                  <article key={card.id} className={"companion-unplaced-card" + (card.cardTable ? " has-table" : "") + (active ? " is-active" : "") + (dropIdeaId === card.id ? " is-drop-target" : "")}
                     onDragOver={event => { if (ideaLayout === "board" && draggedIdeaId.current && draggedIdeaId.current !== card.id) { event.preventDefault(); setDropIdeaId(card.id); } }}
                     onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDropIdeaId(null); }}
                     onDrop={event => { if (!draggedIdeaId.current) return; event.preventDefault(); reorderIdeas(draggedIdeaId.current, card.id); draggedIdeaId.current = null; setDropIdeaId(null); }}>
-                    <button type="button" className="companion-unplaced-card-main" onClick={() => setActiveId(active ? null : card.id)}>
+                    {active ? <div className="idea-focus-header">
+                      <input className="idea-focus-title" value={titleDraftValueFor(card)}
+                        onChange={event => setTitleDrafts(prev => ({ ...prev, [card.id]:event.target.value }))}
+                        onBlur={() => commitTitleDraft(card.id)} onKeyDown={event => handleTitleKeyDown(event, card.id)}
+                        aria-label="Idea name" placeholder="Idea title" />
+                      <div className="idea-focus-actions">
+                        {!card.cardTable && <button type="button" className="card-table-corner" onClick={event => {
+                          event.stopPropagation();
+                          patchCard(card.id, current => tableOnlyCardPatch(current, true, ideaNoteDrafts[card.id]));
+                          setIdeaNoteDrafts(previous => ({ ...previous, [card.id]:"" }));
+                        }}
+                          title="Add table" aria-label={"Add table to " + (card.title || "idea")}>+ Table</button>}
+                        <button type="button" className="companion-archive-button" onClick={() => archiveIdeaCard(card.id)}
+                          title="Archive idea" aria-label="Archive idea"><ArchiveTrayIcon size={18} /></button>
+                      </div>
+                    </div> : <button type="button" className="companion-unplaced-card-main" onClick={() => setActiveId(card.id)}>
                       {companionIdeaTypeIds(card, ideaTypes).length > 0 && <span className="companion-unplaced-type">{companionIdeaTypeLabel(card, ideaTypes)}</span>}
                       <span className="companion-unplaced-title">{card.title || "Untitled"}</span>
                       {snippet && <span className="companion-unplaced-snippet">{snippet}</span>}
-                    </button>
-                    {ideaLayout === "board" && <>
+                    </button>}
+                    {ideaLayout === "board" && !active && <>
                       <span className="companion-idea-drag" role="button" tabIndex="0" draggable="true" title="Drag to reorder idea" aria-label={"Drag to reorder " + (card.title || "idea")}
                         onDragStart={event => { draggedIdeaId.current = card.id; event.dataTransfer.setData("text/plain", card.id); event.dataTransfer.effectAllowed = "move"; }}
                         onDragEnd={() => { draggedIdeaId.current = null; setDropIdeaId(null); }}
@@ -13736,49 +14750,34 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                     </>}
                     {active && (
                       <div className="companion-unplaced-actions">
-                        <div className="companion-idea-edit-fields">
-                          <label className="companion-idea-edit-field">
-                            <span>Idea name</span>
-                            <input
-                              className="companion-title-input is-idea"
-                              value={titleDraftValueFor(card)}
-                              onChange={e => setTitleDrafts(prev => ({ ...prev, [card.id]:e.target.value }))}
-                              onBlur={() => commitTitleDraft(card.id)}
-                              onKeyDown={event => handleTitleKeyDown(event, card.id)}
-                              aria-label="Idea name"
-                              placeholder="Untitled idea"
-                            />
-                          </label>
-                          <label className="companion-idea-edit-field">
-                            <span>Categories</span>
-                            <IdeaCategoryPicker types={ideaTypes} selected={companionIdeaTypeIds(card, ideaTypes)}
-                              onChange={ids => patchCard(card.id, { ideaTypes:ids, ideaType:ids[0] || "" })} label="Idea categories" />
-                          </label>
-                          <label className="companion-idea-edit-field">
-                            <span>Details</span>
-                            <textarea
-                              className="companion-textarea companion-idea-detail-text"
-                              value={ideaDetailDraftValueFor(card)}
-                              onChange={e => queueIdeaDetailDraft(card.id, e.target.value)}
-                              onBlur={() => commitIdeaDetailDraft(card.id)}
-                              aria-label="Idea details"
-                              placeholder="Add idea details"
-                            />
-                          </label>
-                          {card.ideaCard && safeArray(card.changes).some(change => !change.archived) &&
-                            <div className="companion-idea-edit-field companion-idea-scene-changes">
-                              <span>Scene changes</span>
-                              {safeArray(card.changes).filter(change => !change.archived).map(change =>
-                                <textarea key={change.id} value={change.text || ""} rows={2}
-                                  onChange={event => patchCard(card.id, current => ({ changes:safeArray(current.changes).map(item => asId(item.id) === asId(change.id) ? touchRecord(item, { text:event.target.value }) : item) }))}
-                                  aria-label={"Scene change in " + (card.title || "idea")} />)}
-                            </div>}
+                        <div className="idea-focus-category"><span>Categories</span>
+                          <IdeaCategoryPicker types={ideaTypes} selected={companionIdeaTypeIds(card, ideaTypes)}
+                            onChange={ids => patchCard(card.id, { ideaTypes:ids, ideaType:ids[0] || "" })} label="Idea categories" />
                         </div>
+                        {!card.cardTable && <details className="notecard-details idea-notes" open>
+                          <summary>Notes</summary>
+                          <ul className="notecard-change-list">{ideaNoteRows(card).map(note => <li key={note.id} className={"notecard-change-row" + (note.done ? " is-done" : "")}>
+                            <label className="notecard-change-check" title="Mark idea note complete"><input type="checkbox" className="notecard-change-done" checked={!!note.done}
+                              onChange={event => patchIdeaNotes(card.id, changes => changes.map(item => asId(item.id) === asId(note.id) ? touchRecord(item, { done:event.target.checked }) : item))}
+                              aria-label={"Mark idea note complete " + (note.text || "note")} /></label>
+                            <textarea value={note.text || ""} rows={1} ref={sizeIdeaNote} onChange={event => {
+                              sizeIdeaNote(event.target);
+                              patchIdeaNotes(card.id, changes => changes.map(item => asId(item.id) === asId(note.id) ? touchRecord(item, { text:event.target.value }) : item));
+                            }} aria-label={"Idea note for " + (card.title || "idea")} />
+                            <button type="button" className="notecard-icon-button" onClick={() => patchIdeaNotes(card.id, changes => changes.map(item => asId(item.id) === asId(note.id) ? touchRecord(item, archiveFields()) : item))}
+                              title="Remove idea note" aria-label="Remove idea note">×</button>
+                          </li>)}</ul>
+                          <div className="notecard-add-change"><span className="notecard-bullet" aria-hidden="true">•</span>
+                            <input value={ideaNoteDrafts[card.id] || ""} onChange={event => setIdeaNoteDrafts(previous => ({ ...previous, [card.id]:event.target.value }))}
+                              onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) addIdeaNote(card); }}
+                              placeholder="Add note" aria-label={"Add idea note to " + (card.title || "idea")} />
+                            <button type="button" disabled={!String(ideaNoteDrafts[card.id] || "").trim()} onClick={() => addIdeaNote(card)}
+                              aria-label={"Save idea note to " + (card.title || "idea")}>+</button>
+                          </div>
+                        </details>}
+                        {card.cardTable && <CardTableEditor simple table={card.cardTable} onChange={change => patchCard(card.id, current => ({ cardTable:change(current.cardTable) }))} />}
                         <div className="companion-unplaced-action-row">
                           <button type="button" className="companion-assign-button" onClick={() => turnIdeaIntoNotecard(card)}>Turn into notecard</button>
-                          <button type="button" className="companion-archive-button" onClick={() => archiveIdeaCard(card.id)} title="Archive idea" aria-label="Archive idea">
-                            <ArchiveTrayIcon size={18} />
-                          </button>
                         </div>
                       </div>
                     )}
@@ -13797,13 +14796,18 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
           <button type="button" className="companion-picker-tab is-active">Scene List</button>
           <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setActiveId(null); }}>Menu</button>
         </div>}
+        {isProgressMode && <div className="companion-picker-tabs companion-workspace-nav" aria-label="Progress workspace">
+          <button type="button" className="companion-picker-tab is-active">Progress</button>
+          <button type="button" className="companion-picker-tab" onClick={() => { setCompanionMode("menu"); setActiveId(null); }}>Menu</button>
+        </div>}
 
       </div>
 
       {isNotecardsMode && <NotecardsWorkspace scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards}
-        showToast={showToast} focusedId={focusedNotecardId} setFocusedId={setFocusedNotecardId} onTurnIntoIdea={turnNotecardIntoIdea} syncLabel={syncLabel} syncError={syncError} />}
-      {isSceneListMode && <CompanionSceneList scenes={scenes} setScenes={setScenes} notecards={notecards} setNotecards={setNotecards}
-        openNotecard={id => { setFocusedNotecardId(id); setCompanionMode("notecards"); }} />}
+        sequences={sequences} showToast={showToast} focusedId={focusedNotecardId} setFocusedId={setFocusedNotecardId} onTurnIntoIdea={turnNotecardIntoIdea} syncLabel={syncLabel} syncError={syncError} />}
+      {isSceneListMode && <CompanionSceneList sequences={sequences} setSequences={setSequences}
+        openProgressScene={row => { setProgressFocusSceneId(row.id); setCompanionMode("progress"); }} />}
+      {isProgressMode && <CompanionProgressWorkspace sequences={sequences} setSequences={setSequences} showToast={showToast} initialSceneId={progressFocusSceneId} />}
 
       {isSequenceMode && sequenceView === "table" && (
         <section className="companion-table-panel" aria-label="View scenes and sequences">
@@ -14694,13 +15698,16 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
   const archivedTotal = archiveBuckets.archivedCards.length + archiveBuckets.archivedTaskRows.length + archiveBuckets.archivedMomentRows.length;
   const pagesDone = getTotalPagesDone(sequences);
   const pageGoal = getTotalPageGoal(sequences);
+  const scriptProgress = companionScriptProgress(sequences);
   const activeSequenceOrder = getActiveSequenceOrder(sequences);
-  const pctPages = pageGoal > 0 ? Math.min(100, Math.round((pagesDone / pageGoal) * 100)) : 0;
+  const pctPages = scriptProgress.percent ?? 0;
   const pctRewriteTasks = stats.totalRewriteTasks ? Math.round((stats.completedRewriteTasks / stats.totalRewriteTasks) * 100) : 0;
   const bar = (pct, color) => <div style={{height:"9px",background:"#f6d0f6",borderRadius:"999px",overflow:"hidden"}}><div style={{height:"100%",width:pct + "%",background:color}} /></div>;
-  const setSequenceValue = (key, value) => setSequences(prev => ({ ...(prev || {}), [key]: value === "" ? "" : Number(value) }));
+  const setSequenceValue = (key, value) => {
+    if (key === '_pageCurrent' && value !== "" && (!Number.isFinite(Number(value)) || Number(value) < 0)) return;
+    setSequences(prev => ({ ...(prev || {}), [key]:key === '_pageCurrent' ? value : value === "" ? "" : Number(value) }));
+  };
   const currentInputValue = sequences && sequences._pageCurrent !== undefined ? sequences._pageCurrent : pagesDone;
-  const goalInputValue = sequences && sequences._pageGoal !== undefined ? sequences._pageGoal : pageGoal;
   const taskAuditRows = activeSequenceOrder.map(seq => ({
     seq,
     label: getSequenceTitle(sequences, seq),
@@ -14711,14 +15718,14 @@ function ProgressV2Tab({ scenes, sequences, setSequences }) {
       <div className="progress-edit-grid">
         <div className="progress-edit-field">
           <label>Current pages</label>
-          <input type="number" min="0" value={currentInputValue} onChange={e => setSequenceValue('_pageCurrent', e.target.value)} />
+          <input type="number" min="0" step="any" value={currentInputValue} onChange={e => setSequenceValue('_pageCurrent', e.target.value)} />
         </div>
         <div className="progress-edit-field">
           <label>Page goal</label>
-          <input type="number" min="1" value={goalInputValue} onChange={e => setSequenceValue('_pageGoal', e.target.value)} />
+          <output aria-label="Page goal from Progress scenes">{pageGoal}</output>
         </div>
       </div>
-      <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",marginBottom:"10px"}}>{pagesDone} / {pageGoal} pages</div>
+      <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",marginBottom:"10px"}}>{scriptProgress.label}</div>
       {bar(pctPages, "#DA005F")}
       <div style={{fontSize:"1.3em",fontWeight:800,color:"var(--neon-pink)",margin:"22px 0 10px"}}>{stats.rewriteTasksLeft} / {stats.totalRewriteTasks} scene changes left</div>
       {bar(pctRewriteTasks, "#63B6A4")}
@@ -14783,7 +15790,7 @@ function App() {
   }, []);
   const [activeTab, setActiveTab] = useState(() => {
     const savedTab = localStorage.getItem("pickme_active_tab");
-    return savedTab && savedTab !== "script" && savedTab !== "scene-list" ? savedTab : "companion";
+    return savedTab && !["script", "scene-list", "progress"].includes(savedTab) ? savedTab : "companion";
   });
   const [dbxSyncStatus, setDbxSyncStatus] = useState('idle'); // 'idle'|'syncing'|'error'
   const [dbxConnected, setDbxConnected] = useState(() => DBX.isConnected());
@@ -15155,7 +16162,6 @@ function App() {
 
   const SIMPLE_TABS = [
     { id: "companion",  label: "Companion" },
-    { id: "progress",   label: "Progress" },
     { id: "archive",    label: "Archive" },
     { id: "notes",      label: "Scene Notes" },
     { id: "playlist",   label: "The Playlist" },
@@ -15164,6 +16170,7 @@ function App() {
   const ADVANCED_TABS = [
     { id: "script",    label: "Script Rail" },
     { id: "scenes",    label: "Board" },
+    { id: "progress",  label: "Previous Progress" },
     { id: "question",  label: "Scene Question" },
     { id: "eval",      label: "Scene Evaluation" },
     { id: "ritual",    label: "Pre-Writing Ritual" },
@@ -15237,39 +16244,18 @@ function App() {
       )}
       {showGlobalSequenceProgress && showSequenceBar && (
         <div className="progress-bar-container">
-          {Object.keys(sequences).length > 0 ? (
-            <>
-              {(() => {
-                const totalCompleted = getTotalPagesDone(sequences);
-                const totalPages = getTotalPageGoal(sequences);
-                const totalPercentage = totalPages > 0 ? Math.round((totalCompleted / totalPages) * 100) : 0;
-
-                return (
-                  <>
-                    <div style={{display: "flex", alignItems: "center", gap: "12px", width: "100%"}}>
-                      <span style={{color: "#EA258D", fontSize: "1.4em", flexShrink: 0}}>✓</span>
-                      <div style={{flex: 1}}>
-                        <div style={{fontSize: "0.9em", fontWeight: "600", color: "#333", marginBottom: "6px"}}>{totalPercentage}% Complete</div>
-                        <div style={{width: "100%", height: "8px", backgroundColor: "rgba(0,0,0,0.1)", borderRadius: "4px", overflow: "hidden"}}>
-                          <div style={{height: "100%", width: `${totalPercentage}%`, backgroundColor: "#EA258D", transition: "width 0.3s ease"}}></div>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-              <button className="progress-toggle-btn" onClick={() => setShowSequenceBar(false)} title="Hide progress">
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 3 L5 7 L9 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="progress-feature-name">No sequences yet</div>
-              <button className="progress-toggle-btn" onClick={() => setShowSequenceBar(false)} title="Hide progress">
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 3 L5 7 L9 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-            </>
-          )}
+          {(() => {
+            const totalProgress = companionScriptProgress(sequences);
+            return <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:"0.9em",fontWeight:600,color:"#965B78",marginBottom:"6px"}}>{totalProgress.label}</div>
+              <div style={{width:"100%",height:"8px",backgroundColor:"#F8EAF1",borderRadius:"4px",overflow:"hidden"}}>
+                <div style={{height:"100%",width:(totalProgress.percent === null ? 0 : totalProgress.percent) + "%",backgroundColor:"#DCA2BF",transition:"width 0.3s ease"}} />
+              </div>
+            </div>;
+          })()}
+          <button className="progress-toggle-btn" onClick={() => setShowSequenceBar(false)} title="Hide progress">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 3 L5 7 L9 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
         </div>
       )}
 

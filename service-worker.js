@@ -1,4 +1,4 @@
-const CACHE_NAME = "pick-me-writers-assistant-20261006a";
+const CACHE_NAME = "pick-me-writers-assistant-20261019b";
 const CORE_ASSETS = ["./", "./index.html", "./manifest.json", "./icon.png"];
 
 self.addEventListener("install", event => {
