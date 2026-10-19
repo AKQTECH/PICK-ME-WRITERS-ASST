@@ -5276,16 +5276,19 @@
 
         .card-table-editor { min-width: 0; }
         .card-table-heading { align-items: baseline; display: flex; gap: 12px; justify-content: space-between; }
-        .card-table-heading h3 { color: #E668A7; font-size: 0.78rem; font-weight: 800; margin: 0; text-transform: uppercase; }
-        .card-table-heading span, .card-table-preview { color: #C3578D; font-size: 0.74rem; font-weight: 700; }
+        .card-table-heading h3 { color: #F2C8DC; font-size: 0.78rem; font-weight: 800; margin: 0; text-transform: uppercase; }
+        .card-table-heading span { color: #F2C8DC; font-size: 0.74rem; font-weight: 700; }
+        .card-table-preview { color: #C3578D; font-size: 0.74rem; font-weight: 700; }
         .card-table-scroll { max-width: 100%; overflow-x: auto; }
         .card-table-editor table { border-collapse: collapse; table-layout: fixed; width: 100%; }
         .card-table-editor th, .card-table-editor td { border-bottom: 1px solid var(--companion-line); padding: 6px; vertical-align: top; }
         .card-table-editor .card-table-check-heading, .card-table-editor .card-table-check-cell { text-align: center; width: 48px; }
+        .card-table-editor thead th { vertical-align: middle; }
+        .card-table-editor .card-table-check-heading > span { align-items: center; color: #000000; display: flex; font-size: 0.72rem; font-weight: 800; justify-content: center; min-height: 36px; text-transform: uppercase; }
         .card-table-editor .card-table-row-actions { text-align: right; width: 36px; }
         .card-table-editor .card-table-column-heading { align-items: center; display: flex; gap: 4px; }
         .card-table-editor input:not([type="checkbox"]), .card-table-editor textarea { background: #FFFFFF !important; border: 1px solid var(--companion-line) !important; border-radius: 4px !important; box-sizing: border-box; color: #000000 !important; font: inherit; min-width: 0; padding: 7px 8px !important; width: 100%; }
-        .card-table-editor textarea { line-height: 1.4; min-height: 58px; resize: vertical; }
+        .card-table-editor textarea { line-height: 1.4; min-height: 58px; overflow-y: hidden; resize: vertical; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
         .card-table-editor input:not([type="checkbox"]) { font-size: 0.72rem; font-weight: 800; min-height: 36px; }
         .card-table-editor input[type="checkbox"] { accent-color: #C3578D; cursor: pointer; height: 18px; margin: 8px 0 0; width: 18px; }
         .card-table-editor tr.is-done textarea { color: #C3578D !important; text-decoration: line-through; }
@@ -5293,7 +5296,7 @@
         .card-table-corner { background: transparent; border: 0; color: #F2C8DC; cursor: pointer; flex: 0 0 auto; font: inherit; font-size: 0.68rem; font-weight: 800; min-height: 30px; padding: 4px; text-transform: uppercase; white-space: nowrap; }
         .card-table-corner:hover, .card-table-corner:focus-visible { color: #C3578D; }
         .card-table-editor button:disabled { cursor: default; opacity: 0.35; }
-        .card-table-editor .card-table-column-heading button, .card-table-editor .card-table-row-actions button { border: 0; color: #C3578D; font-size: 1rem; padding: 0; width: 28px; }
+        .card-table-editor .card-table-row-actions button { border: 0; color: #F2C8DC; font-size: 1rem; padding: 0; width: 28px; }
         .card-table-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .card-table-format { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 360px; }
         .card-table-format button { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 800; min-height: 44px; text-transform: uppercase; }
@@ -5317,6 +5320,8 @@
         body.pwa-build .card-table-editor table { min-width: 420px; }
         body.pwa-build .card-table-editor th:not(.card-table-check-heading):not(.card-table-row-actions) { min-width: 160px; }
         body.pwa-build .card-table-editor textarea { min-height: 72px; }
+        body.pwa-build .card-table-editor .card-table-column-heading input,
+        body.pwa-build .card-table-editor .card-table-check-heading > span { min-height: 44px; }
         body.pwa-build .card-table-editor button, body.pwa-build .card-table-add { min-height: 44px; }
         body.pwa-build .card-table-add { margin-top: 16px; }
         body.pwa-build .card-table-format { max-width: none; }
@@ -5370,26 +5375,26 @@
         .companion-unplaced-card.is-active .card-table-add { justify-self: start; margin-top: 0; }
         .companion-unplaced-card.is-active .companion-unplaced-action-row { border-top: 1px solid var(--companion-line); padding-top: 16px; }
         .idea-table-editor { border-top: 1px solid var(--companion-line); min-width: 0; padding-top: 14px; }
-        .idea-table-heading { align-items: center; color: #C3578D; display: flex; font-size: 0.72rem; font-weight: 800; justify-content: space-between; margin-bottom: 6px; text-transform: uppercase; }
+        .idea-table-heading { align-items: center; color: #F2C8DC; display: flex; font-size: 0.72rem; font-weight: 800; justify-content: space-between; margin-bottom: 6px; text-transform: uppercase; }
         .idea-table-row { align-items: start; border-bottom: 1px solid var(--companion-line); display: grid; gap: 10px; grid-template-columns: 22px minmax(0, 1fr) 30px; padding: 10px 0; }
         .idea-table-check { align-items: center; display: flex; height: 36px; justify-content: center; }
         .idea-table-check input { accent-color: #C3578D; cursor: pointer; height: 18px; margin: 0; width: 18px; }
         .idea-table-cells { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); min-width: 0; }
         .idea-table-cells label { display: grid; gap: 4px; min-width: 0; }
         .idea-table-cells span { color: #C3578D; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
-        .idea-table-cells textarea { background: transparent; border: 0; border-bottom: 1px solid #F1BBD6; border-radius: 0; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.92rem; line-height: 1.4; min-height: 42px; min-width: 0; padding: 3px 0; resize: vertical; width: 100%; }
+        .idea-table-cells textarea { background: transparent; border: 0; border-bottom: 1px solid #F1BBD6; border-radius: 0; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.92rem; line-height: 1.4; min-height: 42px; min-width: 0; overflow-y: hidden; padding: 3px 0; resize: vertical; transition: border-color 0.15s ease, box-shadow 0.15s ease; width: 100%; }
         .idea-table-cells textarea:focus { border-bottom-color: #E668A7; outline: none; }
         .idea-table-row.is-done textarea { color: #C3578D; text-decoration: line-through; }
-        .idea-table-remove { background: transparent; border: 0; color: #C3578D; cursor: pointer; font: inherit; font-size: 1.1rem; height: 36px; padding: 0; width: 30px; }
+        .idea-table-remove { background: transparent; border: 0; color: #F2C8DC; cursor: pointer; font: inherit; font-size: 1.1rem; height: 36px; padding: 0; width: 30px; }
         .idea-table-footer { margin-top: 12px; }
         .idea-table-column-list > button { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 800; min-height: 36px; padding: 6px 12px; text-transform: uppercase; }
         .table-footer-controls { align-items: center; display: flex; flex-wrap: wrap; gap: 8px 18px; max-width: none; }
         .table-footer-controls > button, .table-footer-controls > .idea-table-columns > summary {
             align-items: center; background: transparent !important; border: 0 !important; border-radius: 0; box-sizing: border-box;
-            color: #C3578D !important; cursor: pointer; display: inline-flex; font: inherit; font-size: 0.72rem; font-weight: 800;
+            color: #F2C8DC !important; cursor: pointer; display: inline-flex; font: inherit; font-size: 0.72rem; font-weight: 800;
             height: auto !important; justify-content: flex-start; line-height: 1.2; min-height: 36px !important;
             padding: 4px 2px !important; text-align: left; text-transform: uppercase; white-space: nowrap;
-            width: auto; -webkit-text-fill-color: #C3578D !important;
+            width: auto; -webkit-text-fill-color: #F2C8DC !important;
         }
         .table-footer-controls > button:hover, .table-footer-controls > .idea-table-columns > summary:hover { color: #E668A7 !important; -webkit-text-fill-color: #E668A7 !important; }
         .table-footer-controls > button:focus-visible, .table-footer-controls > .idea-table-columns > summary:focus-visible { outline: 2px solid #E668A7; outline-offset: 2px; }
@@ -5402,7 +5407,7 @@
         .idea-table-column-list { display: grid; gap: 8px; margin-top: 8px; }
         .idea-table-column { align-items: center; display: flex; gap: 8px; }
         .idea-table-column input { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; color: #000000; flex: 1; font: inherit; min-height: 36px; min-width: 0; padding: 6px 10px; }
-        .idea-table-column button { background: transparent; border: 0; color: #C3578D; cursor: pointer; font: inherit; font-size: 1.1rem; min-height: 36px; width: 36px; }
+        .idea-table-column button { background: transparent; border: 0; color: #F2C8DC; cursor: pointer; font: inherit; font-size: 1.1rem; min-height: 36px; width: 36px; }
         .idea-table-column button:disabled { opacity: 0.35; }
         .idea-table-column-list > button { justify-self: start; }
         @media (max-width: 760px) {
@@ -5810,7 +5815,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.75";
+const APP_VERSION = "1.2.76";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -12800,7 +12805,83 @@ function tableOnlyCardPatch(card, idea = false, pendingText = "") {
   };
 }
 
+function useCardTableSizing(table, simple) {
+  const editorRef = React.useRef(null);
+  const rowMinimums = React.useRef(new Map());
+  const cellMinimums = React.useRef(new WeakMap());
+  React.useLayoutEffect(() => {
+    const root = editorRef.current;
+    if (!root) return;
+    let frame = null;
+    let rootWidth = root.getBoundingClientRect().width;
+    const expected = new WeakMap();
+    const sharedRow = row => !simple || getComputedStyle(row.querySelector('.idea-table-cells')).gridTemplateColumns.trim().split(/\s+/).length > 1;
+    const naturalHeight = cell => {
+      const width = cell.getBoundingClientRect().width;
+      if (!width) return 0;
+      const style = getComputedStyle(cell);
+      // Measure an invisible copy so the focused field never collapses or moves the caret.
+      const measure = cell.cloneNode(false);
+      measure.value = cell.value;
+      measure.removeAttribute('aria-label');
+      measure.setAttribute('aria-hidden', 'true');
+      measure.tabIndex = -1;
+      Object.assign(measure.style, { position:'absolute', visibility:'hidden', pointerEvents:'none',
+        height:'0px', minHeight:'0px', maxHeight:'none', width:width + 'px', overflow:'hidden', resize:'none' });
+      cell.parentElement.appendChild(measure);
+      const height = Math.max(parseFloat(style.minHeight) || 0,
+        measure.scrollHeight + (parseFloat(style.borderTopWidth) || 0) + (parseFloat(style.borderBottomWidth) || 0));
+      measure.remove();
+      return Math.ceil(height);
+    };
+    const sizeRows = () => {
+      frame = null;
+      root.querySelectorAll('[data-table-row-id]').forEach(row => {
+        const cells = Array.from(row.querySelectorAll('textarea'));
+        const heights = cells.map(naturalHeight);
+        const shared = sharedRow(row);
+        const rowHeight = Math.max(rowMinimums.current.get(row.dataset.tableRowId) || 0, ...heights);
+        cells.forEach((cell, index) => {
+          const height = shared ? rowHeight : Math.max(heights[index], cellMinimums.current.get(cell) || 0);
+          if (!height) return;
+          expected.set(cell, height);
+          if (Math.abs(cell.getBoundingClientRect().height - height) > 0.5) cell.style.height = height + 'px';
+        });
+      });
+    };
+    const schedule = () => { if (frame === null) frame = requestAnimationFrame(sizeRows); };
+    sizeRows();
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(entries => {
+      entries.forEach(({ target }) => {
+        if (target === root) {
+          const width = root.getBoundingClientRect().width;
+          if (Math.abs(width - rootWidth) > 0.5) { rootWidth = width; schedule(); }
+          return;
+        }
+        const height = target.getBoundingClientRect().height;
+        if (Math.abs(height - (expected.get(target) || height)) <= 1) return;
+        const row = target.closest('[data-table-row-id]');
+        if (!row) return;
+        if (sharedRow(row)) rowMinimums.current.set(row.dataset.tableRowId, height);
+        else cellMinimums.current.set(target, height);
+        schedule();
+      });
+    }) : null;
+    if (observer) {
+      observer.observe(root);
+      root.querySelectorAll('textarea').forEach(cell => observer.observe(cell));
+    } else window.addEventListener('resize', schedule);
+    return () => {
+      if (observer) observer.disconnect();
+      else window.removeEventListener('resize', schedule);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
+  }, [table, simple]);
+  return editorRef;
+}
+
 function CardTableEditor({ table, onChange, simple = false }) {
+  const editorRef = useCardTableSizing(table, simple);
   const columns = safeArray(table && table.columns);
   const rows = safeArray(table && table.rows);
   const visibleColumns = columns.filter(column => !column.archived);
@@ -12809,9 +12890,9 @@ function CardTableEditor({ table, onChange, simple = false }) {
     const base = current && typeof current === "object" ? current : newCardTable();
     return change(base);
   });
-  if (simple) return <section className="idea-table-editor" aria-label="Card table" onClick={event => event.stopPropagation()}>
+  if (simple) return <section ref={editorRef} className="idea-table-editor" aria-label="Card table" onClick={event => event.stopPropagation()}>
     <div className="idea-table-heading"><span>Table</span><span>{visibleRows.filter(row => row.done).length}/{visibleRows.length} checked</span></div>
-    {visibleRows.map((row, index) => <div className={"idea-table-row" + (row.done ? " is-done" : "")} key={row.id}>
+    {visibleRows.map((row, index) => <div className={"idea-table-row" + (row.done ? " is-done" : "")} key={row.id} data-table-row-id={row.id}>
       <label className="idea-table-check" title="Mark row complete">
         <input type="checkbox" checked={!!row.done} onChange={event => update(current => ({ ...current, rows:safeArray(current.rows).map(item => item.id === row.id ? { ...item, done:event.target.checked } : item) }))}
           aria-label={"Check table row " + (index + 1)} />
@@ -12841,17 +12922,15 @@ function CardTableEditor({ table, onChange, simple = false }) {
       <button type="button" onClick={() => update(current => ({ ...current, columns:[...safeArray(current.columns), { id:newCardTableId("column"), label:"Column " + (safeArray(current.columns).length + 1) }] }))}>+ Column</button>
     </div>
   </section>;
-  return <section className="card-table-editor" aria-label="Card table" onClick={event => event.stopPropagation()}>
+  return <section ref={editorRef} className="card-table-editor" aria-label="Card table" onClick={event => event.stopPropagation()}>
     <div className="card-table-heading"><h3>Table</h3><span>{visibleRows.filter(row => row.done).length}/{visibleRows.length} checked</span></div>
     <div className="card-table-scroll"><table style={{ minWidth:(visibleColumns.length * 175 + 84) + "px" }}>
-      <thead><tr><th scope="col" className="card-table-check-heading">Done</th>
+      <thead><tr><th scope="col" className="card-table-check-heading"><span>Done</span></th>
         {visibleColumns.map((column, index) => <th scope="col" key={column.id}><div className="card-table-column-heading">
           <input value={column.label || ""} onChange={event => update(current => ({ ...current, columns:safeArray(current.columns).map(item => item.id === column.id ? { ...item, label:event.target.value } : item) }))}
             aria-label={"Column " + (index + 1) + " label"} placeholder="Column name" />
-          <button type="button" disabled={visibleColumns.length < 2} onClick={() => update(current => ({ ...current, columns:safeArray(current.columns).map(item => item.id === column.id ? { ...item, ...archiveFields() } : item) }))}
-            title="Remove column" aria-label={"Remove column " + (column.label || index + 1)}>−</button>
         </div></th>)}<th scope="col" className="card-table-row-actions" aria-label="Row actions"></th></tr></thead>
-      <tbody>{visibleRows.map((row, index) => <tr key={row.id} className={row.done ? "is-done" : ""}>
+      <tbody>{visibleRows.map((row, index) => <tr key={row.id} data-table-row-id={row.id} className={row.done ? "is-done" : ""}>
         <td className="card-table-check-cell"><input type="checkbox" checked={!!row.done} onChange={event => update(current => ({ ...current, rows:safeArray(current.rows).map(item => item.id === row.id ? { ...item, done:event.target.checked } : item) }))}
           aria-label={"Check table row " + (index + 1)} /></td>
         {visibleColumns.map(column => <td key={column.id}><textarea rows={2} value={String(row.cells && row.cells[column.id] || "")}
