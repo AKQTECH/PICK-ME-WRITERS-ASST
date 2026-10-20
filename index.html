@@ -5824,7 +5824,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.79";
+const APP_VERSION = "1.2.80";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -13497,6 +13497,11 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, sequen
   const displayed = focusedId ? (focused ? [focused] : []) : visible;
   const openCount = visible.filter(card => !card.done).length;
   const completedCount = visible.length - openCount;
+  const focusedChecksLeft = focused ? safeArray(focused.cardTable ? focused.cardTable.rows : focused.changes)
+    .filter(item => !item.archived && !item.done).length : 0;
+  const focusedCountLabel = focused && focused.cardTable
+    ? focusedChecksLeft + (focusedChecksLeft === 1 ? " check left" : " checks left")
+    : focusedChecksLeft + (focusedChecksLeft === 1 ? " note left" : " notes left");
   const scriptProgress = companionScriptProgress(sequences);
   const archiveCard = card => {
     patchScene(card.sourceSceneId, archiveFields());
@@ -13509,7 +13514,7 @@ function NotecardsWorkspace({ scenes, setScenes, notecards, setNotecards, sequen
       {focusedId ? <button type="button" className="notecard-back" onClick={() => setFocusedId(null)}>← Notecards</button> : <h2>Notecards</h2>}
       <div className="notecards-meta">
         <div role="status" className={"notecards-sync-status" + (syncError ? " is-error" : "")}>{syncLabel}</div>
-        <span className="notecards-count">{openCount} open, {completedCount} completed</span>
+        <span className="notecards-count" aria-live="polite">{focusedId ? focusedCountLabel : <>{openCount} open, {completedCount} completed</>}</span>
         {!focusedId && <details className="notecards-progress-toggle">
           <summary>Progress</summary>
           <div className="notecards-script-progress" aria-label="Whole script progress">
