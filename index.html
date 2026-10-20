@@ -5824,7 +5824,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.78";
+const APP_VERSION = "1.2.79";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -9484,6 +9484,9 @@ function withStateWriteLock(work) {
   return navigator.locks && navigator.locks.request
     ? navigator.locks.request("pickme-state-write", { mode:"exclusive" }, work)
     : Promise.resolve().then(work);
+}
+function hasActiveEditorField() {
+  return !!(document.activeElement && document.activeElement.matches("input, textarea, [contenteditable='true']"));
 }
 function saveCanonicalState(state, options) {
   const normalized = normalizeState(state);
@@ -16024,7 +16027,12 @@ function App() {
     withStateWriteLock(() => {
       if (generation !== saveGenerationRef.current) return null;
       const result = rebaseEditorState(parts, lastAppliedStateRef.current, false);
-      return result.conflicts.length ? { result } : { result, state:saveCanonicalState(result.state) };
+      if (result.conflicts.length) return { result };
+      const state = saveCanonicalState(result.state);
+      // A later keystroke can queue before this lock's promise resolves. Advance its editor base now.
+      // Keep unrendered external changes out of that base so stale UI values cannot undo them.
+      lastAppliedStateRef.current = result.externalChanges ? normalizeState({ ...state, ...parts }) : state;
+      return { result, state };
     }).then(outcome => {
       if (!outcome || generation !== saveGenerationRef.current) return;
       pendingLocalSaveRef.current = false;
@@ -16091,21 +16099,21 @@ function App() {
 
   React.useEffect(() => {
     const fromDropbox = event => {
-      if (conflictDraftRef.current || pendingLocalSaveRef.current) { pendingWindowStateRef.current = event.detail; return; }
-      applyIncomingState(event.detail);
+      const newest = loadCanonicalStateFromStorage();
+      if (hasActiveEditorField() || conflictDraftRef.current || pendingLocalSaveRef.current) { pendingWindowStateRef.current = newest; return; }
+      applyIncomingState(newest);
     };
     window.addEventListener("pickme_state_updated", fromDropbox);
     return () => window.removeEventListener("pickme_state_updated", fromDropbox);
   }, [applyIncomingState]);
 
   React.useEffect(() => {
-    const hasActiveEdit = () => document.activeElement && document.activeElement.matches("input, textarea, [contenteditable='true']");
     const receive = input => {
       if (!input) return;
       const saved = loadCanonicalStateFromStorage();
       const newest = saved;
       if (sameSavedValue(newest, lastAppliedStateRef.current)) return;
-      if (hasActiveEdit() || conflictDraftRef.current || pendingLocalSaveRef.current) { pendingWindowStateRef.current = newest; return; }
+      if (hasActiveEditorField() || conflictDraftRef.current || pendingLocalSaveRef.current) { pendingWindowStateRef.current = newest; return; }
       applyIncomingState(newest);
     };
     const onStorage = event => {
@@ -16116,7 +16124,7 @@ function App() {
       if (event.data && event.data.from !== PICKME_WINDOW_ID) receive(event.data.state);
     };
     const onFocusOut = () => setTimeout(() => {
-      if (hasActiveEdit() || conflictDraftRef.current || pendingLocalSaveRef.current || !pendingWindowStateRef.current) return;
+      if (hasActiveEditorField() || conflictDraftRef.current || pendingLocalSaveRef.current || !pendingWindowStateRef.current) return;
       const pending = pendingWindowStateRef.current;
       pendingWindowStateRef.current = null;
       receive(pending);
