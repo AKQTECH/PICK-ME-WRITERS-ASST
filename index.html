@@ -5815,7 +5815,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.76";
+const APP_VERSION = "1.2.77";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -13260,16 +13260,20 @@ function companionScriptProgress(sequences) {
   const current = getStoredNumber(sequences, "_pageCurrent", null);
   const goal = companionTotalPageGoal(sequences);
   if (current === null || goal === null || goal <= 0) return { percent:null, label:"—", cuts:0, adds:0 };
-  // Rounded-up scene currents inflate cuts, so reconcile planned additions against the actual script length.
-  let plannedAdds = 0;
+  let cuts = 0;
+  let adds = 0;
+  let comparedScenes = 0;
   companionProgressRows(sequences).forEach(row => {
     const values = companionProgressNumbers(row, sequences);
     if (values.current === null || values.goal === null) return;
-    plannedAdds += Math.max(0, values.goal - values.current);
+    comparedScenes += 1;
+    cuts += Math.max(0, values.current - values.goal);
+    adds += Math.max(0, values.goal - values.current);
   });
-  const netCut = Number((current - goal).toFixed(10));
-  const adds = Number(Math.max(plannedAdds, -netCut, 0).toFixed(10));
-  const cuts = Number((netCut + adds).toFixed(10));
+  if (!comparedScenes) return { percent:null, label:"—", cuts:0, adds:0 };
+  // Scene counts are rounded; measure their remaining work without forcing them to match the actual script total.
+  cuts = Number(cuts.toFixed(10));
+  adds = Number(adds.toFixed(10));
   const remaining = Number((cuts + adds).toFixed(2));
   const percent = remaining === 0 ? 100 : current <= 0 ? 0 : Math.min(99, Math.max(0, Math.round(100 * (current - remaining) / current)));
   const pageCount = (value, action) => companionPageLabel(value) + (value === 1 ? " page to be " : " pages to be ") + action;
