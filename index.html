@@ -5506,7 +5506,11 @@
         .companion-script-goal-field { color: #C3578D; display: grid; font-size: 0.7rem; font-weight: 800; gap: 6px; min-width: 0; text-transform: uppercase; }
         .companion-script-goal-field output { align-items: center; color: #000000; display: flex; font-size: 0.85rem; min-height: 40px; padding: 7px 0; }
         .companion-script-page-fields input { background: #FFFFFF; border: 1px solid #F1BBD6; border-radius: 4px; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.85rem; min-height: 40px; min-width: 0; padding: 7px 9px; width: 100%; }
-        .companion-progress-tools { margin-bottom: 16px; }
+        .companion-progress-tools { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; margin-bottom: 16px; }
+        .companion-progress-column-toggles { align-items: center; display: flex; gap: 16px; }
+        .companion-progress-column-toggles label { align-items: center; color: #C77C9F; cursor: pointer; display: inline-flex; font-size: 0.72rem; font-weight: 800; gap: 6px; min-height: 36px; text-transform: uppercase; }
+        .companion-progress-column-toggles input[type="checkbox"] { accent-color: #E5A5C4; cursor: pointer; height: 15px; margin: 0; min-height: 0; padding: 0; width: 15px; }
+        .companion-progress-column-toggles input:disabled { cursor: default; opacity: 0.55; }
         .companion-progress-add { display: flex; gap: 8px; margin-top: 18px; max-width: 540px; }
         .companion-progress-add input, .companion-progress-filters select,
         .companion-progress-scene-filter > summary { background: #FFFFFF; border: 1px solid var(--companion-line); border-radius: 4px; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.8rem; min-height: 42px; padding: 8px 10px; }
@@ -5527,10 +5531,12 @@
         .companion-progress-table th, .companion-progress-table td { border-bottom: 1px solid var(--companion-line); padding: 10px 14px; text-align: left; vertical-align: middle; }
         .companion-progress-table th { color: #C3578D; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
         .companion-progress-table th:first-child { width: 50%; }
-        .companion-progress-table th:nth-child(2), .companion-progress-table th:nth-child(3) { width: 14%; }
-        .companion-progress-table th:nth-child(4) { width: 22%; }
+        .companion-progress-table .companion-progress-count-column { width: 14%; }
+        .companion-progress-table .companion-progress-change-column { width: 22%; }
+        .companion-progress-table:not([data-page-columns="both"]) thead th:first-child { width: 75%; }
+        .companion-progress-table:not([data-page-columns="both"]) .companion-progress-count-column { width: 25%; }
         .companion-progress-table tfoot th, .companion-progress-table tfoot td { border-bottom: 0; border-top: 2px solid #F1BBD6; font-weight: 800; }
-        .companion-progress-table tfoot td:nth-child(3) { font-size: 0.96rem; white-space: nowrap; }
+        .companion-progress-table .companion-progress-goal-total { font-size: 0.96rem; white-space: nowrap; }
         .companion-progress-table input[type="number"] { appearance: textfield; background: #FFFFFF; border: 1px solid #E1D5DB; border-radius: 4px; box-sizing: border-box; color: #000000; font: inherit; font-size: 0.84rem; min-height: 40px; min-width: 0; padding: 6px 4px; width: 100%; }
         .companion-progress-table input[type="number"]::-webkit-inner-spin-button,
         .companion-progress-table input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -5600,6 +5606,8 @@
         @media (max-width: 760px) {
             .companion-script-page-fields input { min-height: 44px; }
             .companion-progress-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .companion-progress-tools .companion-progress-filters { width: 100%; }
+            .companion-progress-column-toggles label { min-height: 44px; }
             .companion-progress-filter-options { max-width: calc(100vw - 60px); width: 100%; }
             .companion-progress-add button, .companion-progress-filters select,
             .companion-progress-scene-filter > summary, .companion-progress-select-wrap select { min-height: 44px; }
@@ -5607,14 +5615,15 @@
             .companion-progress-table, .companion-progress-table tbody, .companion-progress-table tfoot { display: block; width: 100%; }
             .companion-progress-table thead { display: none; }
             .companion-progress-table tr { border-bottom: 1px solid var(--companion-line); display: grid; gap: 8px; grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.2fr); padding: 12px 0; }
+            .companion-progress-table:not([data-page-columns="both"]) tbody tr { grid-template-columns: minmax(0, 1fr); }
             .companion-progress-table td { border: 0; display: block; min-width: 0; padding: 0; width: 100%; }
             .companion-progress-table td:first-child { grid-column: 1 / -1; }
             .companion-progress-table td[data-label]:not(:first-child)::before { color: #C3578D; content: attr(data-label); display: block; font-size: 0.66rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
             .companion-progress-table tfoot tr { align-items: center; border-bottom: 0; border-top: 2px solid #F1BBD6; grid-template-columns: minmax(0, 1fr) auto; }
             .companion-progress-table tfoot th, .companion-progress-table tfoot td { border-top: 0; }
             .companion-progress-table tfoot th:first-child { grid-column: 1; white-space: nowrap; width: auto; }
-            .companion-progress-table tfoot td:nth-child(2), .companion-progress-table tfoot td:nth-child(4) { display: none; }
-            .companion-progress-table tfoot td:nth-child(3) { grid-column: 2; text-align: right; }
+            .companion-progress-table .companion-progress-footer-spacer { display: none; }
+            .companion-progress-table .companion-progress-goal-total { grid-column: 2; text-align: right; }
             .companion-progress-table input[type="number"] { min-height: 44px; }
             .companion-progress-title-input { font-size: 0.84rem; }
             .companion-progress-drag { display: none; }
@@ -5815,7 +5824,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.2.77";
+const APP_VERSION = "1.2.78";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -13665,6 +13674,18 @@ function CompanionSceneList({ sequences, setSequences, openProgressScene }) {
 function CompanionProgressWorkspace({ sequences, setSequences, showToast, initialSceneId }) {
   const [newTitle, setNewTitle] = React.useState("");
   const [titleDrafts, setTitleDrafts] = React.useState({});
+  const [pageColumns, setPageColumns] = React.useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("pickme_progress_page_columns") || "null");
+      const current = saved?.current !== false;
+      const goal = saved?.goal !== false;
+      return current || goal ? { current, goal } : { current:true, goal:true };
+    } catch { return { current:true, goal:true }; }
+  });
+  React.useEffect(() => { saveUiPreference("pickme_progress_page_columns", JSON.stringify(pageColumns)); }, [pageColumns]);
+  const showCurrent = pageColumns.current;
+  const showGoal = pageColumns.goal;
+  const showDifference = showCurrent && showGoal;
   const [differenceFilter, setDifferenceFilter] = React.useState("all");
   const [selectedIds, setSelectedIds] = React.useState(initialSceneId ? [initialSceneId] : null);
   const [dropId, setDropId] = React.useState(null);
@@ -13752,6 +13773,12 @@ function CompanionProgressWorkspace({ sequences, setSequences, showToast, initia
       </details>
     </div>
     <div className="companion-progress-tools">
+      <div className="companion-progress-column-toggles" role="group" aria-label="Page columns">
+        <label><input type="checkbox" checked={showCurrent} disabled={!showGoal}
+          onChange={event => setPageColumns(previous => ({ ...previous, current:event.target.checked }))} />Current</label>
+        <label><input type="checkbox" checked={showGoal} disabled={!showCurrent}
+          onChange={event => setPageColumns(previous => ({ ...previous, goal:event.target.checked }))} />Goal</label>
+      </div>
       <div className="companion-progress-filters">
         <details className="companion-progress-scene-filter"><summary>{selectedIds === null ? "All scenes" : selectedIds.length + " selected"}</summary>
           <div className="companion-progress-filter-options">
@@ -13767,8 +13794,11 @@ function CompanionProgressWorkspace({ sequences, setSequences, showToast, initia
         </div>
       </div>
     </div>
-    {shown.length ? <div className="companion-progress-table-wrap"><table className="companion-progress-table">
-      <thead><tr><th scope="col">Scene</th><th scope="col">Current</th><th scope="col">Goal</th><th scope="col">Change needed</th></tr></thead>
+    {shown.length ? <div className="companion-progress-table-wrap"><table className="companion-progress-table" data-page-columns={showDifference ? "both" : showCurrent ? "current" : "goal"}>
+      <thead><tr><th scope="col">Scene</th>
+        {showCurrent && <th scope="col" className="companion-progress-count-column">Current</th>}
+        {showGoal && <th scope="col" className="companion-progress-count-column">Goal</th>}
+        {showDifference && <th scope="col" className="companion-progress-change-column">Change needed</th>}</tr></thead>
       <tbody>{shown.map((row, rowIndex) => {
         const values = companionProgressNumbers(row, sequences);
         return <tr key={row.id} data-progress-id={row.id} className={dropId === row.id ? "is-drop-target" : ""}
@@ -13791,14 +13821,17 @@ function CompanionProgressWorkspace({ sequences, setSequences, showToast, initia
               <button type="button" disabled={rowIndex === shown.length - 1} onClick={() => moveRow(row.id, 1)} aria-label={"Move " + row.title + " down"}>↓</button>
             </span>
           </div></td>
-          <td data-label="Current"><input type="number" min="0" step="any" inputMode="decimal" value={values.currentRaw}
-            onChange={event => setPageValue(row.id, COMPANION_PROGRESS_CURRENT_PREFIX, event.target.value)} aria-label={"Current pages for " + row.title} /></td>
-          <td data-label="Goal"><input type="number" min="0" step="any" inputMode="decimal" value={values.goalRaw}
-            onChange={event => setPageValue(row.id, COMPANION_PROGRESS_GOAL_PREFIX, event.target.value)} aria-label={"Goal pages for " + row.title} /></td>
-          <td data-label="Change needed" className="companion-progress-difference">{companionPageDifference(values.current, values.goal)}</td>
+          {showCurrent && <td data-label="Current"><input type="number" min="0" step="any" inputMode="decimal" value={values.currentRaw}
+            onChange={event => setPageValue(row.id, COMPANION_PROGRESS_CURRENT_PREFIX, event.target.value)} aria-label={"Current pages for " + row.title} /></td>}
+          {showGoal && <td data-label="Goal"><input type="number" min="0" step="any" inputMode="decimal" value={values.goalRaw}
+            onChange={event => setPageValue(row.id, COMPANION_PROGRESS_GOAL_PREFIX, event.target.value)} aria-label={"Goal pages for " + row.title} /></td>}
+          {showDifference && <td data-label="Change needed" className="companion-progress-difference">{companionPageDifference(values.current, values.goal)}</td>}
         </tr>;
       })}</tbody>
-      <tfoot><tr><th scope="row">Total page goal</th><td></td><td aria-live="polite">{Number(totalPageGoal.toFixed(10)).toLocaleString("en-US", { maximumFractionDigits:10 })}</td><td></td></tr></tfoot>
+      {showGoal && <tfoot><tr><th scope="row">Total page goal</th>
+        {showCurrent && <td className="companion-progress-footer-spacer"></td>}
+        <td className="companion-progress-goal-total" aria-live="polite">{Number(totalPageGoal.toFixed(10)).toLocaleString("en-US", { maximumFractionDigits:10 })}</td>
+        {showDifference && <td className="companion-progress-footer-spacer"></td>}</tr></tfoot>}
     </table></div> : <div className="companion-progress-empty">{rows.length ? "No scenes match this view." : "No scenes yet."}</div>}
     <div className="companion-progress-add"><input value={newTitle} onChange={event => setNewTitle(event.target.value)}
       onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) addScene(); }}
