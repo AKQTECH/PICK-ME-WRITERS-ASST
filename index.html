@@ -5682,6 +5682,8 @@ body .preproduction-workspace button { -webkit-text-fill-color:currentColor; }
 .pp-note-line .is-done { text-decoration:line-through; color:#b08d9e; }
 .pp-card footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:24px; }
 .pp-card footer .pp-quiet { color:#D772A4; }
+.preproduction-workspace .pp-card-details>summary { color:#E668A7; font-size:13px; font-weight:800; min-height:32px; padding:6px 0; text-transform:uppercase; }
+.pp-card-details[open]>summary { margin-bottom:10px; }
 .pp-empty { color:#a38b98; font-size:14px; padding:28px 0; }
 .pp-table-scroll { overflow-x:auto; max-width:100%; }
 .pp-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:14px; background:transparent; margin:0; }
@@ -5729,6 +5731,7 @@ body .preproduction-workspace button { -webkit-text-fill-color:currentColor; }
 .pp-archive-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0; border-bottom:1px solid #f2d8e5; }
 @media(max-width:1100px) { .pp-card-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .pp-fields,.pp-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:640px) {
+  .preproduction-workspace .pp-card-details>summary { min-height:44px; padding:12px 0; }
   .pp-finance-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .pp-main-menu { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
   .pp-main-menu button { aspect-ratio:1.5; padding:12px; font-size:12px; }
@@ -5941,7 +5944,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.3.2";
+const APP_VERSION = "1.3.3";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -16343,6 +16346,9 @@ function PPCardTitle({value,onChange,onBlur}) {
 }
 function PPCardLibrary({section,records,setRecords}) {
   const [later,setLater]=React.useState(false),[title,setTitle]=React.useState(''),[focus,setFocus]=React.useState(null),[drafts,setDrafts]=React.useState({});
+  const [detailsOpen,setDetailsOpen]=React.useState({});
+  const toggleDetails=(id,open)=>setDetailsOpen(previous=>previous[id]===open?previous:{...previous,[id]:open});
+  const focusCard=id=>{if(id)toggleDetails(id,true);else if(focus)toggleDetails(focus,false);setFocus(id);};
   const drag=React.useRef(null);
   const rows=ppActive(records).filter(row=>row.type==='card'&&row.section===section&&!!row.later===later).sort((a,b)=>(a.order||0)-(b.order||0));
   const patch=(id,change)=>setRecords(previous=>previous.map(row=>row.id===id?touchRecord(row,typeof change==='function'?change(row):change):row));
@@ -16353,18 +16359,22 @@ function PPCardLibrary({section,records,setRecords}) {
     const pending=String(drafts[row.id]||'').trim();
     patch(row.id,current=>({table:addNotesToCardTable(current.table,[...ppActive(current.changes),...(pending?[{text:pending,done:false}]:[])]),changes:safeArray(current.changes).map(note=>note.archived?note:touchRecord(note,archiveFields({movedToTable:true})))}));
     setDrafts(previous=>({...previous,[row.id]:''}));
+    toggleDetails(row.id,true);
   };
   return <section>
     <div className="pp-toolbar"><div className="pp-tabs" role="tablist"><button role="tab" aria-selected={!later} onClick={()=>{setLater(false);setFocus(null);}}>Active</button><button role="tab" aria-selected={later} onClick={()=>{setLater(true);setFocus(null);}}>Notes for Later</button></div></div>
     <form className="pp-add" onSubmit={event=>{event.preventDefault();add();}}><input aria-label="New preproduction card title" placeholder="New card title" value={title} onChange={event=>setTitle(event.target.value)} /><button disabled={!title.trim()}>+ Card</button></form>
-    {focus&&<button className="pp-quiet pp-back" onClick={()=>setFocus(null)}>← All cards</button>}
+    {focus&&<button className="pp-quiet pp-back" onClick={()=>focusCard(null)}>← All cards</button>}
     <div className={'pp-card-grid'+(focus?' is-focused':'')}>{rows.filter(row=>!focus||row.id===focus).map(row=><article key={row.id} className="pp-card"
       onDragOver={event=>{if(drag.current)event.preventDefault();}} onDrop={event=>{event.preventDefault();move(drag.current,row.id);drag.current=null;}}>
       <header><PPCardTitle value={row.title} onChange={value=>patch(row.id,{title:value})} onBlur={()=>{if(!row.title.trim())patch(row.id,{title:'Untitled card'});}} />
         <div className="pp-card-tools">{!row.table&&<button className="pp-quiet" onClick={()=>convertTable(row)}>+ Table</button>}<button className="pp-icon" title="Archive card" aria-label={'Archive '+row.title} onClick={()=>{patch(row.id,archiveFields());setFocus(null);}}><ArchiveTrayIcon /></button><PPOrder row={row} rows={rows} index={rows.indexOf(row)} onMove={move} dragRef={drag} /></div></header>
+      <details className="pp-card-details" open={detailsOpen[row.id]??focus===row.id} onToggle={event=>toggleDetails(row.id,event.currentTarget.open)}>
+      <summary aria-label={'Toggle '+(row.table?'details':'notes')+' for '+row.title}>{row.table?'Details':'Notes'}</summary>
       {row.table ? <CardTableEditor table={row.table} onChange={change=>patch(row.id,current=>({table:typeof change==='function'?change(current.table):change}))} /> : <div className="pp-card-notes">{ppActive(row.changes).map(note=><div className="pp-note-line" key={note.id}><input type="checkbox" aria-label={'Complete '+note.text} checked={!!note.done} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{done:event.target.checked}):item)}))} /><textarea rows={1} aria-label="Card note" className={note.done?'is-done':''} value={note.text} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{text:event.target.value}):item)}))} /><button className="pp-icon" title="Remove note" aria-label="Remove preproduction note" onClick={()=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,archiveFields()):item)}))}>−</button></div>)}
         <form className="pp-note-line" onSubmit={event=>{event.preventDefault();addNote(row);}}><span className="pp-dot">•</span><input placeholder="Add note" aria-label="Add card note" value={drafts[row.id]||''} onChange={event=>setDrafts(previous=>({...previous,[row.id]:event.target.value}))} /><button className="pp-icon" disabled={!String(drafts[row.id]||'').trim()}>+</button></form></div>}
-      <footer><button className="pp-quiet" onClick={()=>{patch(row.id,{later:!later,order:Date.now()});setFocus(null);}}>{later?'Move to active':'Notes for Later'}</button><button className="pp-quiet" onClick={()=>setFocus(focus?null:row.id)}>{focus?'Collapse':'Open card'}</button></footer>
+      </details>
+      <footer><button className="pp-quiet" onClick={()=>{patch(row.id,{later:!later,order:Date.now()});setFocus(null);}}>{later?'Move to active':'Notes for Later'}</button><button className="pp-quiet" onClick={()=>focusCard(focus?null:row.id)}>{focus?'Collapse':'Open card'}</button></footer>
     </article>)}</div>
     {!rows.length&&<p className="pp-empty">{later?'No notes saved for later.':'No cards yet.'}</p>}
   </section>;
