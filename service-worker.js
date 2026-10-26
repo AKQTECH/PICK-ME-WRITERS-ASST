@@ -1,4 +1,4 @@
-const CACHE_NAME = "pick-me-writers-assistant-1.3.0-preproduction";
+const CACHE_NAME = "pick-me-writers-assistant-1.3.1-preproduction";
 const CORE_ASSETS = ["./", "./index.html", "./manifest.json", "./icon.png"];
 
 self.addEventListener("install", event => {
