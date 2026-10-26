@@ -5635,17 +5635,19 @@
         }
 
     /* PREPRODUCTION STYLES START */
-.preproduction-workspace { --pp-pink:#edbad5; --pp-ink:#bc6b98; --pp-line:#f2d8e5; color:#171217; min-width:0; }
+.preproduction-workspace { --pp-pink:#E9AFCC; --pp-ink:#C3578D; --pp-line:#E9AFCC; color:#171217; min-width:0; }
 .preproduction-workspace *, .preproduction-workspace *::before, .preproduction-workspace *::after { box-sizing:border-box; letter-spacing:0; }
 .pp-heading,.pp-section-heading,.pp-budget-top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:0 0 20px; }
+.pp-heading>.pp-quiet { flex-shrink:0; white-space:nowrap; }
 .preproduction-workspace h2,.preproduction-workspace h3 { color:var(--pp-ink); font-size:15px; font-weight:800; text-transform:uppercase; margin:0; }
 .pp-main-menu { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
 .pp-main-menu button { aspect-ratio:2.4; background:#fff; border:1px solid var(--pp-pink); border-radius:4px; color:#171217; font:800 16px 'DM Sans',sans-serif; text-transform:uppercase; padding:22px; }
 .pp-main-menu button:hover { background:#fff7fb; border-color:var(--pp-ink); }
 .preproduction-workspace button { cursor:pointer; font-family:inherit; }
+body .preproduction-workspace button { -webkit-text-fill-color:currentColor; }
 .preproduction-workspace button:disabled { opacity:.35; cursor:default; }
 .preproduction-workspace input:not([type=checkbox]),.preproduction-workspace textarea,.preproduction-workspace select { background:#fff !important; color:#171217 !important; border:1px solid var(--pp-line) !important; border-radius:3px !important; box-shadow:none !important; font:400 15px/1.5 'DM Sans',sans-serif !important; min-width:0; width:100%; padding:8px 10px; margin:0; }
-.preproduction-workspace select { padding-right:34px; min-height:40px; appearance:none; background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 1 5 5 5-5' stroke='%23bc6b98' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") !important; background-repeat:no-repeat !important; background-position:right 12px center !important; }
+.preproduction-workspace select { padding-right:34px; min-height:40px; appearance:none; background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 1 5 5 5-5' stroke='%23E9AFCC' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") !important; background-repeat:no-repeat !important; background-position:right 12px center !important; }
 .preproduction-workspace input:focus-visible,.preproduction-workspace textarea:focus-visible,.preproduction-workspace select:focus-visible,.preproduction-workspace button:focus-visible,.preproduction-workspace summary:focus-visible,.pp-grip:focus-visible { outline:2px solid var(--pp-pink); outline-offset:2px; }
 .preproduction-workspace input[aria-invalid=true] { border-color:#ba3862 !important; }
 .preproduction-workspace input[type=checkbox] { accent-color:#dca4c1; width:17px; height:17px; flex-shrink:0; margin:0; }
@@ -5653,31 +5655,33 @@
 .pp-toolbar>select,.pp-scenario-heading>select { max-width:300px; }
 .pp-scenario-heading>input { flex:1; min-width:180px !important; max-width:450px; font-weight:700 !important; }
 .pp-scenario-heading .pp-toolbar { margin:0; }
-.pp-quiet,.pp-icon { border:0; background:transparent; color:var(--pp-ink); padding:6px 0; font-size:13px; font-weight:800; line-height:1.4; text-transform:uppercase; box-shadow:none; border-radius:0; }
+.preproduction-workspace .pp-quiet,.preproduction-workspace .pp-icon { border:0; background:transparent; color:var(--pp-ink); padding:6px 0; font-size:13px; font-weight:800; line-height:1.4; text-transform:uppercase; box-shadow:none; border-radius:0; }
 .pp-quiet:hover,.pp-icon:hover { color:#923b70; }
-.pp-icon { width:28px; min-width:28px; height:30px; display:inline-flex; align-items:center; justify-content:center; font-size:20px; }
+.preproduction-workspace .pp-icon { width:28px; min-width:28px; height:30px; display:inline-flex; align-items:center; justify-content:center; font-size:20px; color:var(--pp-pink); }
+.preproduction-workspace svg { color:var(--pp-pink); }
 .pp-back { margin-bottom:18px; }
 .pp-tabs { display:flex; flex-wrap:wrap; gap:6px 24px; border-bottom:1px solid var(--pp-line); margin-bottom:24px; }
-.pp-tabs button { border:0; border-bottom:2px solid transparent; background:transparent; padding:10px 0; border-radius:0; font:800 12px/1.5 'DM Sans',sans-serif; color:#957887; text-transform:uppercase; }
-.pp-tabs button[aria-selected=true],.pp-tabs button[aria-current=page] { color:#ac4f85; border-bottom-color:var(--pp-pink); }
+.preproduction-workspace .pp-tabs button { border:0; border-bottom:2px solid transparent; background:transparent; padding:10px 0; border-radius:0; font:800 12px/1.5 'DM Sans',sans-serif; color:#E668A7; text-transform:uppercase; }
+.pp-tabs button[aria-selected=true],.pp-tabs button[aria-current=page] { color:#E668A7; border-bottom-color:var(--pp-pink); }
 .pp-add { display:flex; align-items:stretch; gap:14px; margin:20px 0 28px; max-width:720px; }
-.pp-add button { flex-shrink:0; background:#fff; border:1px solid var(--pp-pink); border-radius:3px; color:var(--pp-ink); font-weight:800; font-size:12px; text-transform:uppercase; padding:8px 14px; }
+.preproduction-workspace .pp-add button { flex-shrink:0; background:#fff; border:1px solid var(--pp-pink); border-radius:3px; color:var(--pp-pink); font-weight:800; font-size:12px; text-transform:uppercase; padding:8px 14px; }
 .pp-card-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
 .pp-card-grid.is-focused { grid-template-columns:minmax(0,1fr); max-width:1180px; margin:0 auto; }
 .pp-card { border:1px solid var(--pp-line); border-radius:6px; padding:22px; background:#fff; min-width:0; }
 .pp-card header { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:22px; flex-wrap:wrap; }
-.preproduction-workspace .pp-card input.pp-card-title { border:0 !important; font-size:19px !important; font-weight:800 !important; padding:0; min-width:100px; flex:1; }
-.pp-card-tools { display:flex; align-items:center; gap:12px; margin-left:auto; }
+.preproduction-workspace .pp-card textarea.pp-card-title { border:0 !important; font-size:19px !important; font-weight:800 !important; line-height:1.45 !important; padding:0; min-width:0; flex:1 1 250px; max-width:100%; min-height:28px; overflow:hidden; resize:none; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
+.pp-card-tools { display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; max-width:100%; gap:12px; margin-left:auto; }
 .pp-card-tools .pp-quiet { color:var(--pp-pink); font-size:11px; white-space:nowrap; }
 .pp-order { display:flex; align-items:center; gap:3px; }
-.pp-order button { background:none; border:0; color:var(--pp-pink); padding:3px; font-size:14px; }
+.preproduction-workspace .pp-order button { background:none; border:0; color:var(--pp-pink); padding:3px; font-size:14px; }
 .pp-grip { display:inline-block; color:var(--pp-pink); cursor:grab; font-size:18px; white-space:nowrap; padding:4px; }
-.pp-note-line { display:flex; align-items:flex-start; gap:10px; min-height:42px; border-bottom:1px solid #faeaf2; padding:7px 0; }
+.pp-note-line { display:flex; align-items:flex-start; gap:10px; min-height:42px; border-bottom:1px solid var(--pp-line); padding:7px 0; }
 .pp-note-line input[type=checkbox] { margin-top:8px; }
 .preproduction-workspace .pp-note-line textarea,.preproduction-workspace .pp-note-line input:not([type=checkbox]) { flex:1; border:0 !important; padding:3px 0; resize:vertical; min-height:28px; }
 .pp-dot { color:var(--pp-pink); margin-top:3px; }
 .pp-note-line .is-done { text-decoration:line-through; color:#b08d9e; }
 .pp-card footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:24px; }
+.pp-card footer .pp-quiet { color:#D772A4; }
 .pp-empty { color:#a38b98; font-size:14px; padding:28px 0; }
 .pp-table-scroll { overflow-x:auto; max-width:100%; }
 .pp-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:14px; background:transparent; margin:0; }
@@ -5937,7 +5941,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.3.1";
+const APP_VERSION = "1.3.2";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -16313,6 +16317,30 @@ function ppReorder(records,rows,from,to) {
   ids.splice(b,0,ids.splice(a,1)[0]);
   return records.map(row=>ids.includes(row.id)?touchRecord(row,{order:ids.indexOf(row.id)}):row);
 }
+function PPCardTitle({value,onChange,onBlur}) {
+  const ref=React.useRef(null);
+  const fit=React.useCallback(()=>{
+    const element=ref.current;
+    if(!element)return;
+    element.style.height='auto';
+    element.style.height=element.scrollHeight+'px';
+  },[]);
+  React.useLayoutEffect(fit,[value,fit]);
+  React.useLayoutEffect(()=>{
+    const element=ref.current;
+    let width=element.getBoundingClientRect().width;
+    const observer=new ResizeObserver(()=>{
+      const next=element.getBoundingClientRect().width;
+      if(next!==width){width=next;fit();}
+    });
+    observer.observe(element);
+    document.fonts?.addEventListener('loadingdone',fit);
+    return ()=>{observer.disconnect();document.fonts?.removeEventListener('loadingdone',fit);};
+  },[fit]);
+  return <textarea ref={ref} className="pp-card-title" value={value} rows={1} wrap="soft" aria-label="Card title"
+    onChange={event=>onChange(event.target.value.replace(/[\r\n]+/g,' '))} onBlur={onBlur}
+    onKeyDown={event=>{if(event.key==='Enter'&&!event.nativeEvent.isComposing){event.preventDefault();event.currentTarget.blur();}}} />;
+}
 function PPCardLibrary({section,records,setRecords}) {
   const [later,setLater]=React.useState(false),[title,setTitle]=React.useState(''),[focus,setFocus]=React.useState(null),[drafts,setDrafts]=React.useState({});
   const drag=React.useRef(null);
@@ -16332,7 +16360,7 @@ function PPCardLibrary({section,records,setRecords}) {
     {focus&&<button className="pp-quiet pp-back" onClick={()=>setFocus(null)}>← All cards</button>}
     <div className={'pp-card-grid'+(focus?' is-focused':'')}>{rows.filter(row=>!focus||row.id===focus).map(row=><article key={row.id} className="pp-card"
       onDragOver={event=>{if(drag.current)event.preventDefault();}} onDrop={event=>{event.preventDefault();move(drag.current,row.id);drag.current=null;}}>
-      <header><input className="pp-card-title" value={row.title} aria-label="Card title" onChange={event=>patch(row.id,{title:event.target.value})} onBlur={()=>{if(!row.title.trim())patch(row.id,{title:'Untitled card'});}} />
+      <header><PPCardTitle value={row.title} onChange={value=>patch(row.id,{title:value})} onBlur={()=>{if(!row.title.trim())patch(row.id,{title:'Untitled card'});}} />
         <div className="pp-card-tools">{!row.table&&<button className="pp-quiet" onClick={()=>convertTable(row)}>+ Table</button>}<button className="pp-icon" title="Archive card" aria-label={'Archive '+row.title} onClick={()=>{patch(row.id,archiveFields());setFocus(null);}}><ArchiveTrayIcon /></button><PPOrder row={row} rows={rows} index={rows.indexOf(row)} onMove={move} dragRef={drag} /></div></header>
       {row.table ? <CardTableEditor table={row.table} onChange={change=>patch(row.id,current=>({table:typeof change==='function'?change(current.table):change}))} /> : <div className="pp-card-notes">{ppActive(row.changes).map(note=><div className="pp-note-line" key={note.id}><input type="checkbox" aria-label={'Complete '+note.text} checked={!!note.done} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{done:event.target.checked}):item)}))} /><textarea rows={1} aria-label="Card note" className={note.done?'is-done':''} value={note.text} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{text:event.target.value}):item)}))} /><button className="pp-icon" title="Remove note" aria-label="Remove preproduction note" onClick={()=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,archiveFields()):item)}))}>−</button></div>)}
         <form className="pp-note-line" onSubmit={event=>{event.preventDefault();addNote(row);}}><span className="pp-dot">•</span><input placeholder="Add note" aria-label="Add card note" value={drafts[row.id]||''} onChange={event=>setDrafts(previous=>({...previous,[row.id]:event.target.value}))} /><button className="pp-icon" disabled={!String(drafts[row.id]||'').trim()}>+</button></form></div>}
