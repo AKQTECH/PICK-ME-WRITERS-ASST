@@ -5948,7 +5948,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.3.4";
+const APP_VERSION = "1.3.5";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -16310,12 +16310,13 @@ function PPBar({label,value,total,color}) {
 }
 function PPOrder({row,index,rows,onMove,dragRef}) {
   return <div className="pp-order">
+    {APP_BUILD==='PWA'?<>
     <button title="Move up" aria-label={'Move '+(row.title||row.name)+' up'} disabled={!index} onClick={()=>onMove(row.id,rows[index-1].id)}>↑</button>
     <button title="Move down" aria-label={'Move '+(row.title||row.name)+' down'} disabled={index===rows.length-1} onClick={()=>onMove(row.id,rows[index+1].id)}>↓</button>
-    <span className="pp-grip" draggable tabIndex={0} role="button" title="Drag to reorder" aria-label={'Reorder '+(row.title||row.name)}
+    </>:<span className="pp-grip" draggable tabIndex={0} role="button" title="Drag to reorder" aria-label={'Reorder '+(row.title||row.name)}
       onDragStart={event=>{dragRef.current=row.id;event.dataTransfer.setData('text/plain',row.id);}}
       onDragEnd={()=>{dragRef.current=null;}}
-      onKeyDown={event=>{if(['ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();const next=rows[index+(event.key==='ArrowUp'?-1:1)];if(next)onMove(row.id,next.id);}}}>⋮⋮</span>
+      onKeyDown={event=>{if(['ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();const next=rows[index+(event.key==='ArrowUp'?-1:1)];if(next)onMove(row.id,next.id);}}}>⋮⋮</span>}
   </div>;
 }
 function ppReorder(records,rows,from,to) {
@@ -16370,7 +16371,7 @@ function PPCardLibrary({section,records,setRecords}) {
     <form className="pp-add" onSubmit={event=>{event.preventDefault();add();}}><input aria-label="New preproduction card title" placeholder="New card title" value={title} onChange={event=>setTitle(event.target.value)} /><button disabled={!title.trim()}>+ Card</button></form>
     {focus&&<button className="pp-quiet pp-back" onClick={()=>focusCard(null)}>← All cards</button>}
     <div className={'pp-card-grid'+(focus?' is-focused':'')}>{rows.filter(row=>!focus||row.id===focus).map(row=><article key={row.id} className="pp-card"
-      onDragOver={event=>{if(drag.current)event.preventDefault();}} onDrop={event=>{event.preventDefault();move(drag.current,row.id);drag.current=null;}}>
+      onDragOver={APP_BUILD==='DESKTOP'?event=>{if(drag.current)event.preventDefault();}:undefined} onDrop={APP_BUILD==='DESKTOP'?event=>{if(drag.current){event.preventDefault();move(drag.current,row.id);drag.current=null;}}:undefined}>
       <header><PPCardTitle value={row.title} onChange={value=>patch(row.id,{title:value})} onBlur={()=>{if(!row.title.trim())patch(row.id,{title:'Untitled card'});}} />
         <div className="pp-card-tools">{!row.table&&<button className="pp-quiet" onClick={()=>convertTable(row)}>+ Table</button>}<button className="pp-icon" title="Archive card" aria-label={'Archive '+row.title} onClick={()=>{patch(row.id,archiveFields());setFocus(null);}}><ArchiveTrayIcon /></button><PPOrder row={row} rows={rows} index={rows.indexOf(row)} onMove={move} dragRef={drag} /></div></header>
       <details className="pp-card-details" open={detailsOpen[row.id]??focus===row.id} onToggle={event=>toggleDetails(row.id,event.currentTarget.open)}>
@@ -16378,7 +16379,7 @@ function PPCardLibrary({section,records,setRecords}) {
       {row.table ? <CardTableEditor table={row.table} onChange={change=>patch(row.id,current=>({table:typeof change==='function'?change(current.table):change}))} /> : <div className="pp-card-notes">{ppActive(row.changes).map(note=><div className="pp-note-line" key={note.id}><input type="checkbox" aria-label={'Complete '+note.text} checked={!!note.done} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{done:event.target.checked}):item)}))} /><textarea rows={1} aria-label="Card note" className={note.done?'is-done':''} value={note.text} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{text:event.target.value}):item)}))} /><button className="pp-icon" title="Remove note" aria-label="Remove preproduction note" onClick={()=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,archiveFields()):item)}))}>−</button></div>)}
         <form className="pp-note-line" onSubmit={event=>{event.preventDefault();addNote(row);}}><span className="pp-dot">•</span><input placeholder="Add note" aria-label="Add card note" value={drafts[row.id]||''} onChange={event=>setDrafts(previous=>({...previous,[row.id]:event.target.value}))} /><button className="pp-icon" disabled={!String(drafts[row.id]||'').trim()}>+</button></form></div>}
       </details>
-      <footer><button className="pp-quiet" onClick={()=>{patch(row.id,{later:!later,order:Date.now()});setFocus(null);}}>{later?'Move to active':'Notes for Later'}</button><button className="pp-quiet" onClick={()=>focusCard(focus?null:row.id)}>{focus?'Collapse':'Open card'}</button></footer>
+      {later&&<footer><button className="pp-quiet" onClick={()=>{patch(row.id,{later:false,order:Date.now()});setFocus(null);}}>Move to active</button></footer>}
     </article>)}</div>
     {!rows.length&&<p className="pp-empty">{later?'No notes saved for later.':'No cards yet.'}</p>}
   </section>;
@@ -16390,7 +16391,7 @@ function PPContacts({section,records,setRecords}) {
   const move=(a,b)=>setRecords(previous=>ppReorder(previous,rows,a,b));
   const columns=[ppText('name','Name'),ppText('company','Company'),ppText('specialty',section==='financiers'?'Financing type':'Role / focus'),ppText('email','Email'),ppSelect('status','Status',['Research','To approach','Contacted','In discussion','Interested','Passed']),...(section==='financiers'?[ppCash('amount','Potential amount')]:[])];
   return <section><form className="pp-add" onSubmit={event=>{event.preventDefault();if(!name.trim())return;setRecords(previous=>[...previous,ppNew('contact',{section,name:name.trim(),company:'',email:'',specialty:'',status:'Research',amount:0,notes:'',nextStep:'',lastContact:'',order:Math.max(0,...rows.map(row=>row.order||0))+1})]);setName('');}}><input aria-label="New prospect name" placeholder={section==='financiers'?'Financier name':'Producer name'} value={name} onChange={event=>setName(event.target.value)} /><button disabled={!name.trim()}>+ {section==='financiers'?'Financier':'Producer'}</button></form>
-    <div className="pp-table-scroll"><table className="pp-table pp-contacts"><thead><tr><th aria-label="Order" />{columns.map(field=><th key={field.key}>{field.label}</th>)}<th>Notes & follow-up</th><th /></tr></thead><tbody>{rows.map((row,index)=><tr key={row.id} onDragOver={event=>{if(drag.current)event.preventDefault();}} onDrop={event=>{event.preventDefault();move(drag.current,row.id);drag.current=null;}}><td><PPOrder row={row} rows={rows} index={index} onMove={move} dragRef={drag} /></td>{columns.map(field=><td key={field.key}><PPField field={field} row={row} onChange={change=>patch(row.id,change)} /></td>)}<td><details><summary>{row.notes?'Notes':'Add notes'}</summary><PPFields fields={[ppText('notes','Notes',{kind:'textarea'}),ppText('nextStep','Next step'),ppText('lastContact','Last contact',{inputType:'date'})]} row={row} onChange={change=>patch(row.id,change)} /></details></td><td><button className="pp-icon" aria-label={'Archive '+row.name} title="Archive prospect" onClick={()=>patch(row.id,archiveFields())}><ArchiveTrayIcon /></button></td></tr>)}</tbody></table></div>{!rows.length&&<p className="pp-empty">No prospects yet.</p>}
+    <div className="pp-table-scroll"><table className="pp-table pp-contacts"><thead><tr><th aria-label="Order" />{columns.map(field=><th key={field.key}>{field.label}</th>)}<th>Notes & follow-up</th><th /></tr></thead><tbody>{rows.map((row,index)=><tr key={row.id} onDragOver={APP_BUILD==='DESKTOP'?event=>{if(drag.current)event.preventDefault();}:undefined} onDrop={APP_BUILD==='DESKTOP'?event=>{if(drag.current){event.preventDefault();move(drag.current,row.id);drag.current=null;}}:undefined}><td><PPOrder row={row} rows={rows} index={index} onMove={move} dragRef={drag} /></td>{columns.map(field=><td key={field.key}><PPField field={field} row={row} onChange={change=>patch(row.id,change)} /></td>)}<td><details><summary>{row.notes?'Notes':'Add notes'}</summary><PPFields fields={[ppText('notes','Notes',{kind:'textarea'}),ppText('nextStep','Next step'),ppText('lastContact','Last contact',{inputType:'date'})]} row={row} onChange={change=>patch(row.id,change)} /></details></td><td><button className="pp-icon" aria-label={'Archive '+row.name} title="Archive prospect" onClick={()=>patch(row.id,archiveFields())}><ArchiveTrayIcon /></button></td></tr>)}</tbody></table></div>{!rows.length&&<p className="pp-empty">No prospects yet.</p>}
   </section>;
 }
 function PPFinanceTable({title,rows,columns,details=[],detailRows,onPatch,onArchive,onAdd,extra,archiveDisabled}) {
