@@ -5733,6 +5733,12 @@ body .preproduction-workspace a { color:var(--pp-pink); -webkit-text-fill-color:
 .preproduction-workspace .card-table-editor tr.is-done textarea { color:#777777 !important; }
 .pp-print-summary { display:none; }
 .pp-archive-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0; border-bottom:1px solid #f2d8e5; }
+body.pwa-build .preproduction-workspace button,body.pwa-build .preproduction-workspace summary { min-height:44px; touch-action:manipulation; }
+body.pwa-build .preproduction-workspace .pp-order button,body.pwa-build .preproduction-workspace .pp-icon { min-width:44px; width:44px; height:44px; }
+body.pwa-build .preproduction-workspace input:not([type=checkbox]),body.pwa-build .preproduction-workspace textarea,body.pwa-build .preproduction-workspace select { font-size:16px !important; }
+body.pwa-build .preproduction-workspace input:not([type=checkbox]),body.pwa-build .preproduction-workspace select { min-height:44px; }
+body.pwa-build .preproduction-workspace .pp-card-title { font-size:19px !important; }
+body.pwa-build .pp-card-tools { gap:8px; }
 @media(max-width:1100px) { .pp-card-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .pp-fields,.pp-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:640px) {
   .preproduction-workspace .pp-card-details>summary { min-height:44px; padding:12px 0; }
@@ -5948,7 +5954,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.3.5";
+const APP_VERSION = "1.3.6";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
