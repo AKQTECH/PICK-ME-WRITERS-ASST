@@ -5692,6 +5692,10 @@ body .preproduction-workspace a { color:var(--pp-pink); -webkit-text-fill-color:
 .preproduction-workspace .pp-note-line textarea,.preproduction-workspace .pp-note-line input:not([type=checkbox]) { flex:1; border:0 !important; padding:3px 0; resize:vertical; min-height:28px; }
 .pp-dot { color:var(--pp-pink); margin-top:3px; }
 .pp-note-line .is-done { text-decoration:line-through; color:#777777; }
+body:not(.pwa-build) [data-checklist-note] { cursor:grab; }
+body:not(.pwa-build) [data-checklist-note] textarea { cursor:grab; }
+body:not(.pwa-build) [data-checklist-note] textarea:focus { cursor:text; }
+body:not(.pwa-build) [data-checklist-drop=true] { box-shadow:inset 0 2px #E9AFCC; }
 .pp-card footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:24px; }
 .pp-card footer .pp-quiet { color:var(--pp-pink); }
 .preproduction-workspace .pp-card-details>summary { color:var(--pp-pink); font-size:13px; font-weight:800; min-height:32px; padding:6px 0; text-transform:uppercase; }
@@ -5965,7 +5969,7 @@ DBX.load();
 
 
 // --- SCRIPT RAIL V2 SHARED DATA LAYER ---------------------------------------
-const APP_VERSION = "1.3.8";
+const APP_VERSION = "1.3.9";
 const APP_BUILD = "PWA";
 const DEFAULT_NOTION_URL = "https://www.notion.so/3314237e26d081a887afd5c24e7c45a1";
 const PICKME_STATE_KEY = "pickme_state_v1";
@@ -14294,6 +14298,8 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
     const materialized = materializeIdeaNotes(current);
     return { ...materialized, changes:update(materialized.changes) };
   });
+  const ideaBulletDrag = useChecklistDrag((id, from, to) => patchIdeaNotes(id, changes => reorderChecklistNotes(changes, from, to)));
+  const draftIdeaBulletDrag = useChecklistDrag((group, from, to) => setDraftIdeaNotes(changes => reorderChecklistNotes(changes, from, to)));
   const newIdeaNote = text => touchRecord(normalizeChange({
     id:"idea-note-" + (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8)),
     text, source:"COMPANION_USER", isRewriteTask:true
@@ -14905,7 +14911,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                 </div>
                 {!draftIdeaHasTable && <details className="notecard-details idea-notes" open>
                   <summary>Notes</summary>
-                  <ul className="notecard-change-list">{draftIdeaNotes.map(note => <li key={note.id} className={"notecard-change-row" + (note.done ? " is-done" : "")}>
+                  <ul className="notecard-change-list">{draftIdeaNotes.map(note => <li key={note.id} {...draftIdeaBulletDrag('draft', note.id)} className={"notecard-change-row" + (note.done ? " is-done" : "")}>
                     <label className="notecard-change-check" title="Mark idea note complete"><input type="checkbox" className="notecard-change-done" checked={!!note.done}
                       onChange={event => setDraftIdeaNotes(previous => previous.map(item => item.id === note.id ? { ...item, done:event.target.checked } : item))}
                       aria-label={"Mark idea note complete " + note.text} /></label>
@@ -15049,7 +15055,7 @@ function ScriptCompanionTab({ scenes, setScenes, notecards, setNotecards, sequen
                         </div>
                         {!card.cardTable && <details className="notecard-details idea-notes" open>
                           <summary>Notes</summary>
-                          <ul className="notecard-change-list">{ideaNoteRows(card).map(note => <li key={note.id} className={"notecard-change-row" + (note.done ? " is-done" : "")}>
+                          <ul className="notecard-change-list">{ideaNoteRows(card).map(note => <li key={note.id} {...ideaBulletDrag(card.id, note.id)} className={"notecard-change-row" + (note.done ? " is-done" : "")}>
                             <label className="notecard-change-check" title="Mark idea note complete"><input type="checkbox" className="notecard-change-done" checked={!!note.done}
                               onChange={event => patchIdeaNotes(card.id, changes => changes.map(item => asId(item.id) === asId(note.id) ? touchRecord(item, { done:event.target.checked }) : item))}
                               aria-label={"Mark idea note complete " + (note.text || "note")} /></label>
@@ -16342,6 +16348,54 @@ function ppReorder(records,rows,from,to) {
   ids.splice(b,0,ids.splice(a,1)[0]);
   return records.map(row=>ids.includes(row.id)?touchRecord(row,{order:ids.indexOf(row.id)}):row);
 }
+function checklistNotesInOrder(notes) {
+  return safeArray(notes).map((note,index)=>({note,index})).sort((a,b)=>(Number.isFinite(Number(a.note.notecardOrder))&&a.note.notecardOrder!=null?Number(a.note.notecardOrder):a.index)-(Number.isFinite(Number(b.note.notecardOrder))&&b.note.notecardOrder!=null?Number(b.note.notecardOrder):b.index)||a.index-b.index).map(item=>item.note);
+}
+function reorderChecklistNotes(notes,from,to) {
+  const ordered=checklistNotesInOrder(notes),active=ordered.filter(note=>!note.archived&&!note.maybe);
+  const a=active.findIndex(note=>asId(note.id)===asId(from)),b=active.findIndex(note=>asId(note.id)===asId(to));
+  if(a<0||b<0||a===b)return notes;
+  active.splice(b,0,active.splice(a,1)[0]);
+  let index=0;
+  return ordered.map((note,position)=>note.archived||note.maybe?note:touchRecord(active[index++],{notecardOrder:position}));
+}
+function useChecklistDrag(onMove) {
+  const drag=React.useRef(null),editing=React.useRef(null),suppressClick=React.useRef(false),move=React.useRef(onMove);
+  const [drop,setDrop]=React.useState(null);
+  move.current=onMove;
+  const clear=()=>{const current=drag.current;drag.current=null;setDrop(null);if(current?.element.hasPointerCapture(current.pointerId))current.element.releasePointerCapture(current.pointerId);};
+  React.useEffect(()=>()=>{const current=drag.current;drag.current=null;if(current?.element.hasPointerCapture(current.pointerId))current.element.releasePointerCapture(current.pointerId);},[]);
+  return (group,id)=>APP_BUILD!=='DESKTOP'?{}:{
+    'data-checklist-note':id,'data-checklist-group':group,'data-checklist-drop':drop?.group===group&&drop?.id===id?'true':undefined,
+    onFocusCapture:event=>{if(event.target.matches('textarea'))editing.current={group,id};},
+    onBlurCapture:event=>{if(event.target.matches('textarea'))editing.current=null;},
+    onPointerDown:event=>{
+      if(event.button!==0||event.target.closest('button,input,select,a,[draggable=true]')||(event.target.matches('textarea')&&editing.current?.group===group&&editing.current?.id===id))return;
+      drag.current={group,id,pointerId:event.pointerId,x:event.clientX,y:event.clientY,element:event.currentTarget,dragging:false,target:null};
+    },
+    onPointerMove:event=>{
+      const current=drag.current;if(!current||current.pointerId!==event.pointerId)return;
+      if(!current.dragging&&Math.hypot(event.clientX-current.x,event.clientY-current.y)<7)return;
+      if(!current.dragging)current.element.setPointerCapture(event.pointerId);
+      current.dragging=true;event.preventDefault();event.stopPropagation();
+      const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-checklist-note]');
+      current.target=target?.dataset.checklistGroup===current.group?target.dataset.checklistNote:null;
+      setDrop(current.target&&current.target!==current.id?{group:current.group,id:current.target}:null);
+      if(event.clientY>innerHeight-48)window.scrollBy(0,18);else if(event.clientY<48)window.scrollBy(0,-18);
+    },
+    onPointerUp:event=>{
+      const current=drag.current;if(!current||current.pointerId!==event.pointerId)return;
+      clear();if(!current.dragging)return;
+      event.preventDefault();event.stopPropagation();suppressClick.current=true;
+      if(current.element.contains(document.activeElement)&&document.activeElement.matches('textarea'))document.activeElement.blur();
+      if(current.target&&current.target!==current.id)move.current(current.group,current.id,current.target);
+      setTimeout(()=>{suppressClick.current=false;},0);
+    },
+    onPointerCancel:clear,onLostPointerCapture:()=>{if(drag.current)clear();},
+    onKeyDown:event=>{if(event.key==='Escape'&&drag.current){event.preventDefault();clear();}},
+    onClickCapture:event=>{if(suppressClick.current){event.preventDefault();event.stopPropagation();}}
+  };
+}
 function PPCardTitle({value,onChange,onBlur}) {
   const ref=React.useRef(null);
   const fit=React.useCallback(()=>{
@@ -16377,12 +16431,13 @@ function PPCardLibrary({section,records,setRecords}) {
   const drag=React.useRef(null);
   const rows=ppActive(records).filter(row=>row.type==='card'&&row.section===section&&!!row.later===later).sort((a,b)=>(a.order||0)-(b.order||0));
   const patch=(id,change)=>setRecords(previous=>previous.map(row=>row.id===id?touchRecord(row,typeof change==='function'?change(row):change):row));
+  const noteDrag=useChecklistDrag((id,from,to)=>patch(id,current=>({changes:reorderChecklistNotes(current.changes,from,to)})));
   const move=(a,b)=>setRecords(previous=>ppReorder(previous,rows,a,b));
   const add=()=>{if(!title.trim())return;const row=ppNew('card',{section,title:title.trim(),later,changes:[],order:Math.max(0,...rows.map(row=>row.order||0))+1});setRecords(previous=>[...previous,row]);setTitle('');setFocus(row.id);};
   const addNote=row=>{const text=String(drafts[row.id]||'').trim();if(!text)return;patch(row.id,current=>({changes:[...safeArray(current.changes),ppNew('note',{text,done:false})]}));setDrafts(previous=>({...previous,[row.id]:''}));};
   const convertTable=row=>{
     const pending=String(drafts[row.id]||'').trim();
-    patch(row.id,current=>({table:addNotesToCardTable(current.table,[...ppActive(current.changes),...(pending?[{text:pending,done:false}]:[])]),changes:safeArray(current.changes).map(note=>note.archived?note:touchRecord(note,archiveFields({movedToTable:true})))}));
+    patch(row.id,current=>({table:addNotesToCardTable(current.table,[...ppActive(checklistNotesInOrder(current.changes)),...(pending?[{text:pending,done:false}]:[])]),changes:safeArray(current.changes).map(note=>note.archived?note:touchRecord(note,archiveFields({movedToTable:true})))}));
     setDrafts(previous=>({...previous,[row.id]:''}));
     toggleDetails(row.id,true);
   };
@@ -16398,7 +16453,7 @@ function PPCardLibrary({section,records,setRecords}) {
         <div className="pp-card-tools">{!row.table&&<button className="pp-quiet" onClick={()=>convertTable(row)}>+ Table</button>}{APP_BUILD==='PWA'&&!focus&&<button className="pp-icon" title="Expand card" aria-label={'Expand '+row.title} onClick={()=>focusCard(row.id)}>↗</button>}<button className="pp-icon" title="Archive card" aria-label={'Archive '+row.title} onClick={()=>{patch(row.id,archiveFields());setFocus(null);}}><ArchiveTrayIcon /></button><PPOrder row={row} rows={rows} index={rows.indexOf(row)} onMove={move} dragRef={drag} /></div></header>
       <details className="pp-card-details" open={detailsOpen[row.id]??focus===row.id} onToggle={event=>toggleDetails(row.id,event.currentTarget.open)}>
       <summary aria-label={'Toggle '+(row.table?'details':'notes')+' for '+row.title}>{row.table?'Details':'Notes'}</summary>
-      {row.table ? <CardTableEditor table={row.table} onChange={change=>patch(row.id,current=>({table:typeof change==='function'?change(current.table):change}))} /> : <div className="pp-card-notes">{ppActive(row.changes).map(note=><div className="pp-note-line" key={note.id}><input type="checkbox" aria-label={'Complete '+note.text} checked={!!note.done} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{done:event.target.checked}):item)}))} /><textarea rows={1} aria-label="Card note" className={note.done?'is-done':''} value={note.text} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{text:event.target.value}):item)}))} /><button className="pp-icon" title="Remove note" aria-label="Remove preproduction note" onClick={()=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,archiveFields()):item)}))}>−</button></div>)}
+      {row.table ? <CardTableEditor table={row.table} onChange={change=>patch(row.id,current=>({table:typeof change==='function'?change(current.table):change}))} /> : <div className="pp-card-notes">{ppActive(checklistNotesInOrder(row.changes)).map(note=><div className="pp-note-line" key={note.id} {...noteDrag(row.id,note.id)}><input type="checkbox" aria-label={'Complete '+note.text} checked={!!note.done} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{done:event.target.checked}):item)}))} /><textarea rows={1} aria-label="Card note" className={note.done?'is-done':''} value={note.text} onChange={event=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,{text:event.target.value}):item)}))} /><button className="pp-icon" title="Remove note" aria-label="Remove preproduction note" onClick={()=>patch(row.id,current=>({changes:current.changes.map(item=>item.id===note.id?touchRecord(item,archiveFields()):item)}))}>−</button></div>)}
         <form className="pp-note-line" onSubmit={event=>{event.preventDefault();addNote(row);}}><span className="pp-dot">•</span><input placeholder="Add note" aria-label="Add card note" value={drafts[row.id]||''} onChange={event=>setDrafts(previous=>({...previous,[row.id]:event.target.value}))} /><button className="pp-icon" disabled={!String(drafts[row.id]||'').trim()}>+</button></form></div>}
       </details>
       {later&&<footer><button className="pp-quiet" onClick={()=>{patch(row.id,{later:false,order:Date.now()});setFocus(null);}}>Move to active</button></footer>}
